@@ -64,11 +64,11 @@ export const COLOR_THEMES = [
 ]
 
 export const REWARD_CATEGORIES = [
-  "Screen time",
-  "Treat",
-  "Activity",
-  "Experience",
-  "Toy / item",
-  "Privilege",
-  "Other",
+  { value: "screen_time", label: "Screen time", emoji: "📱" },
+  { value: "treat", label: "Treat", emoji: "🍦" },
+  { value: "activity", label: "Activity", emoji: "🎨" },
+  { value: "experience", label: "Experience", emoji: "🎡" },
+  { value: "toy_item", label: "Toy / item", emoji: "🧸" },
+  { value: "privilege", label: "Privilege", emoji: "👑" },
+  { value: "other", label: "Other", emoji: "🎁" },
 ]

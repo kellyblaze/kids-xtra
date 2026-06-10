@@ -20,7 +20,7 @@ export default async function ActivityPage() {
   const { data: logs } = await supabase
     .from("activity_logs")
     .select(`
-      id, created_at, action_type, description,
+      id, created_at, event_type, metadata,
       child_profiles(name, avatar_key)
     `)
     .eq("family_id", profile.family_id)
@@ -67,7 +67,11 @@ export default async function ActivityPage() {
                     {child && (
                       <span className="text-xs font-semibold text-primary mr-1.5">{child.name}</span>
                     )}
-                    <span className="text-sm">{log.description ?? log.action_type}</span>
+                    <span className="text-sm">
+                      {(log.metadata as Record<string, string> | null)?.chore_title
+                        ?? (log.metadata as Record<string, string> | null)?.reward_title
+                        ?? log.event_type.replace(/_/g, " ")}
+                    </span>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-xs text-muted-foreground">{dateStr}</p>
