@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/shared/EmptyState"
 import { CATEGORY_EMOJI, CATEGORY_LABELS, FREQUENCY_LABELS } from "@/lib/constants"
 import { Plus, CheckSquare, Pencil } from "lucide-react"
 import { DeleteChoreButton } from "@/components/parent/DeleteChoreButton"
+import { SuggestChoresButton } from "@/components/parent/SuggestChoresButton"
 
 export default async function ChoresPage() {
   const supabase = await createClient()
@@ -38,9 +39,12 @@ export default async function ChoresPage() {
           <h1 className="text-2xl font-bold">Chores</h1>
           <p className="text-muted-foreground text-sm mt-1">Manage tasks your children can complete for credits</p>
         </div>
-        <Button asChild>
-          <Link href="/parent/chores/new"><Plus className="mr-2 w-4 h-4" /> Add chore</Link>
-        </Button>
+        <div className="flex gap-2">
+          <SuggestChoresButton />
+          <Button asChild>
+            <Link href="/parent/chores/new"><Plus className="mr-2 w-4 h-4" /> Add chore</Link>
+          </Button>
+        </div>
       </div>
 
       {!chores?.length ? (
