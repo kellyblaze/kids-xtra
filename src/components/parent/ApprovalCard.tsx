@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import { AVATAR_EMOJI, CATEGORY_EMOJI } from "@/lib/constants"
 import {
   approveChoreCompletion,
@@ -12,7 +12,8 @@ import {
   approveRewardRedemption,
   denyRewardRedemption,
 } from "@/app/actions/approval-actions"
-import { CheckCircle, XCircle, Gift, Star } from "lucide-react"
+import { getRejectionReasons, addRejectionReason } from "@/app/actions/rejection-actions"
+import { CheckCircle, XCircle, Gift, Star, ChevronDown, Plus } from "lucide-react"
 
 type ChildInfo = { id: string; name: string; avatar_key: string | null }
 
@@ -41,7 +42,19 @@ export function ApprovalCard({ type, item }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [showReject, setShowReject] = useState(false)
-  const [note, setNote] = useState("")
+  const [reasons, setReasons] = useState<string[]>([])
+  const [selected, setSelected] = useState("")
+  const [newReason, setNewReason] = useState("")
+  const [addingReason, setAddingReason] = useState(false)
+
+  useEffect(() => {
+    if (showReject && reasons.length === 0) {
+      getRejectionReasons().then(({ reasons: r }) => {
+        setReasons(r)
+        if (r.length > 0) setSelected(r[0])
+      })
+    }
+  }, [showReject, reasons.length])
 
   const child = item.child_profiles
   const avatarEmoji = AVATAR_EMOJI[child?.avatar_key ?? "star"] ?? "⭐"
@@ -54,12 +67,22 @@ export function ApprovalCard({ type, item }: Props) {
     })
   }
 
+  async function handleAddReason() {
+    if (!newReason.trim()) return
+    setAddingReason(true)
+    await addRejectionReason(newReason.trim())
+    setReasons((prev) => [...prev, newReason.trim()])
+    setSelected(newReason.trim())
+    setNewReason("")
+    setAddingReason(false)
+  }
+
   function handleReject() {
+    if (!selected) return
     startTransition(async () => {
-      if (type === "chore") await rejectChoreCompletion(item.id, note)
-      else await denyRewardRedemption(item.id, note)
+      if (type === "chore") await rejectChoreCompletion(item.id, selected)
+      else await denyRewardRedemption(item.id, selected)
       setShowReject(false)
-      setNote("")
       router.refresh()
     })
   }
@@ -107,25 +130,63 @@ export function ApprovalCard({ type, item }: Props) {
           <img
             src={choreItem.photo_url}
             alt="Completion photo"
-            className="rounded-lg w-full max-h-40 object-cover border"
+            className="rounded-lg w-full max-h-48 object-cover border"
           />
         )}
 
         {showReject ? (
-          <div className="space-y-2">
-            <Textarea
-              placeholder="Optional note for your child…"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              rows={2}
-              className="text-sm"
-            />
+          <div className="space-y-3 border-t pt-3">
+            <p className="text-sm font-semibold text-slate-700">Select a reason</p>
+
+            <div className="relative">
+              <select
+                value={selected}
+                onChange={(e) => setSelected(e.target.value)}
+                className="w-full appearance-none rounded-lg border border-input bg-background px-3 py-2 text-sm pr-8 focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                {reasons.map((r) => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2.5 top-2.5 w-4 h-4 text-muted-foreground pointer-events-none" />
+            </div>
+
             <div className="flex gap-2">
-              <Button size="sm" variant="destructive" onClick={handleReject} disabled={isPending} className="flex-1">
-                <XCircle className="w-3.5 h-3.5 mr-1.5" />
-                {type === "chore" ? "Reject" : "Deny"}
+              <Input
+                placeholder="Add new reason…"
+                value={newReason}
+                onChange={(e) => setNewReason(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddReason()}
+                className="text-sm"
+                disabled={addingReason}
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleAddReason}
+                disabled={!newReason.trim() || addingReason}
+              >
+                <Plus className="w-4 h-4" />
               </Button>
-              <Button size="sm" variant="outline" onClick={() => { setShowReject(false); setNote("") }} disabled={isPending}>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={handleReject}
+                disabled={isPending || !selected}
+                className="flex-1"
+              >
+                <XCircle className="w-3.5 h-3.5 mr-1.5" />
+                Send Rejection
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowReject(false)}
+                disabled={isPending}
+              >
                 Cancel
               </Button>
             </div>
@@ -138,7 +199,7 @@ export function ApprovalCard({ type, item }: Props) {
             </Button>
             <Button size="sm" variant="outline" onClick={() => setShowReject(true)} disabled={isPending} className="flex-1 text-destructive border-destructive/30 hover:bg-destructive/10">
               <XCircle className="w-3.5 h-3.5 mr-1.5" />
-              {type === "chore" ? "Reject" : "Deny"}
+              Reject
             </Button>
           </div>
         )}

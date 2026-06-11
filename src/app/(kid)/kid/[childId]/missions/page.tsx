@@ -40,6 +40,22 @@ export default async function KidMissionsPage({ params }: PageProps) {
     .in("status", ["pending_approval", "approved"])
     .gte("completed_at", monthStart)
 
+  const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString()
+  const { data: recentRejections } = await supabase
+    .from("chore_completions")
+    .select("assignment_id, rejection_note, reviewed_at")
+    .eq("child_id", childId)
+    .eq("status", "rejected")
+    .gte("reviewed_at", threeDaysAgo)
+    .order("reviewed_at", { ascending: false })
+
+  const rejectionByAssignment = new Map<string, string>()
+  for (const r of recentRejections ?? []) {
+    if (!rejectionByAssignment.has(r.assignment_id)) {
+      rejectionByAssignment.set(r.assignment_id, r.rejection_note ?? "Please try again")
+    }
+  }
+
   function countForAssignment(assignmentId: string, periodUnit: string): number {
     const cutoff = periodUnit === "week" ? weekStart : periodUnit === "month" ? monthStart : dayStart
     return (periodCompletions ?? []).filter(
@@ -91,11 +107,17 @@ export default async function KidMissionsPage({ params }: PageProps) {
       {todo.length > 0 && (
         <div className="space-y-3">
           {todo.map(({ assignmentId, chore, timesAllowed, periodUnit, doneCount }) => (
-            <div key={assignmentId} className="rounded-3xl border-4 border-violet-200 bg-white p-4 flex items-start gap-3 shadow-[0_4px_0_#ddd6fe]">
+            <div key={assignmentId} className={`rounded-3xl border-4 bg-white p-4 flex items-start gap-3 ${rejectionByAssignment.has(assignmentId) ? "border-red-300 shadow-[0_4px_0_#fca5a5]" : "border-violet-200 shadow-[0_4px_0_#ddd6fe]"}`}>
               <div className="text-3xl shrink-0">
                 {CATEGORY_EMOJI[chore.category as keyof typeof CATEGORY_EMOJI] ?? "📋"}
               </div>
               <div className="flex-1 min-w-0">
+                {rejectionByAssignment.has(assignmentId) && (
+                  <div className="mb-2 flex items-start gap-1.5 bg-red-50 border-2 border-red-200 rounded-xl px-2.5 py-1.5">
+                    <span className="text-sm">❌</span>
+                    <p className="text-xs font-black text-red-700">Try again · {rejectionByAssignment.get(assignmentId)}</p>
+                  </div>
+                )}
                 <p className="font-black text-slate-800">{chore.title}</p>
                 {chore.description && (
                   <p className="text-xs text-slate-500 mt-0.5 font-medium">{chore.description}</p>
