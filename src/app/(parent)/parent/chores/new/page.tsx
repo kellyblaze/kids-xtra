@@ -31,6 +31,8 @@ export default function NewChorePage() {
   const [frequency, setFrequency] = useState<string | null>("daily")
   const [category, setCategory] = useState<string | null>("chore")
   const [customDays, setCustomDays] = useState<number[]>([])
+  const [timesPeriod, setTimesPeriod] = useState(1)
+  const [periodUnit, setPeriodUnit] = useState("day")
 
   useEffect(() => {
     const supabase = createClient()
@@ -62,6 +64,8 @@ export default function NewChorePage() {
     formData.set("frequency", frequency)
     selectedChildren.forEach((id) => formData.append("child_ids", id))
     if (frequency === "custom") formData.set("custom_days", customDays.join(","))
+    formData.set("times_per_period", String(timesPeriod))
+    formData.set("period_unit", periodUnit)
     setError(null)
     startTransition(async () => {
       const result = await createChore(formData)
@@ -118,6 +122,34 @@ export default function NewChorePage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>How many times?</Label>
+              <div className="flex items-center gap-3">
+                <Input
+                  type="number"
+                  min={1}
+                  max={99}
+                  value={timesPeriod}
+                  onChange={(e) => setTimesPeriod(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-24"
+                />
+                <span className="text-sm text-muted-foreground">time{timesPeriod !== 1 ? "s" : ""} per</span>
+                <Select value={periodUnit} onValueChange={(v) => v && setPeriodUnit(v)}>
+                  <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="day">Day</SelectItem>
+                    <SelectItem value="week">Week</SelectItem>
+                    <SelectItem value="month">Month</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {timesPeriod > 1 && (
+                <p className="text-xs text-muted-foreground">
+                  Kids can complete this {timesPeriod}× per {periodUnit}
+                </p>
+              )}
             </div>
 
             {frequency === "custom" && (

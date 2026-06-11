@@ -72,6 +72,8 @@ export interface Chore {
   category: TaskCategory
   frequency: TaskFrequency
   custom_days: number[] | null
+  times_per_period: number
+  period_unit: 'day' | 'week' | 'month'
   due_time: string | null
   credit_value: number
   xp_value: number

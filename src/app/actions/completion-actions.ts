@@ -8,7 +8,7 @@ export async function markChoreComplete(assignmentId: string, childId: string, p
 
   const { data: assignment } = await supabase
     .from("chore_assignments")
-    .select("id, chore_id, child_id, family_id, chores(title, requires_photo)")
+    .select("id, chore_id, child_id, family_id, chores(title, requires_photo, times_per_period, period_unit)")
     .eq("id", assignmentId)
     .eq("child_id", childId)
     .single()
@@ -19,10 +19,23 @@ export async function markChoreComplete(assignmentId: string, childId: string, p
     const raw = assignment.chores
     if (!raw) return null
     return Array.isArray(raw) ? raw[0] ?? null : raw
-  })()
+  })() as { title: string; requires_photo: boolean; times_per_period: number; period_unit: string } | null
 
   if (chore?.requires_photo && !photoUrl) {
     return { error: "A photo is required for this chore" }
+  }
+
+  const timesAllowed = chore?.times_per_period ?? 1
+  const periodUnit = chore?.period_unit ?? "day"
+
+  const now = new Date()
+  let periodStart: Date
+  if (periodUnit === "week") {
+    periodStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay())
+  } else if (periodUnit === "month") {
+    periodStart = new Date(now.getFullYear(), now.getMonth(), 1)
+  } else {
+    periodStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   }
 
   const { data: existing } = await supabase
@@ -31,9 +44,11 @@ export async function markChoreComplete(assignmentId: string, childId: string, p
     .eq("assignment_id", assignmentId)
     .eq("child_id", childId)
     .in("status", ["pending_approval", "approved"])
-    .maybeSingle()
+    .gte("completed_at", periodStart.toISOString())
 
-  if (existing) return { error: "Already submitted or approved" }
+  if ((existing?.length ?? 0) >= timesAllowed) {
+    return { error: timesAllowed === 1 ? "Already submitted" : `Already completed ${timesAllowed}× this ${periodUnit}` }
+  }
 
   const { error } = await supabase.from("chore_completions").insert({
     assignment_id: assignmentId,
