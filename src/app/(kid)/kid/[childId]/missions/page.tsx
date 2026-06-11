@@ -41,7 +41,7 @@ export default async function KidMissionsPage({ params }: PageProps) {
     .in("status", ["pending_approval", "approved"])
     .gte("completed_at", new Date(new Date().setHours(0, 0, 0, 0)).toISOString())
 
-  const doneSet = new Set(todayCompletions?.map((c) => c.assignment_id) ?? [])
+  const doneSet = new Set(todayCompletions?.map((c) => c.chore_assignment_id) ?? [])
 
   const items = (assignments ?? []).map((a) => {
     const chore = Array.isArray(a.chores) ? a.chores[0] : a.chores
