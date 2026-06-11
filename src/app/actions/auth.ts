@@ -80,6 +80,32 @@ export async function signOut() {
   redirect("/")
 }
 
+export async function ensureFamilyCode(): Promise<{ code: string | null; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { code: null, error: "Not signed in" }
+
+  const admin = createAdminClient()
+  const { data: profile } = await admin
+    .from("parent_profiles")
+    .select("family_id")
+    .eq("id", user.id)
+    .single()
+  if (!profile) return { code: null, error: "Profile not found" }
+
+  const { data: family } = await admin
+    .from("families")
+    .select("family_code")
+    .eq("id", profile.family_id)
+    .single()
+
+  if (family?.family_code) return { code: family.family_code }
+
+  const newCode = Math.random().toString(36).slice(2, 8).toUpperCase()
+  await admin.from("families").update({ family_code: newCode }).eq("id", profile.family_id)
+  return { code: newCode }
+}
+
 export async function resetPassword(formData: FormData) {
   const email = formData.get("email") as string
   const supabase = await createClient()

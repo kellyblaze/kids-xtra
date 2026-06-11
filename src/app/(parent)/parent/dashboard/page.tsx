@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { AVATAR_EMOJI } from "@/lib/constants"
+import { ensureFamilyCode } from "@/app/actions/auth"
 
 export default async function ParentDashboardPage() {
   const supabase = await createClient()
@@ -11,13 +12,19 @@ export default async function ParentDashboardPage() {
 
   const { data: profile } = await supabase
     .from("parent_profiles")
-    .select("family_id")
+    .select("family_id, families(family_code)")
     .eq("id", user.id)
     .single()
 
   if (!profile) redirect("/login")
 
   const familyId = profile.family_id
+  const familyRow = Array.isArray(profile.families) ? profile.families[0] : profile.families
+  let familyCode = (familyRow as { family_code?: string } | null)?.family_code ?? null
+  if (!familyCode) {
+    const result = await ensureFamilyCode()
+    familyCode = result.code
+  }
 
   const [
     { data: children },
@@ -60,6 +67,14 @@ export default async function ParentDashboardPage() {
         <h1 className="text-2xl font-black text-slate-800">Dashboard 🏡</h1>
         <p className="text-slate-500 text-sm mt-1 font-medium">Overview of your family&apos;s progress</p>
       </div>
+
+      {familyCode && (
+        <div className="rounded-3xl border-4 border-violet-200 bg-violet-50 p-4 shadow-[0_4px_0_#ddd6fe]">
+          <p className="text-xs font-bold text-violet-500 uppercase tracking-wide mb-1">Kids login with this family code</p>
+          <p className="text-3xl font-black text-violet-700 tracking-widest">{familyCode}</p>
+          <p className="text-xs font-medium text-violet-400 mt-1">Share this with your children — they enter it at the Kid Login screen</p>
+        </div>
+      )}
 
       {pendingCount > 0 && (
         <Link
