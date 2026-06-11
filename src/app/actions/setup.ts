@@ -35,7 +35,7 @@ export async function completeSetup(formData: FormData) {
         .single()
 
       if (familyError || !family) {
-        return { error: "Could not create family. Please try again." }
+        return { error: `Family insert failed: ${familyError?.message ?? "unknown error"} (code: ${familyError?.code})` }
       }
 
       const { error: profileError } = await admin.from("parent_profiles").insert({
