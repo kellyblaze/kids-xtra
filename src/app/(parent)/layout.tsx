@@ -15,7 +15,7 @@ export default async function ParentLayout({ children }: { children: React.React
     .eq("id", user.id)
     .single()
 
-  if (!profile) redirect("/login")
+  if (!profile) redirect("/setup")
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
