@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { verifyKidSession } from '@/lib/kid-session'
-import { KID_SESSION_COOKIE } from '@/app/actions/kid-auth'
+import { KID_SESSION_COOKIE } from '@/lib/kid-session-constants'
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })

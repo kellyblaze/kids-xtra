@@ -4,7 +4,8 @@ import Link from "next/link"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
 import { verifyKidSession } from "@/lib/kid-session"
-import { KID_SESSION_COOKIE, kidLogout } from "@/app/actions/kid-auth"
+import { KID_SESSION_COOKIE } from "@/lib/kid-session-constants"
+import { kidLogout } from "@/app/actions/kid-auth"
 import { AVATAR_EMOJI } from "@/lib/constants"
 
 interface LayoutProps {

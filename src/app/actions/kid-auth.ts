@@ -4,8 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { signKidSession, hashPin } from "@/lib/kid-session"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-
-export const KID_SESSION_COOKIE = "kid_session"
+import { KID_SESSION_COOKIE } from "@/lib/kid-session-constants"
 
 export async function getChildrenByFamilyCode(familyCode: string) {
   try {
