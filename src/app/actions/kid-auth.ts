@@ -53,9 +53,11 @@ export async function kidLogin(familyCode: string, childId: string, pin: string)
 
     if (!child) return { error: "Profile not found." }
     if (!child.pin_hash) return { error: "No PIN set yet. Ask a parent to set your PIN first." }
-    if (hashPin(pin) !== child.pin_hash) return { error: "Wrong PIN. Try again." }
 
-    const token = signKidSession({ childId: child.id, familyId: family.id, childName: child.name })
+    const pinHash = await hashPin(pin)
+    if (pinHash !== child.pin_hash) return { error: "Wrong PIN. Try again." }
+
+    const token = await signKidSession({ childId: child.id, familyId: family.id, childName: child.name })
     const cookieStore = await cookies()
     cookieStore.set(KID_SESSION_COOKIE, token, {
       httpOnly: true,
@@ -86,7 +88,7 @@ export async function setChildPin(childId: string, pin: string) {
     const admin = createAdminClient()
     const { error } = await admin
       .from("child_profiles")
-      .update({ pin_hash: hashPin(pin) })
+      .update({ pin_hash: await hashPin(pin) })
       .eq("id", childId)
 
     if (error) return { error: "Could not save PIN." }

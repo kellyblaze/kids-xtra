@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const kidToken = request.cookies.get(KID_SESSION_COOKIE)?.value
-  const kidSession = kidToken ? verifyKidSession(kidToken) : null
+  const kidSession = kidToken ? await verifyKidSession(kidToken) : null
 
   // Kid routes: valid kid session OR parent Supabase session
   if (pathname.startsWith('/kid')) {
