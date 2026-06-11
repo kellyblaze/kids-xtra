@@ -25,42 +25,44 @@ export default async function ChildSelectPage() {
   if (!children?.length) redirect("/parent/children")
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gradient-to-b from-violet-50 to-white">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-violet-700">Who&apos;s playing?</h1>
-          <p className="text-muted-foreground mt-2">Tap your name to see your missions</p>
+          <div className="text-6xl mb-4">👋</div>
+          <h1 className="text-4xl font-black text-slate-800">Who&apos;s playing?</h1>
+          <p className="text-slate-500 font-medium mt-2">Tap your name to see your missions</p>
         </div>
 
         <div className="grid gap-4">
           {children.map((child) => {
             const emoji = AVATAR_EMOJI[child.avatar_key ?? "star"] ?? "⭐"
             const theme = COLOR_THEMES.find((t) => t.value === child.color_theme)
-            const bg = theme?.bg ?? "bg-violet-100"
+            const bg = theme?.bg ?? "bg-violet-50"
             const text = theme?.text ?? "text-violet-700"
 
             return (
               <Link
                 key={child.id}
                 href={`/kid/${child.id}/dashboard`}
-                className={`flex items-center gap-4 p-5 rounded-2xl ${bg} hover:opacity-90 active:scale-95 transition-all cursor-pointer`}
+                className={`flex items-center gap-4 p-5 rounded-3xl border-4 border-violet-200 ${bg} shadow-[0_6px_0_#ddd6fe] hover:translate-y-[3px] hover:shadow-[0_3px_0_#ddd6fe] active:translate-y-[6px] active:shadow-none transition-all cursor-pointer`}
               >
-                <div className="w-16 h-16 rounded-full bg-white/60 flex items-center justify-center text-4xl shrink-0 shadow-sm">
+                <div className="w-16 h-16 rounded-2xl bg-white/80 border-2 border-white flex items-center justify-center text-4xl shrink-0 shadow-sm">
                   {emoji}
                 </div>
-                <div>
-                  <p className={`text-2xl font-bold ${text}`}>{child.name}</p>
-                  <p className={`text-sm font-medium ${text} opacity-80`}>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-2xl font-black ${text} truncate`}>{child.name}</p>
+                  <p className={`text-sm font-bold opacity-70 ${text}`}>
                     ⭐ {child.credit_balance ?? 0} credits · Level {child.level ?? 1}
                   </p>
                 </div>
+                <span className="text-2xl">→</span>
               </Link>
             )
           })}
         </div>
 
-        <p className="text-center text-xs text-muted-foreground">
-          <Link href="/parent/dashboard" className="underline underline-offset-2">
+        <p className="text-center text-xs font-bold text-slate-400">
+          <Link href="/parent/dashboard" className="hover:text-violet-600 transition-colors underline underline-offset-2">
             Back to parent view
           </Link>
         </p>

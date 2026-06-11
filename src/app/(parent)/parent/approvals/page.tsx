@@ -1,8 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import { EmptyState } from "@/components/shared/EmptyState"
 import { ApprovalCard } from "@/components/parent/ApprovalCard"
-import { CheckSquare } from "lucide-react"
 
 export default async function ApprovalsPage() {
   const supabase = await createClient()
@@ -44,8 +42,8 @@ export default async function ApprovalsPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold">Approvals</h1>
-        <p className="text-muted-foreground text-sm mt-1">
+        <h1 className="text-2xl font-black text-slate-800">Approvals ✅</h1>
+        <p className="text-slate-500 text-sm mt-1 font-medium">
           {total > 0
             ? `${total} item${total !== 1 ? "s" : ""} waiting for review`
             : "Nothing pending review"}
@@ -53,16 +51,16 @@ export default async function ApprovalsPage() {
       </div>
 
       {total === 0 ? (
-        <EmptyState
-          icon={CheckSquare}
-          title="All caught up!"
-          description="No chore completions or reward requests waiting for your review."
-        />
+        <div className="rounded-3xl border-4 border-emerald-200 bg-emerald-50 p-10 text-center shadow-[0_4px_0_#a7f3d0]">
+          <div className="text-5xl mb-4">🎉</div>
+          <h2 className="font-black text-xl text-emerald-800">All caught up!</h2>
+          <p className="text-emerald-700 font-medium mt-1 text-sm">No chore completions or reward requests waiting.</p>
+        </div>
       ) : (
         <div className="space-y-6">
           {completions && completions.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">
                 Chore completions ({completions.length})
               </h2>
               {completions.map((c) => {
@@ -84,7 +82,7 @@ export default async function ApprovalsPage() {
 
           {redemptions && redemptions.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">
                 Reward requests ({redemptions.length})
               </h2>
               {redemptions.map((r) => {
