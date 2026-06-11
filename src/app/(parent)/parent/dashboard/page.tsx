@@ -51,6 +51,7 @@ export default async function ParentDashboardPage() {
       .limit(8),
   ])
 
+
   const pendingCount = (pendingCompletions?.length ?? 0) + (pendingRedemptions?.length ?? 0)
 
   return (
