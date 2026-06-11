@@ -54,10 +54,12 @@ export function ParentTopbar({ profile }: ParentTopbarProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>
-              <p className="font-medium">{name}</p>
-              <p className="text-xs text-muted-foreground font-normal">{familyName}</p>
-            </DropdownMenuLabel>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>
+                <p className="font-medium">{name}</p>
+                <p className="text-xs text-muted-foreground font-normal">{familyName}</p>
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push("/parent/settings")} className="flex items-center gap-2 cursor-pointer">
               <Settings className="w-4 h-4" />
