@@ -98,11 +98,11 @@ export default function LandingPage() {
               <div className="relative hidden md:block">
                 <div className="relative rounded-3xl overflow-hidden border-4 border-violet-200 shadow-2xl">
                   <Image
-                    src="https://images.pexels.com/photos/5593130/pexels-photo-5593130.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-                    alt="Happy Black family enjoying time together in the kitchen"
+                    src="https://images.pexels.com/photos/7114188/pexels-photo-7114188.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+                    alt="Happy Black family with young children enjoying time together at home"
                     width={940}
                     height={650}
-                    className="w-full h-80 object-cover"
+                    className="w-full h-80 object-cover object-top"
                     unoptimized
                   />
                 </div>
