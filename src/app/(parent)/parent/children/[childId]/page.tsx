@@ -102,7 +102,11 @@ export default async function ChildDetailPage({ params }: PageProps) {
             ) : (
               assignments.map((a) => {
                 type ChoreShape = { id: string; title: string; category: string; credit_value: number; frequency: string }
-                const chore = a.chores as ChoreShape | null
+                const chore = (() => {
+                  const chores = a.chores as unknown as ChoreShape | ChoreShape[] | null
+                  if (!chores) return null
+                  return Array.isArray(chores) ? chores[0] ?? null : chores
+                })()
                 if (!chore) return null
                 return (
                   <div key={a.id} className="flex items-center gap-2 text-sm">
@@ -125,8 +129,15 @@ export default async function ChildDetailPage({ params }: PageProps) {
               <p className="text-sm text-muted-foreground">No completions yet.</p>
             ) : (
               completions.map((c) => {
-                type AssignShape = { chores: { title: string; category: string } }
-                const chore = (c.chore_assignments as AssignShape | null)?.chores
+                const chore = (() => {
+                  const assignment = Array.isArray(c.chore_assignments)
+                    ? c.chore_assignments[0] ?? null
+                    : c.chore_assignments
+                  if (!assignment) return null
+                  const chores = assignment.chores
+                  if (!chores) return null
+                  return Array.isArray(chores) ? chores[0] ?? null : chores
+                })()
                 const StatusIcon =
                   c.status === "approved" ? CheckCircle
                   : c.status === "rejected" ? XCircle
