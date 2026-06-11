@@ -38,7 +38,7 @@ export function ParentTopbar({ profile }: ParentTopbarProps) {
       <div className="flex items-center gap-3">
         <Link
           href="/kid/select"
-          className="hidden sm:flex items-center gap-1.5 text-sm font-semibold border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 rounded-md transition-colors"
+          className="flex items-center gap-1.5 text-sm font-semibold border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 rounded-md transition-colors"
         >
           <Star className="w-3.5 h-3.5 fill-primary text-primary" />
           Kid Mode
