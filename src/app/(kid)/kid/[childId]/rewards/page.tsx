@@ -1,7 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { EmptyState } from "@/components/shared/EmptyState"
 import { RedeemButton } from "@/components/kid/RedeemButton"
 import { Gift, Star } from "lucide-react"
@@ -52,12 +50,13 @@ export default async function KidRewardsPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 pb-6">
       <div>
-        <h1 className="text-2xl font-bold">Rewards</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          You have <span className="font-semibold text-amber-600">⭐ {balance} credits</span> to spend
-        </p>
+        <h1 className="text-2xl font-black text-slate-800">Rewards 🎁</h1>
+        <div className="mt-2 inline-flex items-center gap-2 bg-amber-100 border-2 border-amber-200 text-amber-700 font-black text-sm px-3 py-1.5 rounded-full">
+          <Star className="w-4 h-4" />
+          {balance} credits to spend
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -68,45 +67,42 @@ export default async function KidRewardsPage({ params }: PageProps) {
           const canAfford = balance >= reward.credit_cost
           const outOfStock = remaining !== null && remaining <= 0
           const alreadyPending = pendingSet.has(reward.id)
+          const dim = outOfStock || alreadyPending
 
           return (
-            <Card
+            <div
               key={reward.id}
-              className={`transition-opacity ${outOfStock || alreadyPending ? "opacity-60" : ""}`}
+              className={`rounded-3xl border-4 p-4 flex items-start gap-3 transition-all ${dim ? "border-slate-200 bg-slate-50 opacity-60 shadow-none" : canAfford ? "border-amber-200 bg-amber-50 shadow-[0_4px_0_#fde68a]" : "border-slate-200 bg-white shadow-[0_4px_0_#e2e8f0]"}`}
             >
-              <CardContent className="p-4 flex items-start gap-3">
-                <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center text-2xl shrink-0">
-                  🎁
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold">{reward.title}</p>
-                  {reward.description && (
-                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{reward.description}</p>
-                  )}
-                  <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <Badge
-                      className={`text-xs ${canAfford ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-muted text-muted-foreground"}`}
-                    >
-                      <Star className="w-3 h-3 mr-1" />
-                      {reward.credit_cost} credits
-                    </Badge>
-                    {remaining !== null && !outOfStock && (
-                      <span className="text-xs text-muted-foreground">{remaining} left</span>
-                    )}
-                    {outOfStock && <Badge variant="secondary" className="text-xs">Out of stock</Badge>}
-                    {alreadyPending && <Badge variant="secondary" className="text-xs">Requested ✓</Badge>}
-                  </div>
-                </div>
-                {!outOfStock && !alreadyPending && (
-                  <RedeemButton
-                    rewardId={reward.id}
-                    childId={childId}
-                    canAfford={canAfford}
-                    creditCost={reward.credit_cost}
-                  />
+              <div className="w-12 h-12 rounded-2xl bg-violet-100 border-2 border-violet-200 flex items-center justify-center text-2xl shrink-0">
+                🎁
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-black text-slate-800">{reward.title}</p>
+                {reward.description && (
+                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-2 font-medium">{reward.description}</p>
                 )}
-              </CardContent>
-            </Card>
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  <span className={`inline-flex items-center gap-1 text-xs font-black px-2 py-0.5 rounded-full border-2 ${canAfford ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                    <Star className="w-3 h-3" />
+                    {reward.credit_cost} credits
+                  </span>
+                  {remaining !== null && !outOfStock && (
+                    <span className="text-xs font-bold text-slate-400">{remaining} left</span>
+                  )}
+                  {outOfStock && <span className="text-xs font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Out of stock</span>}
+                  {alreadyPending && <span className="text-xs font-black bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Requested ✓</span>}
+                </div>
+              </div>
+              {!outOfStock && !alreadyPending && (
+                <RedeemButton
+                  rewardId={reward.id}
+                  childId={childId}
+                  canAfford={canAfford}
+                  creditCost={reward.credit_cost}
+                />
+              )}
+            </div>
           )
         })}
       </div>

@@ -1,8 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { EmptyState } from "@/components/shared/EmptyState"
 import { MarkDoneButton } from "@/components/kid/MarkDoneButton"
 import { CATEGORY_EMOJI } from "@/lib/constants"
@@ -62,10 +60,10 @@ export default async function KidMissionsPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 pb-6">
       <div>
-        <h1 className="text-2xl font-bold">My Missions</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <h1 className="text-2xl font-black text-slate-800">My Missions 🗂️</h1>
+        <p className="text-sm font-bold text-slate-500 mt-1">
           {todo.length} to do · {done.length} done today
         </p>
       </div>
@@ -73,55 +71,49 @@ export default async function KidMissionsPage({ params }: PageProps) {
       {todo.length > 0 && (
         <div className="space-y-3">
           {todo.map(({ assignmentId, chore }) => (
-            <Card key={assignmentId} className="border-2 border-primary/20">
-              <CardContent className="p-4 flex items-start gap-3">
-                <div className="text-2xl shrink-0 mt-0.5">
-                  {CATEGORY_EMOJI[chore!.category as keyof typeof CATEGORY_EMOJI] ?? "📋"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold">{chore!.title}</p>
-                  {chore!.description && (
-                    <p className="text-xs text-muted-foreground mt-0.5">{chore!.description}</p>
+            <div key={assignmentId} className="rounded-3xl border-4 border-violet-200 bg-white p-4 flex items-start gap-3 shadow-[0_4px_0_#ddd6fe]">
+              <div className="text-3xl shrink-0">
+                {CATEGORY_EMOJI[chore!.category as keyof typeof CATEGORY_EMOJI] ?? "📋"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-black text-slate-800">{chore!.title}</p>
+                {chore!.description && (
+                  <p className="text-xs text-slate-500 mt-0.5 font-medium">{chore!.description}</p>
+                )}
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 border-2 border-amber-200 text-xs font-black px-2 py-0.5 rounded-full">
+                    <Star className="w-3 h-3" />
+                    {chore!.credit_value} credits
+                  </span>
+                  {chore!.due_time && (
+                    <span className="text-xs font-bold text-slate-400">Due {chore!.due_time}</span>
                   )}
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs">
-                      <Star className="w-3 h-3 mr-1" />
-                      {chore!.credit_value} credits
-                    </Badge>
-                    {chore!.due_time && (
-                      <span className="text-xs text-muted-foreground">Due {chore!.due_time}</span>
-                    )}
-                  </div>
                 </div>
-                <MarkDoneButton
-                  assignmentId={assignmentId}
-                  childId={childId}
-                  familyId={child.family_id}
-                  requiresPhoto={chore!.requires_photo ?? false}
-                />
-              </CardContent>
-            </Card>
+              </div>
+              <MarkDoneButton
+                assignmentId={assignmentId}
+                childId={childId}
+                familyId={child.family_id}
+                requiresPhoto={chore!.requires_photo ?? false}
+              />
+            </div>
           ))}
         </div>
       )}
 
       {done.length > 0 && (
         <div className="space-y-2">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Done today ✅
-          </h2>
+          <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Done today ✅</h2>
           {done.map(({ assignmentId, chore }) => (
-            <Card key={assignmentId} className="opacity-60">
-              <CardContent className="p-3 flex items-center gap-3">
-                <span className="text-xl shrink-0">
-                  {CATEGORY_EMOJI[chore!.category as keyof typeof CATEGORY_EMOJI] ?? "📋"}
-                </span>
-                <p className="text-sm flex-1 truncate line-through">{chore!.title}</p>
-                <Badge variant="secondary" className="text-xs shrink-0">
-                  +{chore!.credit_value} ⭐
-                </Badge>
-              </CardContent>
-            </Card>
+            <div key={assignmentId} className="rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-3 flex items-center gap-3 opacity-70">
+              <span className="text-xl shrink-0">
+                {CATEGORY_EMOJI[chore!.category as keyof typeof CATEGORY_EMOJI] ?? "📋"}
+              </span>
+              <p className="text-sm font-bold flex-1 truncate line-through text-slate-500">{chore!.title}</p>
+              <span className="text-xs font-black bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full shrink-0">
+                +{chore!.credit_value} ⭐
+              </span>
+            </div>
           ))}
         </div>
       )}
