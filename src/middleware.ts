@@ -30,7 +30,7 @@ export async function middleware(request: NextRequest) {
   const kidSession = kidToken ? await verifyKidSession(kidToken) : null
 
   // Kid routes: valid kid session OR parent Supabase session
-  if (pathname.startsWith('/kid')) {
+  if (pathname.startsWith('/kid/')) {
     if (!kidSession && !user) {
       return NextResponse.redirect(new URL('/kids', request.url))
     }
