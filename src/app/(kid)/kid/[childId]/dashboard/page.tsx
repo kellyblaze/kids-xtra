@@ -4,7 +4,8 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { CheckCircle2, Clock, Star, Gift, ChevronRight } from "lucide-react"
+import { Progress } from "@/components/ui/progress"
+import { CheckCircle2, Clock, Star, Gift, ChevronRight, Flame } from "lucide-react"
 
 interface PageProps {
   params: Promise<{ childId: string }>
@@ -15,10 +16,10 @@ export default async function KidDashboardPage({ params }: PageProps) {
 
   const supabase = await createClient()
 
-  const [{ data: child }, { data: completions }, { data: redemptions }] = await Promise.all([
+  const [{ data: child }, { data: completions }, { data: redemptions }, { data: streak }] = await Promise.all([
     supabase
       .from("child_profiles")
-      .select("id, name, credit_balance, level")
+      .select("id, name, credit_balance, level, xp_total")
       .eq("id", childId)
       .single(),
 
@@ -40,11 +41,27 @@ export default async function KidDashboardPage({ params }: PageProps) {
       .in("status", ["requested", "approved"])
       .order("requested_at", { ascending: false })
       .limit(3),
+
+    supabase
+      .from("child_streaks")
+      .select("current_streak, longest_streak")
+      .eq("child_id", childId)
+      .maybeSingle(),
   ])
 
   if (!child) redirect("/kid/select")
 
   const pendingCount = completions?.filter((c) => c.status === "pending_approval").length ?? 0
+
+  // XP needed to reach next level: level N requires (N-1)^2 * 50 XP
+  const currentXp = child?.xp_total ?? 0
+  const currentLevel = child?.level ?? 1
+  const xpForCurrentLevel = Math.pow(currentLevel - 1, 2) * 50
+  const xpForNextLevel = Math.pow(currentLevel, 2) * 50
+  const xpProgress = xpForNextLevel > xpForCurrentLevel
+    ? Math.round(((currentXp - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel)) * 100)
+    : 100
+  const currentStreakCount = streak?.current_streak ?? 0
 
   return (
     <div className="space-y-6">
@@ -53,22 +70,42 @@ export default async function KidDashboardPage({ params }: PageProps) {
         <p className="text-sm text-muted-foreground mt-1">Keep earning credits to unlock rewards</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <Card className="bg-amber-50 border-amber-200">
-          <CardContent className="p-4 text-center">
-            <Star className="w-6 h-6 text-amber-500 mx-auto mb-1" />
-            <p className="text-2xl font-bold text-amber-700">{child.credit_balance ?? 0}</p>
+          <CardContent className="p-3 text-center">
+            <Star className="w-5 h-5 text-amber-500 mx-auto mb-1" />
+            <p className="text-xl font-bold text-amber-700">{child.credit_balance ?? 0}</p>
             <p className="text-xs text-amber-600 font-medium">Credits</p>
           </CardContent>
         </Card>
         <Card className="bg-violet-50 border-violet-200">
-          <CardContent className="p-4 text-center">
-            <span className="text-2xl block mb-1">🏆</span>
-            <p className="text-2xl font-bold text-violet-700">Level {child.level ?? 1}</p>
-            <p className="text-xs text-violet-600 font-medium">Your level</p>
+          <CardContent className="p-3 text-center">
+            <span className="text-xl block mb-1">🏆</span>
+            <p className="text-xl font-bold text-violet-700">Lv {child.level ?? 1}</p>
+            <p className="text-xs text-violet-600 font-medium">Level</p>
+          </CardContent>
+        </Card>
+        <Card className={`${currentStreakCount >= 3 ? "bg-orange-50 border-orange-200" : "bg-muted/50"}`}>
+          <CardContent className="p-3 text-center">
+            <Flame className={`w-5 h-5 mx-auto mb-1 ${currentStreakCount >= 3 ? "text-orange-500" : "text-muted-foreground"}`} />
+            <p className={`text-xl font-bold ${currentStreakCount >= 3 ? "text-orange-700" : "text-foreground"}`}>
+              {currentStreakCount}
+            </p>
+            <p className="text-xs text-muted-foreground font-medium">Streak</p>
           </CardContent>
         </Card>
       </div>
+
+      {/* XP progress bar */}
+      <Card className="bg-violet-50 border-violet-100">
+        <CardContent className="p-3 space-y-1.5">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-violet-700 font-medium">Level {currentLevel} → {currentLevel + 1}</span>
+            <span className="text-violet-500">{currentXp - xpForCurrentLevel} / {xpForNextLevel - xpForCurrentLevel} XP</span>
+          </div>
+          <Progress value={xpProgress} className="h-2 bg-violet-100 [&>div]:bg-violet-500" />
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-2 gap-3">
         <Button asChild size="lg" className="h-14 text-base font-semibold rounded-xl">

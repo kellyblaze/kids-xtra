@@ -61,6 +61,8 @@ export async function approveChoreCompletion(completionId: string) {
   })
 
   await supabase.rpc("recalculate_child_balance", { p_child_id: completion.child_id })
+  await supabase.rpc("award_xp", { p_child_id: completion.child_id, p_xp: xpValue })
+  await supabase.rpc("update_child_streak", { p_child_id: completion.child_id })
 
   await supabase.from("activity_logs").insert({
     family_id: ctx.familyId,

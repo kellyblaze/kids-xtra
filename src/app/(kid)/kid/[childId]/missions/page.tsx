@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { EmptyState } from "@/components/shared/EmptyState"
@@ -15,6 +16,14 @@ export default async function KidMissionsPage({ params }: PageProps) {
   const { childId } = await params
 
   const supabase = await createClient()
+
+  const { data: child } = await supabase
+    .from("child_profiles")
+    .select("family_id")
+    .eq("id", childId)
+    .single()
+
+  if (!child) redirect("/kid/select")
 
   const { data: assignments } = await supabase
     .from("chore_assignments")
@@ -87,6 +96,7 @@ export default async function KidMissionsPage({ params }: PageProps) {
                 <MarkDoneButton
                   assignmentId={assignmentId}
                   childId={childId}
+                  familyId={child.family_id}
                   requiresPhoto={chore!.requires_photo ?? false}
                 />
               </CardContent>
