@@ -19,6 +19,7 @@ export function MarkDoneButton({ assignmentId, childId, familyId, requiresPhoto 
   const [isPending, startTransition] = useTransition()
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [showPhotoFlow, setShowPhotoFlow] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
   function handleDoneClick() {
     if (requiresPhoto && !photoUrl) {
@@ -27,8 +28,18 @@ export function MarkDoneButton({ assignmentId, childId, familyId, requiresPhoto 
     }
     startTransition(async () => {
       await markChoreComplete(assignmentId, childId, photoUrl ?? undefined)
-      router.refresh()
+      setSubmitted(true)
+      setTimeout(() => router.refresh(), 1200)
     })
+  }
+
+  if (submitted) {
+    return (
+      <div className="shrink-0 flex items-center gap-1.5 bg-emerald-100 text-emerald-700 font-black text-sm px-3 py-1.5 rounded-xl border-2 border-emerald-300">
+        <CheckCircle2 className="w-4 h-4" />
+        Submitted!
+      </div>
+    )
   }
 
   if (showPhotoFlow && !photoUrl) {
