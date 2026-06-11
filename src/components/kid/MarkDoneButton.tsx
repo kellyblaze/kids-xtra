@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { PhotoUploadButton } from "@/components/kid/PhotoUploadButton"
 import { markChoreComplete } from "@/app/actions/completion-actions"
-import { CheckCircle2 } from "lucide-react"
+import { Camera, CheckCircle2, X } from "lucide-react"
 
 interface Props {
   assignmentId: string
@@ -37,28 +37,48 @@ export function MarkDoneButton({ assignmentId, childId, familyId, requiresPhoto 
         <PhotoUploadButton
           familyId={familyId}
           childId={childId}
-          onUploaded={(url) => setPhotoUrl(url)}
+          onUploaded={(url) => { setPhotoUrl(url); setShowPhotoFlow(false) }}
         />
         <button
           type="button"
           onClick={() => setShowPhotoFlow(false)}
-          className="text-xs text-muted-foreground w-full text-center"
+          className="text-xs text-slate-400 w-full text-center flex items-center justify-center gap-1"
         >
-          Cancel
+          <X className="w-3 h-3" /> Cancel
         </button>
       </div>
     )
   }
 
   return (
-    <Button
-      size="sm"
-      onClick={handleDoneClick}
-      disabled={isPending}
-      className="shrink-0 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white"
-    >
-      <CheckCircle2 className="w-4 h-4 mr-1.5" />
-      {isPending ? "…" : photoUrl ? "Submit!" : "Done!"}
-    </Button>
+    <div className="shrink-0 flex flex-col gap-1 items-end">
+      <Button
+        size="sm"
+        onClick={handleDoneClick}
+        disabled={isPending}
+        className="rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white"
+      >
+        <CheckCircle2 className="w-4 h-4 mr-1.5" />
+        {isPending ? "…" : photoUrl ? "Submit! 📸" : requiresPhoto ? "Add Photo" : "Done!"}
+      </Button>
+      {!requiresPhoto && !photoUrl && (
+        <button
+          type="button"
+          onClick={() => setShowPhotoFlow(true)}
+          className="text-xs text-slate-400 hover:text-violet-600 flex items-center gap-1 transition-colors"
+        >
+          <Camera className="w-3 h-3" /> add photo proof
+        </button>
+      )}
+      {photoUrl && !requiresPhoto && (
+        <button
+          type="button"
+          onClick={() => setPhotoUrl(null)}
+          className="text-xs text-slate-400 hover:text-red-500 flex items-center gap-1 transition-colors"
+        >
+          <X className="w-3 h-3" /> remove photo
+        </button>
+      )}
+    </div>
   )
 }
