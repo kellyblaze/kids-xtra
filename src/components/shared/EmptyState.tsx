@@ -18,7 +18,7 @@ export function EmptyState({ icon: Icon, title, description, action }: EmptyStat
       <h3 className="font-semibold text-foreground mb-1">{title}</h3>
       <p className="text-sm text-muted-foreground max-w-xs mb-4">{description}</p>
       {action && (
-        <Button asChild size="sm">
+        <Button size="sm">
           <Link href={action.href}>{action.label}</Link>
         </Button>
       )}

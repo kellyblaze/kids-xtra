@@ -75,7 +75,7 @@ export default async function ParentDashboardPage() {
               <p className="text-amber-700 text-xs">Completed chores and reward requests</p>
             </div>
           </div>
-          <Button size="sm" asChild className="bg-amber-600 hover:bg-amber-700 text-white shrink-0">
+          <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white shrink-0">
             <Link href="/parent/approvals">
               Review now <ArrowRight className="ml-1 w-3.5 h-3.5" />
             </Link>
@@ -108,7 +108,7 @@ export default async function ParentDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-base">Your children</CardTitle>
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="sm">
               <Link href="/parent/children">Manage <ArrowRight className="ml-1 w-3.5 h-3.5" /></Link>
             </Button>
           </CardHeader>
@@ -116,7 +116,7 @@ export default async function ParentDashboardPage() {
             {!children?.length ? (
               <div className="text-center py-6">
                 <p className="text-muted-foreground text-sm mb-3">No children yet</p>
-                <Button size="sm" asChild><Link href="/parent/children">Add your first child</Link></Button>
+                <Button size="sm"><Link href="/parent/children">Add your first child</Link></Button>
               </div>
             ) : (
               children.map((child) => (
@@ -145,7 +145,7 @@ export default async function ParentDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-base">Recent activity</CardTitle>
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="sm">
               <Link href="/parent/activity">All <ArrowRight className="ml-1 w-3.5 h-3.5" /></Link>
             </Button>
           </CardHeader>

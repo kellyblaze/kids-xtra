@@ -64,7 +64,7 @@ export default async function ChildDetailPage({ params }: PageProps) {
   return (
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" asChild>
+        <Button variant="ghost" size="icon">
           <Link href="/parent/children"><ArrowLeft className="w-4 h-4" /></Link>
         </Button>
         <h1 className="text-2xl font-bold">{child.name}</h1>

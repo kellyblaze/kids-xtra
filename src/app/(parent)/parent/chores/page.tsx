@@ -41,7 +41,7 @@ export default async function ChoresPage() {
         </div>
         <div className="flex gap-2">
           <SuggestChoresButton />
-          <Button asChild>
+          <Button>
             <Link href="/parent/chores/new"><Plus className="mr-2 w-4 h-4" /> Add chore</Link>
           </Button>
         </div>
@@ -87,7 +87,7 @@ export default async function ChoresPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <Button variant="ghost" size="icon" className="w-8 h-8" asChild>
+                    <Button variant="ghost" size="icon" className="w-8 h-8">
                       <Link href={`/parent/chores/${chore.id}/edit`}>
                         <Pencil className="w-4 h-4" />
                       </Link>

@@ -63,7 +63,7 @@ export function PhotoUploadButton({ familyId, childId, onUploaded }: Props) {
       <Button
         variant={uploaded ? "default" : "outline"}
         size="sm"
-        asChild
+       
         className={`${uploaded ? "bg-emerald-500 hover:bg-emerald-500 text-white" : ""}`}
         disabled={uploading}
       >

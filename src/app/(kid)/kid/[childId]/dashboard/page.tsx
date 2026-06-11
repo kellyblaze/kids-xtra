@@ -108,13 +108,13 @@ export default async function KidDashboardPage({ params }: PageProps) {
       </Card>
 
       <div className="grid grid-cols-2 gap-3">
-        <Button asChild size="lg" className="h-14 text-base font-semibold rounded-xl">
+        <Button size="lg" className="h-14 text-base font-semibold rounded-xl">
           <Link href={`/kid/${childId}/missions`}>
             <Star className="w-5 h-5 mr-2" />
             Missions
           </Link>
         </Button>
-        <Button asChild size="lg" variant="outline" className="h-14 text-base font-semibold rounded-xl border-2">
+        <Button size="lg" variant="outline" className="h-14 text-base font-semibold rounded-xl border-2">
           <Link href={`/kid/${childId}/rewards`}>
             <Gift className="w-5 h-5 mr-2" />
             Rewards

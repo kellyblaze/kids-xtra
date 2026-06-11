@@ -48,7 +48,7 @@ export default function PricingPage() {
                 </li>
               ))}
             </ul>
-            <Button asChild variant="outline" className="w-full">
+            <Button variant="outline" className="w-full">
               <Link href="/signup">Get started free</Link>
             </Button>
           </CardContent>
@@ -72,7 +72,7 @@ export default function PricingPage() {
                 </li>
               ))}
             </ul>
-            <Button asChild className="w-full">
+            <Button className="w-full">
               <Link href="/signup">Start free trial</Link>
             </Button>
           </CardContent>

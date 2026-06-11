@@ -49,7 +49,7 @@ export function EditChildDialog({ child }: { child: ChildData }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger>
         <Button variant="outline" size="icon">
           <Pencil className="w-4 h-4" />
         </Button>

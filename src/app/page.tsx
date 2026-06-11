@@ -30,10 +30,10 @@ export default function LandingPage() {
             <Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
           </nav>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" asChild>
+            <Button variant="ghost">
               <Link href="/login">Log in</Link>
             </Button>
-            <Button asChild>
+            <Button>
               <Link href="/signup">Get started free</Link>
             </Button>
           </div>
@@ -59,13 +59,13 @@ export default function LandingPage() {
               Extra effort. Extra rewards. Extra growth.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild className="text-base px-8">
+              <Button size="lg" className="text-base px-8">
                 <Link href="/signup">
                   Start for free
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" asChild className="text-base px-8">
+              <Button size="lg" variant="outline" className="text-base px-8">
                 <Link href="#how-it-works">See how it works</Link>
               </Button>
             </div>
@@ -154,7 +154,7 @@ export default function LandingPage() {
             <p className="text-white/80 max-w-xl mx-auto mb-8">
               Create your free family account in under 2 minutes. No credit card required.
             </p>
-            <Button size="lg" variant="secondary" asChild className="text-primary font-semibold">
+            <Button size="lg" variant="secondary" className="text-primary font-semibold">
               <Link href="/signup">
                 Create your family account
                 <ArrowRight className="ml-2 w-4 h-4" />

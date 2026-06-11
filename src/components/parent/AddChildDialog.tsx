@@ -43,7 +43,7 @@ export function AddChildDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger>
         <Button><Plus className="mr-2 w-4 h-4" /> Add child</Button>
       </DialogTrigger>
       <DialogContent>

@@ -34,7 +34,7 @@ export function ParentTopbar({ profile }: ParentTopbarProps) {
       </div>
 
       <div className="flex items-center gap-3">
-        <Button variant="outline" size="sm" asChild className="hidden sm:flex">
+        <Button variant="outline" size="sm" className="hidden sm:flex">
           <Link href="/kid/select">
             <Star className="w-3.5 h-3.5 mr-1.5 fill-primary text-primary" />
             Kid Mode
@@ -42,7 +42,7 @@ export function ParentTopbar({ profile }: ParentTopbarProps) {
         </Button>
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger>
             <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
               <Avatar className="h-9 w-9">
                 <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
@@ -57,7 +57,7 @@ export function ParentTopbar({ profile }: ParentTopbarProps) {
               <p className="text-xs text-muted-foreground font-normal">{familyName}</p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
+            <DropdownMenuItem>
               <Link href="/parent/settings" className="flex items-center gap-2 cursor-pointer">
                 <Settings className="w-4 h-4" />
                 Settings

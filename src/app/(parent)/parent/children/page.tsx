@@ -61,7 +61,7 @@ export default async function ChildrenPage() {
                     <span className="text-muted-foreground"> credits · Level {child.level}</span>
                   </p>
                 </div>
-                <Button variant="ghost" size="icon" asChild className="shrink-0">
+                <Button variant="ghost" size="icon" className="shrink-0">
                   <Link href={`/parent/children/${child.id}`}>
                     <ArrowRight className="w-4 h-4" />
                   </Link>

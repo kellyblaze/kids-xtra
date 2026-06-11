@@ -34,7 +34,7 @@ export default async function RewardsPage() {
           <h1 className="text-2xl font-bold">Rewards</h1>
           <p className="text-muted-foreground text-sm mt-1">Things your children can redeem with their credits</p>
         </div>
-        <Button asChild>
+        <Button>
           <Link href="/parent/rewards/new"><Plus className="mr-2 w-4 h-4" /> Add reward</Link>
         </Button>
       </div>
