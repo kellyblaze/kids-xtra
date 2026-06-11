@@ -66,11 +66,17 @@ export default async function ApprovalsPage() {
                 Chore completions ({completions.length})
               </h2>
               {completions.map((c) => {
+                type ChoreInfo = { title: string; category: string; credit_value: number }
                 const child = Array.isArray(c.child_profiles) ? c.child_profiles[0] ?? null : c.child_profiles
                 const assignment = Array.isArray(c.chore_assignments) ? c.chore_assignments[0] ?? null : c.chore_assignments
-                const chore = assignment && Array.isArray(assignment.chores) ? assignment.chores[0] ?? null : assignment?.chores ?? null
+                const chore = (() => {
+                  const chores = assignment?.chores
+                  if (!chores) return null
+                  return Array.isArray(chores) ? chores[0] ?? null : chores
+                })() as ChoreInfo | null
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return (
-                  <ApprovalCard key={c.id} type="chore" item={{ ...c, child_profiles: child, chore_assignments: chore ? { chores: chore } : null }} />
+                  <ApprovalCard key={c.id} type="chore" item={{ ...c, child_profiles: child as any, chore_assignments: chore ? { chores: chore } : null } as any} />
                 )
               })}
             </section>
