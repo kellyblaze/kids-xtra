@@ -29,8 +29,12 @@ export default function LandingPage() {
             <Link href="#how-it-works" className="hover:text-violet-600 transition-colors">How it works</Link>
           </nav>
           <div className="flex items-center gap-3">
+            <Link href="/kids"
+              className="font-bold text-amber-600 hover:text-amber-800 transition-colors text-sm px-4 py-2 rounded-2xl border-2 border-amber-200 hover:bg-amber-50">
+              🎮 Kid Login
+            </Link>
             <Link href="/login" className="font-bold text-violet-600 hover:text-violet-800 transition-colors text-sm px-4 py-2">
-              Log in
+              Parent Login
             </Link>
             <Link
               href="/signup"

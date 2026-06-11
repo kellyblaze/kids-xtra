@@ -26,9 +26,10 @@ export async function signUp(formData: FormData) {
 
     const admin = createAdminClient()
 
+    const familyCode = Math.random().toString(36).slice(2, 8).toUpperCase()
     const { data: family, error: familyError } = await admin
       .from("families")
-      .insert({ name: familyName })
+      .insert({ name: familyName, family_code: familyCode })
       .select()
       .single()
 

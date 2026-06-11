@@ -1,5 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { verifyKidSession } from '@/lib/kid-session'
+import { KID_SESSION_COOKIE } from '@/app/actions/kid-auth'
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -9,9 +11,7 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
+        getAll() { return request.cookies.getAll() },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
@@ -24,27 +24,43 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-
   const { pathname } = request.nextUrl
 
-  // Protect parent routes
-  if (pathname.startsWith('/parent') && !user) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  const kidToken = request.cookies.get(KID_SESSION_COOKIE)?.value
+  const kidSession = kidToken ? verifyKidSession(kidToken) : null
+
+  // Kid routes: valid kid session OR parent Supabase session
+  if (pathname.startsWith('/kid')) {
+    if (!kidSession && !user) {
+      return NextResponse.redirect(new URL('/kids', request.url))
+    }
+    // Prevent a kid session from accessing another child's routes
+    if (kidSession && !user) {
+      const parts = pathname.split('/')
+      const childIdInPath = parts[2]
+      if (childIdInPath && childIdInPath !== 'select' && childIdInPath !== kidSession.childId) {
+        return NextResponse.redirect(new URL(`/kid/${kidSession.childId}/dashboard`, request.url))
+      }
+    }
+    return supabaseResponse
   }
 
-  // Protect kid routes — requires active parent session
-  if (pathname.startsWith('/kid') && !user) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  // Parent/admin routes: Supabase session required — kid session alone is not enough
+  if (pathname.startsWith('/parent') || pathname.startsWith('/admin')) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+    return supabaseResponse
   }
 
-  // Protect admin routes
-  if (pathname.startsWith('/admin') && !user) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  // Redirect authenticated users away from auth pages
+  // Redirect authenticated parents away from auth pages
   if (user && (pathname === '/login' || pathname === '/signup')) {
     return NextResponse.redirect(new URL('/parent/dashboard', request.url))
+  }
+
+  // Redirect kids with a valid session away from the kids login page
+  if (kidSession && pathname === '/kids') {
+    return NextResponse.redirect(new URL(`/kid/${kidSession.childId}/dashboard`, request.url))
   }
 
   return supabaseResponse

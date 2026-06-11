@@ -8,6 +8,7 @@ import { AVATAR_EMOJI, CATEGORY_EMOJI } from "@/lib/constants"
 import { ArrowLeft, Star, CheckCircle, XCircle, Clock } from "lucide-react"
 import { EditChildDialog } from "@/components/parent/EditChildDialog"
 import { DeleteChildButton } from "@/components/parent/DeleteChildButton"
+import { SetChildPinForm } from "@/components/parent/SetChildPinForm"
 
 interface PageProps {
   params: Promise<{ childId: string }>
@@ -67,7 +68,16 @@ export default async function ChildDetailPage({ params }: PageProps) {
         <Button variant="ghost" size="icon">
           <Link href="/parent/children"><ArrowLeft className="w-4 h-4" /></Link>
         </Button>
-        <h1 className="text-2xl font-bold">{child.name}</h1>
+        <h1 className="text-2xl font-black text-slate-800">{child.name}</h1>
+      </div>
+
+      {/* Kid login PIN */}
+      <div className="rounded-3xl border-4 border-violet-200 bg-white p-5 shadow-[0_4px_0_#ddd6fe]">
+        <h2 className="font-black text-slate-800 mb-1">Kid login PIN 🔑</h2>
+        <p className="text-sm text-slate-500 font-medium mb-4">
+          Set a 4-digit PIN so {child.name} can log in at <span className="font-black text-violet-600">/kids</span>
+        </p>
+        <SetChildPinForm childId={child.id} />
       </div>
 
       <div className="flex items-start gap-4 p-5 rounded-2xl bg-primary/5 border border-primary/10">
