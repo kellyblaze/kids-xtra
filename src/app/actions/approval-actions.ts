@@ -31,11 +31,16 @@ export async function approveChoreCompletion(completionId: string) {
   if (fetchError || !completion) return { error: "Completion not found" }
   if (completion.status !== "pending_approval") return { error: "Already reviewed" }
 
-  type AssignmentShape = { chores: { credit_value: number; title: string; xp_value: number } }
-  const assignment = completion.chore_assignments as AssignmentShape
-  const creditValue = assignment?.chores?.credit_value ?? 0
-  const xpValue = assignment?.chores?.xp_value ?? 0
-  const choreTitle = assignment?.chores?.title ?? "chore"
+  const assignment = (() => {
+    const raw = completion.chore_assignments
+    if (!raw) return null
+    return Array.isArray(raw) ? raw[0] ?? null : raw
+  })()
+  const chores = assignment?.chores
+  const chore = chores ? (Array.isArray(chores) ? chores[0] ?? null : chores) : null
+  const creditValue = chore?.credit_value ?? 0
+  const xpValue = chore?.xp_value ?? 0
+  const choreTitle = chore?.title ?? "chore"
 
   const { error: updateError } = await supabase
     .from("chore_completions")
@@ -150,7 +155,12 @@ export async function approveRewardRedemption(redemptionId: string) {
     return { error: "Child does not have enough credits" }
   }
 
-  const rewardTitle = (redemption.rewards as { title: string } | null)?.title ?? "reward"
+  const reward = (() => {
+    const raw = redemption.rewards
+    if (!raw) return null
+    return Array.isArray(raw) ? raw[0] ?? null : raw
+  })()
+  const rewardTitle = reward?.title ?? "reward"
 
   const { error } = await supabase
     .from("reward_redemptions")

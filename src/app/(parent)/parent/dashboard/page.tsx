@@ -161,7 +161,12 @@ export default async function ParentDashboardPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm">
                       <span className="font-medium">
-                        {(log.child_profiles as { name: string } | null)?.name ?? "Parent"}
+                        {(() => {
+                          const child = Array.isArray(log.child_profiles)
+                            ? log.child_profiles[0] ?? null
+                            : log.child_profiles
+                          return child?.name ?? "Parent"
+                        })()}
                       </span>{" "}
                       {activityLabel(log.event_type, log.metadata as Record<string, string>)}
                     </p>

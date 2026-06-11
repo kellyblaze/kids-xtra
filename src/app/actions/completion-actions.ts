@@ -15,8 +15,11 @@ export async function markChoreComplete(assignmentId: string, childId: string, p
 
   if (!assignment) return { error: "Assignment not found" }
 
-  type ChoreInfo = { title: string; requires_photo: boolean }
-  const chore = assignment.chores as ChoreInfo | null
+  const chore = (() => {
+    const raw = assignment.chores
+    if (!raw) return null
+    return Array.isArray(raw) ? raw[0] ?? null : raw
+  })()
 
   if (chore?.requires_photo && !photoUrl) {
     return { error: "A photo is required for this chore" }
