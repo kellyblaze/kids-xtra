@@ -1,9 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, CheckSquare, Gift, Star, ArrowRight, Clock } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { AVATAR_EMOJI } from "@/lib/constants"
 
 export default async function ParentDashboardPage() {
@@ -58,143 +56,134 @@ export default async function ParentDashboardPage() {
   return (
     <div className="space-y-6 max-w-6xl">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground text-sm mt-1">Overview of your family&apos;s progress</p>
+        <h1 className="text-2xl font-black text-slate-800">Dashboard 🏡</h1>
+        <p className="text-slate-500 text-sm mt-1 font-medium">Overview of your family&apos;s progress</p>
       </div>
 
       {pendingCount > 0 && (
-        <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 flex items-center justify-between gap-4">
+        <Link
+          href="/parent/approvals"
+          className="flex items-center justify-between gap-4 rounded-3xl border-4 border-amber-200 bg-amber-50 p-4 shadow-[0_4px_0_#fde68a] hover:translate-y-[2px] hover:shadow-[0_2px_0_#fde68a] transition-all"
+        >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-              <Clock className="w-4 h-4 text-amber-600" />
-            </div>
+            <div className="w-10 h-10 rounded-2xl bg-amber-200 flex items-center justify-center text-xl">⏳</div>
             <div>
-              <p className="font-semibold text-amber-900 text-sm">
+              <p className="font-black text-amber-900 text-sm">
                 {pendingCount} item{pendingCount !== 1 ? "s" : ""} waiting for your approval
               </p>
-              <p className="text-amber-700 text-xs">Completed chores and reward requests</p>
+              <p className="text-amber-700 text-xs font-medium">Tap to review now</p>
             </div>
           </div>
-          <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white shrink-0">
-            <Link href="/parent/approvals">
-              Review now <ArrowRight className="ml-1 w-3.5 h-3.5" />
-            </Link>
-          </Button>
-        </div>
+          <ArrowRight className="w-5 h-5 text-amber-600 shrink-0" />
+        </Link>
       )}
 
+      {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Children", value: children?.length ?? 0, icon: Users, color: "bg-primary/10 text-primary" },
-          { label: "Pending chores", value: pendingCompletions?.length ?? 0, icon: CheckSquare, color: "bg-amber-100 text-amber-600" },
-          { label: "Reward requests", value: pendingRedemptions?.length ?? 0, icon: Gift, color: "bg-violet-100 text-violet-600" },
-          { label: "Total credits", value: children?.reduce((s, c) => s + c.credit_balance, 0) ?? 0, icon: Star, color: "bg-emerald-100 text-emerald-600" },
-        ].map(({ label, value, icon: Icon, color }) => (
-          <Card key={label}>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
-                <Icon className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{value}</p>
-                <p className="text-xs text-muted-foreground">{label}</p>
-              </div>
-            </CardContent>
-          </Card>
+          { emoji: "👧", label: "Children", value: children?.length ?? 0, border: "border-blue-200", bg: "bg-blue-50", shadow: "shadow-blue-200", text: "text-blue-700" },
+          { emoji: "✅", label: "Pending chores", value: pendingCompletions?.length ?? 0, border: "border-amber-200", bg: "bg-amber-50", shadow: "shadow-amber-200", text: "text-amber-700" },
+          { emoji: "🎁", label: "Reward requests", value: pendingRedemptions?.length ?? 0, border: "border-violet-200", bg: "bg-violet-50", shadow: "shadow-violet-200", text: "text-violet-700" },
+          { emoji: "⭐", label: "Total credits", value: children?.reduce((s, c) => s + c.credit_balance, 0) ?? 0, border: "border-emerald-200", bg: "bg-emerald-50", shadow: "shadow-emerald-200", text: "text-emerald-700" },
+        ].map(({ emoji, label, value, border, bg, shadow, text }) => (
+          <div key={label} className={`rounded-3xl border-4 ${border} ${bg} p-4 text-center shadow-[0_4px_0_0] ${shadow}`}>
+            <p className="text-2xl mb-1">{emoji}</p>
+            <p className={`text-3xl font-black ${text}`}>{value}</p>
+            <p className="text-xs font-bold text-slate-500 mt-1">{label}</p>
+          </div>
         ))}
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-base">Your children</CardTitle>
-            <Button variant="ghost" size="sm">
-              <Link href="/parent/children">Manage <ArrowRight className="ml-1 w-3.5 h-3.5" /></Link>
-            </Button>
-          </CardHeader>
-          <CardContent className="space-y-2">
+        {/* Children card */}
+        <div className="rounded-3xl border-4 border-slate-200 bg-white shadow-[0_4px_0_#e2e8f0] overflow-hidden">
+          <div className="flex items-center justify-between px-5 pt-5 pb-3">
+            <h2 className="font-black text-slate-800">Your children</h2>
+            <Link href="/parent/children" className="text-xs font-bold text-violet-600 flex items-center gap-1">
+              Manage <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <div className="px-3 pb-4 space-y-1">
             {!children?.length ? (
               <div className="text-center py-6">
-                <p className="text-muted-foreground text-sm mb-3">No children yet</p>
-                <Button size="sm"><Link href="/parent/children">Add your first child</Link></Button>
+                <p className="text-slate-500 text-sm mb-3 font-medium">No children yet</p>
+                <Link href="/parent/children" className="inline-flex items-center gap-2 bg-violet-600 text-white font-bold text-sm px-4 py-2 rounded-2xl shadow-[0_3px_0_#5b21b6]">
+                  Add your first child
+                </Link>
               </div>
             ) : (
               children.map((child) => (
                 <Link
                   key={child.id}
                   href={`/parent/children/${child.id}`}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-2xl hover:bg-violet-50 transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">
+                  <div className="w-10 h-10 rounded-2xl bg-violet-100 flex items-center justify-center text-xl border-2 border-violet-200">
                     {AVATAR_EMOJI[child.avatar_key ?? "star"] ?? "⭐"}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{child.name}</p>
-                    <p className="text-xs text-muted-foreground">Level {child.level}</p>
+                    <p className="font-black text-sm text-slate-800 truncate">{child.name}</p>
+                    <p className="text-xs font-medium text-slate-500">Level {child.level}</p>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="font-semibold text-sm">{child.credit_balance}</p>
-                    <p className="text-xs text-muted-foreground">credits</p>
-                  </div>
+                  <p className="font-black text-sm text-amber-600 shrink-0">{child.credit_balance} ⭐</p>
                 </Link>
               ))
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-base">Recent activity</CardTitle>
-            <Button variant="ghost" size="sm">
-              <Link href="/parent/activity">All <ArrowRight className="ml-1 w-3.5 h-3.5" /></Link>
-            </Button>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        {/* Activity card */}
+        <div className="rounded-3xl border-4 border-slate-200 bg-white shadow-[0_4px_0_#e2e8f0] overflow-hidden">
+          <div className="flex items-center justify-between px-5 pt-5 pb-3">
+            <h2 className="font-black text-slate-800">Recent activity</h2>
+            <Link href="/parent/activity" className="text-xs font-bold text-violet-600 flex items-center gap-1">
+              All <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <div className="px-4 pb-4 space-y-3">
             {!recentActivity?.length ? (
-              <p className="text-muted-foreground text-sm text-center py-6">No activity yet</p>
+              <p className="text-slate-500 text-sm text-center py-6 font-medium">No activity yet</p>
             ) : (
               recentActivity.map((log) => (
                 <div key={log.id} className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-sm shrink-0">
+                  <div className="w-8 h-8 rounded-2xl bg-slate-100 flex items-center justify-center text-base shrink-0 border-2 border-slate-200">
                     {activityEmoji(log.event_type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm">
-                      <span className="font-medium">
-                        {(() => {
-                          const child = Array.isArray(log.child_profiles)
-                            ? log.child_profiles[0] ?? null
-                            : log.child_profiles
-                          return child?.name ?? "Parent"
-                        })()}
-                      </span>{" "}
-                      {activityLabel(log.event_type, log.metadata as Record<string, string>)}
+                    <p className="text-sm font-bold text-slate-700">
+                      {(() => {
+                        const child = Array.isArray(log.child_profiles)
+                          ? log.child_profiles[0] ?? null
+                          : log.child_profiles
+                        return child?.name ?? "Parent"
+                      })()}
+                      {" "}
+                      <span className="font-medium text-slate-500">{activityLabel(log.event_type, log.metadata as Record<string, string>)}</span>
                     </p>
-                    <p className="text-xs text-muted-foreground">{formatRelativeTime(log.created_at)}</p>
+                    <p className="text-xs text-slate-400 font-medium">{formatRelativeTime(log.created_at)}</p>
                   </div>
                 </div>
               ))
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
+      {/* Quick actions */}
       <div className="grid sm:grid-cols-3 gap-4">
         {[
-          { href: "/parent/chores/new", label: "Add a chore", icon: CheckSquare, color: "bg-primary/10 text-primary" },
-          { href: "/parent/rewards/new", label: "Add a reward", icon: Gift, color: "bg-violet-100 text-violet-600" },
-          { href: "/parent/children", label: "Add a child", icon: Users, color: "bg-emerald-100 text-emerald-600" },
-        ].map(({ href, label, icon: Icon, color }) => (
+          { href: "/parent/chores/new", label: "Add a chore", emoji: "✅", border: "border-blue-200", shadow: "shadow-blue-200" },
+          { href: "/parent/rewards/new", label: "Add a reward", emoji: "🎁", border: "border-violet-200", shadow: "shadow-violet-200" },
+          { href: "/parent/children", label: "Add a child", emoji: "👧", border: "border-emerald-200", shadow: "shadow-emerald-200" },
+        ].map(({ href, label, emoji, border, shadow }) => (
           <Link
             key={href}
             href={href}
-            className="flex items-center gap-3 p-4 rounded-xl border bg-white hover:shadow-sm transition-shadow"
+            className={`flex items-center gap-3 p-4 rounded-3xl border-4 ${border} bg-white shadow-[0_4px_0_0] ${shadow} hover:translate-y-[2px] hover:shadow-[0_2px_0_0] transition-all`}
           >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
-              <Icon className="w-5 h-5" />
-            </div>
-            <span className="font-medium text-sm">{label}</span>
-            <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto" />
+            <span className="text-2xl">{emoji}</span>
+            <span className="font-black text-sm text-slate-700">{label}</span>
+            <ArrowRight className="w-4 h-4 text-slate-400 ml-auto" />
           </Link>
         ))}
       </div>

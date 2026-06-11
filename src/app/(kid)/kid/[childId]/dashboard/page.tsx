@@ -1,11 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { CheckCircle2, Clock, Star, Gift, ChevronRight, Flame } from "lucide-react"
+import { CheckCircle2, Clock, Gift, ChevronRight, Flame } from "lucide-react"
 
 interface PageProps {
   params: Promise<{ childId: string }>
@@ -64,116 +60,114 @@ export default async function KidDashboardPage({ params }: PageProps) {
   const currentStreakCount = streak?.current_streak ?? 0
 
   return (
-    <div className="space-y-6">
-      <div className="text-center py-2">
-        <p className="text-lg font-semibold text-violet-700">Great job, {child.name}! 🎉</p>
-        <p className="text-sm text-muted-foreground mt-1">Keep earning credits to unlock rewards</p>
+    <div className="space-y-5 pb-6">
+      {/* Hero greeting */}
+      <div className="rounded-3xl bg-gradient-to-br from-violet-600 to-purple-700 text-white p-6 text-center shadow-[0_6px_0_#5b21b6]">
+        <p className="text-3xl mb-1">👋</p>
+        <h1 className="text-2xl font-black">Hey, {child.name}!</h1>
+        <p className="text-white/80 text-sm font-medium mt-1">Keep going — you&apos;re doing amazing! 🌟</p>
       </div>
 
+      {/* Stat cards */}
       <div className="grid grid-cols-3 gap-3">
-        <Card className="bg-amber-50 border-amber-200">
-          <CardContent className="p-3 text-center">
-            <Star className="w-5 h-5 text-amber-500 mx-auto mb-1" />
-            <p className="text-xl font-bold text-amber-700">{child.credit_balance ?? 0}</p>
-            <p className="text-xs text-amber-600 font-medium">Credits</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-violet-50 border-violet-200">
-          <CardContent className="p-3 text-center">
-            <span className="text-xl block mb-1">🏆</span>
-            <p className="text-xl font-bold text-violet-700">Lv {child.level ?? 1}</p>
-            <p className="text-xs text-violet-600 font-medium">Level</p>
-          </CardContent>
-        </Card>
-        <Card className={`${currentStreakCount >= 3 ? "bg-orange-50 border-orange-200" : "bg-muted/50"}`}>
-          <CardContent className="p-3 text-center">
-            <Flame className={`w-5 h-5 mx-auto mb-1 ${currentStreakCount >= 3 ? "text-orange-500" : "text-muted-foreground"}`} />
-            <p className={`text-xl font-bold ${currentStreakCount >= 3 ? "text-orange-700" : "text-foreground"}`}>
-              {currentStreakCount}
-            </p>
-            <p className="text-xs text-muted-foreground font-medium">Streak</p>
-          </CardContent>
-        </Card>
+        <div className="rounded-3xl border-4 border-amber-200 bg-amber-50 p-3 text-center shadow-[0_4px_0_#fde68a]">
+          <p className="text-2xl">⭐</p>
+          <p className="text-2xl font-black text-amber-700">{child.credit_balance ?? 0}</p>
+          <p className="text-xs font-bold text-amber-600 uppercase tracking-wide">Credits</p>
+        </div>
+        <div className="rounded-3xl border-4 border-violet-200 bg-violet-50 p-3 text-center shadow-[0_4px_0_#ddd6fe]">
+          <p className="text-2xl">🏆</p>
+          <p className="text-2xl font-black text-violet-700">Lv {child.level ?? 1}</p>
+          <p className="text-xs font-bold text-violet-600 uppercase tracking-wide">Level</p>
+        </div>
+        <div className={`rounded-3xl border-4 p-3 text-center shadow-[0_4px_0] ${currentStreakCount >= 3 ? "border-orange-200 bg-orange-50 shadow-orange-200" : "border-slate-200 bg-slate-50 shadow-slate-200"}`}>
+          <p className="text-2xl">🔥</p>
+          <p className={`text-2xl font-black ${currentStreakCount >= 3 ? "text-orange-700" : "text-slate-500"}`}>{currentStreakCount}</p>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Streak</p>
+        </div>
       </div>
 
-      {/* XP progress bar */}
-      <Card className="bg-violet-50 border-violet-100">
-        <CardContent className="p-3 space-y-1.5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-violet-700 font-medium">Level {currentLevel} → {currentLevel + 1}</span>
-            <span className="text-violet-500">{currentXp - xpForCurrentLevel} / {xpForNextLevel - xpForCurrentLevel} XP</span>
-          </div>
-          <Progress value={xpProgress} className="h-2 bg-violet-100 [&>div]:bg-violet-500" />
-        </CardContent>
-      </Card>
+      {/* XP progress */}
+      <div className="rounded-3xl border-4 border-violet-200 bg-violet-50 p-4 shadow-[0_4px_0_#ddd6fe]">
+        <div className="flex items-center justify-between text-xs font-bold text-violet-700 mb-2">
+          <span>Level {currentLevel}</span>
+          <span>{currentXp - xpForCurrentLevel} / {xpForNextLevel - xpForCurrentLevel} XP</span>
+          <span>Level {currentLevel + 1}</span>
+        </div>
+        <div className="h-4 rounded-full bg-violet-200 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-500 transition-all"
+            style={{ width: `${xpProgress}%` }}
+          />
+        </div>
+      </div>
 
+      {/* Big action buttons */}
       <div className="grid grid-cols-2 gap-3">
-        <Button size="lg" className="h-14 text-base font-semibold rounded-xl">
-          <Link href={`/kid/${childId}/missions`}>
-            <Star className="w-5 h-5 mr-2" />
-            Missions
-          </Link>
-        </Button>
-        <Button size="lg" variant="outline" className="h-14 text-base font-semibold rounded-xl border-2">
-          <Link href={`/kid/${childId}/rewards`}>
-            <Gift className="w-5 h-5 mr-2" />
-            Rewards
-          </Link>
-        </Button>
+        <Link
+          href={`/kid/${childId}/missions`}
+          className="flex flex-col items-center justify-center gap-2 bg-violet-600 hover:bg-violet-700 text-white font-black text-lg py-5 rounded-3xl shadow-[0_6px_0_#5b21b6] hover:shadow-[0_3px_0_#5b21b6] hover:translate-y-[3px] transition-all"
+        >
+          <span className="text-3xl">🗂️</span>
+          Missions
+        </Link>
+        <Link
+          href={`/kid/${childId}/rewards`}
+          className="flex flex-col items-center justify-center gap-2 bg-amber-400 hover:bg-amber-500 text-slate-900 font-black text-lg py-5 rounded-3xl shadow-[0_6px_0_#d97706] hover:shadow-[0_3px_0_#d97706] hover:translate-y-[3px] transition-all"
+        >
+          <span className="text-3xl">🎁</span>
+          Rewards
+        </Link>
       </div>
 
       {pendingCount > 0 && (
-        <Card className="border-amber-200 bg-amber-50">
-          <CardContent className="p-4 flex items-center gap-3">
-            <Clock className="w-5 h-5 text-amber-600 shrink-0" />
-            <p className="text-sm text-amber-700 font-medium flex-1">
-              {pendingCount} mission{pendingCount !== 1 ? "s" : ""} waiting for parent approval
-            </p>
-          </CardContent>
-        </Card>
+        <div className="rounded-3xl border-4 border-amber-200 bg-amber-50 p-4 flex items-center gap-3 shadow-[0_4px_0_#fde68a]">
+          <Clock className="w-6 h-6 text-amber-600 shrink-0" />
+          <p className="text-sm text-amber-800 font-bold flex-1">
+            {pendingCount} mission{pendingCount !== 1 ? "s" : ""} waiting for parent to approve ⏳
+          </p>
+        </div>
       )}
 
       {(completions?.length ?? 0) > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Recent</h2>
-            <Link href={`/kid/${childId}/missions`} className="text-xs text-primary flex items-center gap-0.5">
+            <h2 className="font-black text-slate-700 text-sm uppercase tracking-wide">Recent missions</h2>
+            <Link href={`/kid/${childId}/missions`} className="text-xs font-bold text-violet-600 flex items-center gap-0.5">
               See all <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
           {completions!.map((c) => {
             const assignment = Array.isArray(c.chore_assignments) ? c.chore_assignments[0] : c.chore_assignments
             const chore = Array.isArray(assignment?.chores) ? assignment?.chores[0] : assignment?.chores
+            const approved = c.status === "approved"
             return (
-              <Card key={c.id}>
-                <CardContent className="p-3 flex items-center gap-3">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <p className="text-sm flex-1 truncate">{chore?.title ?? "Chore"}</p>
-                  <Badge variant={c.status === "approved" ? "default" : "secondary"} className="text-xs shrink-0">
-                    {c.status === "approved" ? `+${chore?.credit_value ?? 0} ⭐` : "Pending"}
-                  </Badge>
-                </CardContent>
-              </Card>
+              <div key={c.id} className={`rounded-2xl border-2 p-3 flex items-center gap-3 ${approved ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-white"}`}>
+                <CheckCircle2 className={`w-5 h-5 shrink-0 ${approved ? "text-emerald-500" : "text-slate-300"}`} />
+                <p className="text-sm font-bold flex-1 truncate text-slate-700">{chore?.title ?? "Chore"}</p>
+                <span className={`text-xs font-black px-2 py-1 rounded-full ${approved ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                  {approved ? `+${chore?.credit_value ?? 0} ⭐` : "⏳ Pending"}
+                </span>
+              </div>
             )
           })}
         </div>
       )}
 
       {(redemptions?.length ?? 0) > 0 && (
-        <div className="space-y-2">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Reward requests</h2>
+        <div className="space-y-3">
+          <h2 className="font-black text-slate-700 text-sm uppercase tracking-wide">Reward requests</h2>
           {redemptions!.map((r) => {
             const reward = Array.isArray(r.rewards) ? r.rewards[0] : r.rewards
+            const approved = r.status === "approved"
             return (
-              <Card key={r.id}>
-                <CardContent className="p-3 flex items-center gap-3">
-                  <Gift className="w-4 h-4 text-violet-500 shrink-0" />
-                  <p className="text-sm flex-1 truncate">{reward?.title ?? "Reward"}</p>
-                  <Badge variant={r.status === "approved" ? "default" : "secondary"} className="text-xs shrink-0">
-                    {r.status === "approved" ? "Ready! 🎉" : "Pending"}
-                  </Badge>
-                </CardContent>
-              </Card>
+              <div key={r.id} className={`rounded-2xl border-2 p-3 flex items-center gap-3 ${approved ? "border-violet-200 bg-violet-50" : "border-slate-200 bg-white"}`}>
+                <Gift className={`w-5 h-5 shrink-0 ${approved ? "text-violet-500" : "text-slate-300"}`} />
+                <p className="text-sm font-bold flex-1 truncate text-slate-700">{reward?.title ?? "Reward"}</p>
+                <span className={`text-xs font-black px-2 py-1 rounded-full ${approved ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-500"}`}>
+                  {approved ? "Ready! 🎉" : "⏳ Pending"}
+                </span>
+              </div>
             )
           })}
         </div>
