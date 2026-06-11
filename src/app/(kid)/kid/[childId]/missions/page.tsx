@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { EmptyState } from "@/components/shared/EmptyState"
 import { MarkDoneButton } from "@/components/kid/MarkDoneButton"
+import { RealtimeKidRefresh } from "@/components/kid/RealtimeKidRefresh"
 import { CATEGORY_EMOJI } from "@/lib/constants"
 import { Star } from "lucide-react"
 
@@ -97,6 +98,7 @@ export default async function KidMissionsPage({ params }: PageProps) {
 
   return (
     <div className="space-y-5 pb-6">
+      <RealtimeKidRefresh childId={childId} />
       <div>
         <h1 className="text-2xl font-black text-slate-800">My Missions 🗂️</h1>
         <p className="text-sm font-bold text-slate-500 mt-1">

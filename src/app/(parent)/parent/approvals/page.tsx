@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { ApprovalCard } from "@/components/parent/ApprovalCard"
+import { RealtimeApprovalsRefresh } from "@/components/parent/RealtimeApprovalsRefresh"
 
 export default async function ApprovalsPage() {
   const supabase = await createClient()
@@ -42,6 +43,7 @@ export default async function ApprovalsPage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
+      <RealtimeApprovalsRefresh familyId={profile.family_id} />
       <div>
         <h1 className="text-2xl font-black text-slate-800">Approvals ✅</h1>
         <p className="text-slate-500 text-sm mt-1 font-medium">
