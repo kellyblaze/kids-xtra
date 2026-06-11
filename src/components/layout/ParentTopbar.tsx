@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { signOut } from "@/app/actions/auth"
 import { LogOut, Settings, Star } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 interface ParentTopbarProps {
   profile: {
@@ -22,6 +23,7 @@ interface ParentTopbarProps {
 }
 
 export function ParentTopbar({ profile }: ParentTopbarProps) {
+  const router = useRouter()
   const name = profile.display_name ?? "Parent"
   const familyName = profile.families?.name ?? "My Family"
   const initials = name.slice(0, 2).toUpperCase()
@@ -57,11 +59,9 @@ export function ParentTopbar({ profile }: ParentTopbarProps) {
               <p className="text-xs text-muted-foreground font-normal">{familyName}</p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/parent/settings" className="flex items-center gap-2 cursor-pointer">
-                <Settings className="w-4 h-4" />
-                Settings
-              </Link>
+            <DropdownMenuItem onClick={() => router.push("/parent/settings")} className="flex items-center gap-2 cursor-pointer">
+              <Settings className="w-4 h-4" />
+              Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
