@@ -57,8 +57,11 @@ export default async function ChoresPage() {
       ) : (
         <div className="space-y-3">
           {chores.map((chore) => {
-            type AssignShape = { child_id: string; child_profiles: { name: string } | null }
-            const assignments = chore.chore_assignments as AssignShape[]
+            const assignments = (() => {
+              const raw = chore.chore_assignments
+              if (!raw) return []
+              return Array.isArray(raw) ? raw : [raw]
+            })()
             return (
               <Card key={chore.id}>
                 <CardContent className="p-4 flex items-start gap-3">
@@ -81,7 +84,14 @@ export default async function ChoresPage() {
                       {assignments.length > 0 && (
                         <span className="ml-2">
                           · Assigned to{" "}
-                          {assignments.map((a) => a.child_profiles?.name ?? "unknown").join(", ")}
+                          {assignments
+                            .map((a) => {
+                              const child = Array.isArray(a.child_profiles)
+                                ? a.child_profiles[0] ?? null
+                                : a.child_profiles
+                              return child?.name ?? "unknown"
+                            })
+                            .join(", ")}
                         </span>
                       )}
                     </p>
