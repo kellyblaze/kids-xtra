@@ -57,7 +57,7 @@ export function ParentTopbar({ profile }: ParentTopbarProps) {
               <p className="text-xs text-muted-foreground font-normal">{familyName}</p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem asChild>
               <Link href="/parent/settings" className="flex items-center gap-2 cursor-pointer">
                 <Settings className="w-4 h-4" />
                 Settings
