@@ -23,9 +23,13 @@ export default function NewRewardPage() {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [category, setCategory] = useState(REWARD_CATEGORIES[0]?.value ?? "experience")
+  const [category, setCategory] = useState<string | null>(REWARD_CATEGORIES[0]?.value ?? "experience")
 
   function handleSubmit(formData: FormData) {
+    if (!category) {
+      setError("Please choose a reward category.")
+      return
+    }
     formData.set("category", category)
     setError(null)
     startTransition(async () => {
@@ -65,7 +69,7 @@ export default function NewRewardPage() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Category</Label>
-                <Select value={category} onValueChange={setCategory}>
+                <Select value={category} onValueChange={(v) => v && setCategory(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {REWARD_CATEGORIES.map(({ value, label, emoji }) => (

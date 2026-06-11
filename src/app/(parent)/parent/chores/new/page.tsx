@@ -28,8 +28,8 @@ export default function NewChorePage() {
   const [error, setError] = useState<string | null>(null)
   const [children, setChildren] = useState<Child[]>([])
   const [selectedChildren, setSelectedChildren] = useState<string[]>([])
-  const [frequency, setFrequency] = useState("daily")
-  const [category, setCategory] = useState("chore")
+  const [frequency, setFrequency] = useState<string | null>("daily")
+  const [category, setCategory] = useState<string | null>("chore")
   const [customDays, setCustomDays] = useState<number[]>([])
 
   useEffect(() => {
@@ -54,6 +54,10 @@ export default function NewChorePage() {
   }
 
   function handleSubmit(formData: FormData) {
+    if (!category || !frequency) {
+      setError("Please choose a category and frequency.")
+      return
+    }
     formData.set("category", category)
     formData.set("frequency", frequency)
     selectedChildren.forEach((id) => formData.append("child_ids", id))
@@ -91,7 +95,7 @@ export default function NewChorePage() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Category</Label>
-                <Select value={category} onValueChange={setCategory}>
+                <Select value={category} onValueChange={(v) => v && setCategory(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
@@ -105,7 +109,7 @@ export default function NewChorePage() {
 
               <div className="space-y-1.5">
                 <Label>Frequency</Label>
-                <Select value={frequency} onValueChange={setFrequency}>
+                <Select value={frequency} onValueChange={(v) => v && setFrequency(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(FREQUENCY_LABELS).map(([key, label]) => (
