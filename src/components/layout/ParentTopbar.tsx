@@ -1,6 +1,5 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,22 +36,21 @@ export function ParentTopbar({ profile }: ParentTopbarProps) {
       </div>
 
       <div className="flex items-center gap-3">
-        <Button variant="outline" size="sm" className="hidden sm:flex">
-          <Link href="/kid/select">
-            <Star className="w-3.5 h-3.5 mr-1.5 fill-primary text-primary" />
-            Kid Mode
-          </Link>
-        </Button>
+        <Link
+          href="/kid/select"
+          className="hidden sm:flex items-center gap-1.5 text-sm font-semibold border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 rounded-md transition-colors"
+        >
+          <Star className="w-3.5 h-3.5 fill-primary text-primary" />
+          Kid Mode
+        </Link>
 
         <DropdownMenu>
-          <DropdownMenuTrigger>
-            <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
-              <Avatar className="h-9 w-9">
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-            </Button>
+          <DropdownMenuTrigger className="relative h-9 w-9 rounded-full focus:outline-none">
+            <Avatar className="h-9 w-9">
+              <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuGroup>

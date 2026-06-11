@@ -12,7 +12,6 @@ import {
   Gift,
   Activity,
   Settings,
-  Sparkles,
 } from "lucide-react"
 
 const navItems = [
