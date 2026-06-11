@@ -11,43 +11,49 @@ export async function signUp(formData: FormData) {
   const displayName = formData.get("displayName") as string
   const familyName = formData.get("familyName") as string
 
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
-  const { data: authData, error: authError } = await supabase.auth.signUp({
-    email,
-    password,
-    options: { data: { display_name: displayName } },
-  })
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { display_name: displayName } },
+    })
 
-  if (authError || !authData.user) {
-    return { error: authError?.message ?? "Signup failed" }
+    if (authError || !authData.user) {
+      return { error: authError?.message ?? "Signup failed" }
+    }
+
+    const admin = createAdminClient()
+
+    const { data: family, error: familyError } = await admin
+      .from("families")
+      .insert({ name: familyName })
+      .select()
+      .single()
+
+    if (familyError || !family) {
+      return { error: "Could not create family. Please try again." }
+    }
+
+    const { error: profileError } = await admin.from("parent_profiles").insert({
+      id: authData.user.id,
+      family_id: family.id,
+      role: "primary_parent",
+      display_name: displayName,
+    })
+
+    if (profileError) {
+      return { error: "Could not create parent profile. Please try again." }
+    }
+
+    await admin.from("family_settings").insert({ family_id: family.id })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unexpected error during signup"
+    return { error: message }
   }
 
-  const admin = createAdminClient()
-
-  const { data: family, error: familyError } = await admin
-    .from("families")
-    .insert({ name: familyName })
-    .select()
-    .single()
-
-  if (familyError || !family) {
-    return { error: "Could not create family" }
-  }
-
-  const { error: profileError } = await admin.from("parent_profiles").insert({
-    id: authData.user.id,
-    family_id: family.id,
-    role: "primary_parent",
-    display_name: displayName,
-  })
-
-  if (profileError) {
-    return { error: "Could not create parent profile" }
-  }
-
-  await admin.from("family_settings").insert({ family_id: family.id })
-
+  // redirect() must be outside try/catch — it throws NEXT_REDIRECT internally
   redirect("/parent/onboarding")
 }
 

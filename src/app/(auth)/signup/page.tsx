@@ -16,11 +16,15 @@ export default function SignupPage() {
     setError(null)
     setPending(true)
 
-    const formData = new FormData(e.currentTarget)
-    const result = await signUp(formData)
-
-    if (result?.error) {
-      setError(result.error)
+    try {
+      const formData = new FormData(e.currentTarget)
+      const result = await signUp(formData)
+      if (result?.error) {
+        setError(result.error)
+        setPending(false)
+      }
+    } catch {
+      setError("Something went wrong. Please try again.")
       setPending(false)
     }
   }
