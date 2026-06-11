@@ -18,7 +18,7 @@ import { createChore } from "@/app/actions/chore-actions"
 import { CATEGORY_LABELS, CATEGORY_EMOJI, FREQUENCY_LABELS, DAYS_OF_WEEK } from "@/lib/constants"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { createBrowserClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/client"
 
 interface Child { id: string; name: string }
 
@@ -33,7 +33,7 @@ export default function NewChorePage() {
   const [customDays, setCustomDays] = useState<number[]>([])
 
   useEffect(() => {
-    const supabase = createBrowserClient()
+    const supabase = createClient()
     supabase
       .from("child_profiles")
       .select("id, name")
