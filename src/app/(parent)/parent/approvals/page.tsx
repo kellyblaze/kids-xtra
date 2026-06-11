@@ -65,9 +65,14 @@ export default async function ApprovalsPage() {
               <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 Chore completions ({completions.length})
               </h2>
-              {completions.map((c) => (
-                <ApprovalCard key={c.id} type="chore" item={c} />
-              ))}
+              {completions.map((c) => {
+                const child = Array.isArray(c.child_profiles) ? c.child_profiles[0] ?? null : c.child_profiles
+                const assignment = Array.isArray(c.chore_assignments) ? c.chore_assignments[0] ?? null : c.chore_assignments
+                const chore = assignment && Array.isArray(assignment.chores) ? assignment.chores[0] ?? null : assignment?.chores ?? null
+                return (
+                  <ApprovalCard key={c.id} type="chore" item={{ ...c, child_profiles: child, chore_assignments: chore ? { chores: chore } : null }} />
+                )
+              })}
             </section>
           )}
 
@@ -76,9 +81,13 @@ export default async function ApprovalsPage() {
               <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 Reward requests ({redemptions.length})
               </h2>
-              {redemptions.map((r) => (
-                <ApprovalCard key={r.id} type="reward" item={r} />
-              ))}
+              {redemptions.map((r) => {
+                const child = Array.isArray(r.child_profiles) ? r.child_profiles[0] ?? null : r.child_profiles
+                const reward = Array.isArray(r.rewards) ? r.rewards[0] ?? null : r.rewards
+                return (
+                  <ApprovalCard key={r.id} type="reward" item={{ ...r, child_profiles: child, rewards: reward }} />
+                )
+              })}
             </section>
           )}
         </div>
