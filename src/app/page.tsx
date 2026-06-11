@@ -98,8 +98,8 @@ export default function LandingPage() {
               <div className="relative hidden md:block">
                 <div className="relative rounded-3xl overflow-hidden border-4 border-violet-200 shadow-2xl">
                   <Image
-                    src="https://images.pexels.com/photos/3874419/pexels-photo-3874419.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-                    alt="Happy family doing chores together"
+                    src="https://images.pexels.com/photos/5593130/pexels-photo-5593130.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+                    alt="Happy Black family enjoying time together in the kitchen"
                     width={940}
                     height={650}
                     className="w-full h-80 object-cover"
@@ -165,8 +165,8 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="rounded-3xl overflow-hidden border-4 border-violet-200 shadow-xl">
                   <Image
-                    src="https://images.pexels.com/photos/5591853/pexels-photo-5591853.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-                    alt="Child doing chores"
+                    src="https://images.pexels.com/photos/5063099/pexels-photo-5063099.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+                    alt="Black girl dusting and cleaning at home"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
@@ -185,8 +185,8 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="md:order-2 rounded-3xl overflow-hidden border-4 border-amber-200 shadow-xl">
                   <Image
-                    src="https://images.pexels.com/photos/7492915/pexels-photo-7492915.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-                    alt="Kids learning and earning rewards"
+                    src="https://images.pexels.com/photos/6624384/pexels-photo-6624384.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+                    alt="Diverse family playing and having fun together at home"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
@@ -205,8 +205,8 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="rounded-3xl overflow-hidden border-4 border-emerald-200 shadow-xl">
                   <Image
-                    src="https://images.pexels.com/photos/8087926/pexels-photo-8087926.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-                    alt="Happy family at home"
+                    src="https://images.pexels.com/photos/4866876/pexels-photo-4866876.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+                    alt="Black mother enjoying quality time with her children in the kitchen"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
