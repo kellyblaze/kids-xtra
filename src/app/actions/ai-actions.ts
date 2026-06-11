@@ -62,7 +62,8 @@ Do not include any text outside the JSON array.`,
     ],
   })
 
-  const raw = message.content[0]?.type === "text" ? message.content[0].text.trim() : ""
+  const rawText = message.content[0]?.type === "text" ? message.content[0].text.trim() : ""
+  const raw = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim()
 
   try {
     const parsed = JSON.parse(raw) as ChoreSuggestion[]
