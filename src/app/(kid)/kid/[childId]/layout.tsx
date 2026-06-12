@@ -36,7 +36,7 @@ export default async function KidSessionLayout({ children, params }: LayoutProps
     .eq("is_active", true)
     .single()
 
-  if (!child) redirect(isParentSession ? "/kid/select" : "/kids")
+  if (!child) redirect("/kids")
 
   if (kidSession && kidSession.familyId !== child.family_id) redirect("/kids")
 
