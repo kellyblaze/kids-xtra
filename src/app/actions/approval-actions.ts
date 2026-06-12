@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { revalidatePath } from "next/cache"
 
 async function getParentContext(supabase: Awaited<ReturnType<typeof createClient>>) {
@@ -200,7 +201,8 @@ export async function deleteChoreCompletion(completionId: string) {
   const ctx = await getParentContext(supabase)
   if (!ctx) return { error: "Not authenticated" }
 
-  const { error } = await supabase
+  const admin = createAdminClient()
+  const { error } = await admin
     .from("chore_completions")
     .delete()
     .eq("id", completionId)
@@ -218,7 +220,8 @@ export async function deleteRewardRedemption(redemptionId: string) {
   const ctx = await getParentContext(supabase)
   if (!ctx) return { error: "Not authenticated" }
 
-  const { error } = await supabase
+  const admin = createAdminClient()
+  const { error } = await admin
     .from("reward_redemptions")
     .delete()
     .eq("id", redemptionId)
