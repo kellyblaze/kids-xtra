@@ -18,7 +18,7 @@ export default async function KidSessionLayout({ children, params }: LayoutProps
   const cookieStore = await cookies()
 
   const kidToken = cookieStore.get(KID_SESSION_COOKIE)?.value
-  const kidSession = kidToken ? await verifyKidSession(kidToken) : null
+  const kidSession = kidToken ? verifyKidSession(kidToken) : null
 
   let isParentSession = false
   if (!kidSession) {
