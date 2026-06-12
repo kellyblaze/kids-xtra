@@ -195,6 +195,42 @@ export async function approveRewardRedemption(redemptionId: string) {
   return { success: true }
 }
 
+export async function deleteChoreCompletion(completionId: string) {
+  const supabase = await createClient()
+  const ctx = await getParentContext(supabase)
+  if (!ctx) return { error: "Not authenticated" }
+
+  const { error } = await supabase
+    .from("chore_completions")
+    .delete()
+    .eq("id", completionId)
+    .eq("family_id", ctx.familyId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath("/parent/approvals")
+  revalidatePath("/parent/dashboard")
+  return { success: true }
+}
+
+export async function deleteRewardRedemption(redemptionId: string) {
+  const supabase = await createClient()
+  const ctx = await getParentContext(supabase)
+  if (!ctx) return { error: "Not authenticated" }
+
+  const { error } = await supabase
+    .from("reward_redemptions")
+    .delete()
+    .eq("id", redemptionId)
+    .eq("family_id", ctx.familyId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath("/parent/approvals")
+  revalidatePath("/parent/dashboard")
+  return { success: true }
+}
+
 export async function denyRewardRedemption(redemptionId: string, denialNote: string) {
   const supabase = await createClient()
   const ctx = await getParentContext(supabase)

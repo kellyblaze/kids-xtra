@@ -11,9 +11,11 @@ import {
   rejectChoreCompletion,
   approveRewardRedemption,
   denyRewardRedemption,
+  deleteChoreCompletion,
+  deleteRewardRedemption,
 } from "@/app/actions/approval-actions"
 import { getRejectionReasons, addRejectionReason } from "@/app/actions/rejection-actions"
-import { CheckCircle, XCircle, Gift, Star, ChevronDown, Plus } from "lucide-react"
+import { CheckCircle, XCircle, Gift, Star, ChevronDown, Plus, Trash2 } from "lucide-react"
 
 type ChildInfo = { id: string; name: string; avatar_key: string | null }
 
@@ -42,6 +44,7 @@ export function ApprovalCard({ type, item }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [showReject, setShowReject] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
   const [reasons, setReasons] = useState<string[]>([])
   const [selected, setSelected] = useState("")
   const [newReason, setNewReason] = useState("")
@@ -83,6 +86,14 @@ export function ApprovalCard({ type, item }: Props) {
       if (type === "chore") await rejectChoreCompletion(item.id, selected)
       else await denyRewardRedemption(item.id, selected)
       setShowReject(false)
+      router.refresh()
+    })
+  }
+
+  function handleDelete() {
+    startTransition(async () => {
+      if (type === "chore") await deleteChoreCompletion(item.id)
+      else await deleteRewardRedemption(item.id)
       router.refresh()
     })
   }
@@ -191,6 +202,30 @@ export function ApprovalCard({ type, item }: Props) {
               </Button>
             </div>
           </div>
+        ) : showDelete ? (
+          <div className="space-y-2 border-t pt-3">
+            <p className="text-sm font-semibold text-slate-700">Are you sure you want to delete?</p>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={isPending}
+                className="flex-1"
+              >
+                <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                Yes, Delete
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowDelete(false)}
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
         ) : (
           <div className="flex gap-2">
             <Button size="sm" onClick={handleApprove} disabled={isPending} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white">
@@ -200,6 +235,9 @@ export function ApprovalCard({ type, item }: Props) {
             <Button size="sm" variant="outline" onClick={() => setShowReject(true)} disabled={isPending} className="flex-1 text-destructive border-destructive/30 hover:bg-destructive/10">
               <XCircle className="w-3.5 h-3.5 mr-1.5" />
               Reject
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setShowDelete(true)} disabled={isPending} className="text-slate-500 border-slate-200 hover:bg-slate-100 hover:text-slate-700">
+              <Trash2 className="w-3.5 h-3.5" />
             </Button>
           </div>
         )}
