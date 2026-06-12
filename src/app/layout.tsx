@@ -12,6 +12,16 @@ export const metadata: Metadata = {
   title: "Kids Xtra — Extra effort. Extra rewards. Extra growth.",
   description:
     "A parent-controlled chore credit and reward app for children ages 6–10. Turn chores into wins.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Kids Xtra",
+  },
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/icon-192.png",
+  },
 }
 
 export default function RootLayout({
