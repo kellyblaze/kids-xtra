@@ -56,6 +56,10 @@ export default function KidLoginPage() {
       if (result && "error" in result && result.error) {
         setError(result.error)
         setPin("")
+      } else if (result && "childId" in result && result.childId) {
+        // Hard navigation ensures the cookie is sent on the next request
+        // (required for compatibility with older browsers like Amazon Silk)
+        window.location.href = `/kid/${result.childId}/dashboard`
       }
     } catch {
       setError("Something went wrong.")
