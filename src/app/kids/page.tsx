@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Loader2, AlertCircle } from "lucide-react"
-import { getChildrenByFamilyCode, kidLogin } from "@/app/actions/kid-auth"
+import { getChildrenByFamilyCode } from "@/app/actions/kid-auth"
 import { AVATAR_EMOJI } from "@/lib/constants"
 
 type Step = "code" | "pick" | "pin"
@@ -16,6 +16,16 @@ export default function KidLoginPage() {
   const [pin, setPin] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
+
+  // Show errors redirected back from the API route
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const err = params.get("error")
+    if (err) {
+      setError(err)
+      window.history.replaceState({}, "", "/kids")
+    }
+  }, [])
 
   async function handleCodeSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -44,28 +54,6 @@ export default function KidLoginPage() {
     setPin("")
     setError(null)
     setStep("pin")
-  }
-
-  async function handlePinSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!selectedChild || pin.length !== 4) return
-    setError(null)
-    setPending(true)
-    try {
-      const result = await kidLogin(familyCode, selectedChild.id, pin)
-      if (result && "error" in result && result.error) {
-        setError(result.error)
-        setPin("")
-      } else if (result && "childId" in result && result.childId) {
-        // Hard navigation ensures the cookie is sent on the next request
-        // (required for compatibility with older browsers like Amazon Silk)
-        window.location.href = `/kid/${result.childId}/dashboard`
-      }
-    } catch {
-      setError("Something went wrong.")
-    } finally {
-      setPending(false)
-    }
   }
 
   function handlePinKey(digit: string) {
@@ -158,7 +146,12 @@ export default function KidLoginPage() {
               </div>
             )}
 
-            <form onSubmit={handlePinSubmit}>
+            {/* Plain HTML form POST — browser stores cookie from navigation response on all devices */}
+            <form action="/api/kid-login" method="POST">
+              <input type="hidden" name="familyCode" value={familyCode} />
+              <input type="hidden" name="childId" value={selectedChild.id} />
+              <input type="hidden" name="pin" value={pin} />
+
               <div className="flex justify-center gap-3 mb-6">
                 {[0, 1, 2, 3].map((i) => (
                   <div key={i} className={`w-14 h-14 rounded-2xl border-4 flex items-center justify-center text-2xl font-black transition-all ${pin.length > i ? "border-violet-600 bg-violet-50 text-violet-700" : "border-slate-200 bg-slate-50"}`}>
@@ -187,10 +180,10 @@ export default function KidLoginPage() {
 
               <button
                 type="submit"
-                disabled={pin.length !== 4 || pending}
+                disabled={pin.length !== 4}
                 className="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white font-black text-lg py-4 rounded-2xl shadow-[0_4px_0_#5b21b6] hover:shadow-[0_2px_0_#5b21b6] hover:translate-y-[2px] transition-all"
               >
-                {pending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Let's go! 🚀"}
+                Let&apos;s go! 🚀
               </button>
             </form>
 
