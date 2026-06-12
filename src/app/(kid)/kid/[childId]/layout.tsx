@@ -3,7 +3,6 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
-import { verifyKidSession } from "@/lib/kid-session"
 import { KID_SESSION_COOKIE } from "@/lib/kid-session-constants"
 import { kidLogout } from "@/app/actions/kid-auth"
 import { AVATAR_EMOJI } from "@/lib/constants"
@@ -17,11 +16,10 @@ export default async function KidSessionLayout({ children, params }: LayoutProps
   const { childId } = await params
   const cookieStore = await cookies()
 
-  const kidToken = cookieStore.get(KID_SESSION_COOKIE)?.value
-  const kidSession = kidToken ? verifyKidSession(kidToken) : null
+  const kidCookie = cookieStore.get(KID_SESSION_COOKIE)?.value
 
   let isParentSession = false
-  if (!kidSession) {
+  if (!kidCookie) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect("/kids")
@@ -38,7 +36,8 @@ export default async function KidSessionLayout({ children, params }: LayoutProps
 
   if (!child) redirect("/kids")
 
-  if (kidSession && kidSession.familyId !== child.family_id) redirect("/kids")
+  // Ensure kid cookie matches the requested child
+  if (kidCookie && kidCookie !== child.id) redirect("/kids")
 
   const emoji = AVATAR_EMOJI[child.avatar_key ?? "star"] ?? "⭐"
 

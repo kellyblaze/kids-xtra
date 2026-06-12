@@ -1,28 +1,16 @@
-export interface KidSession {
-  childId: string
-  familyId: string
-  childName: string
+// Cookie stores plain childId UUID — verified against DB on every request.
+// httpOnly + secure flags are the security boundary.
+
+export function signKidSession(childId: string): string {
+  return childId
 }
 
-// Session stored as base64-encoded JSON in an httpOnly cookie.
-// httpOnly prevents JS access — that is the primary security boundary.
-export function signKidSession(payload: KidSession): string {
-  return btoa(encodeURIComponent(JSON.stringify(payload)))
+export function verifyKidSession(token: string): string | null {
+  if (token && token.length > 0) return token
+  return null
 }
 
-export function verifyKidSession(token: string): KidSession | null {
-  try {
-    const decoded = JSON.parse(decodeURIComponent(atob(token)))
-    if (decoded && typeof decoded.childId === "string" && typeof decoded.familyId === "string") {
-      return decoded as KidSession
-    }
-    return null
-  } catch {
-    return null
-  }
-}
-
-// PIN is still hashed with SHA-256 for secure storage
+// PIN is hashed with SHA-256 for secure storage
 const enc = new TextEncoder()
 const SECRET = process.env.KID_SESSION_SECRET ?? "fallback-dev-secret"
 

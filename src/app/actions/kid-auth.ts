@@ -56,7 +56,7 @@ export async function kidLogin(familyCode: string, childId: string, pin: string)
     const pinHash = await hashPin(pin)
     if (pinHash !== child.pin_hash) return { error: "Wrong PIN. Try again." }
 
-    const token = signKidSession({ childId: child.id, familyId: family.id, childName: child.name })
+    const token = signKidSession(child.id)
     const cookieStore = await cookies()
     cookieStore.set(KID_SESSION_COOKIE, token, {
       httpOnly: true,
