@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Loader2, AlertCircle } from "lucide-react"
 import { getChildrenByFamilyCode, kidLogin } from "@/app/actions/kid-auth"
 import { AVATAR_EMOJI } from "@/lib/constants"
@@ -10,7 +9,6 @@ type Step = "code" | "pick" | "pin"
 type Child = { id: string; name: string; avatar_key: string | null }
 
 export default function KidLoginPage() {
-  const router = useRouter()
   const [step, setStep] = useState<Step>("code")
   const [familyCode, setFamilyCode] = useState("")
   const [children, setChildren] = useState<Child[]>([])
@@ -55,11 +53,9 @@ export default function KidLoginPage() {
     setPending(true)
     try {
       const result = await kidLogin(familyCode, selectedChild.id, pin)
-      if ("error" in result && result.error) {
+      if (result && "error" in result && result.error) {
         setError(result.error)
         setPin("")
-      } else if ("childId" in result && result.childId) {
-        router.push(`/kid/${result.childId}/dashboard`)
       }
     } catch {
       setError("Something went wrong.")

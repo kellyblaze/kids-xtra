@@ -66,8 +66,10 @@ export async function kidLogin(familyCode: string, childId: string, pin: string)
       path: "/",
     })
 
-    return { success: true, childId: child.id }
+    redirect(`/kid/${child.id}/dashboard`)
   } catch (err) {
+    // redirect() throws internally in Next.js — re-throw so it propagates correctly
+    if ((err as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) throw err
     const message = err instanceof Error ? err.message : "Unexpected error"
     return { error: message }
   }
