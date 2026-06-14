@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Upload, Camera, Check } from "lucide-react"
+import { Camera, Check } from "lucide-react"
 
 interface Props {
   familyId: string
@@ -14,6 +14,7 @@ interface Props {
 export function PhotoUploadButton({ familyId, childId, onUploaded }: Props) {
   const [uploading, setUploading] = useState(false)
   const [uploaded, setUploaded] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
   async function compressImage(file: File): Promise<Blob> {
@@ -70,39 +71,36 @@ export function PhotoUploadButton({ familyId, childId, onUploaded }: Props) {
   return (
     <div className="flex items-center gap-2">
       <input
+        ref={inputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         onChange={handleUpload}
         disabled={uploading || uploaded}
         className="hidden"
-        id="photo-input"
       />
       <Button
         variant={uploaded ? "default" : "outline"}
         size="sm"
-       
         className={`${uploaded ? "bg-emerald-500 hover:bg-emerald-500 text-white" : ""}`}
-        disabled={uploading}
+        disabled={uploading || uploaded}
+        onClick={() => inputRef.current?.click()}
       >
-        <label htmlFor="photo-input" className="cursor-pointer flex items-center gap-2">
-          {uploading ? (
-            <>
-              <span className="animate-spin">⏳</span>
-              Uploading…
-            </>
-          ) : uploaded ? (
-            <>
-              <Check className="w-4 h-4" />
-              Photo ready
-            </>
-          ) : (
-            <>
-              <Camera className="w-4 h-4" />
-              Take photo
-            </>
-          )}
-        </label>
+        {uploading ? (
+          <>
+            <span className="animate-spin">⏳</span>
+            Uploading…
+          </>
+        ) : uploaded ? (
+          <>
+            <Check className="w-4 h-4" />
+            Photo ready
+          </>
+        ) : (
+          <>
+            <Camera className="w-4 h-4" />
+            Take photo
+          </>
+        )}
       </Button>
     </div>
   )
