@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase/admin"
-import { hashPin } from "@/lib/kid-session"
+import { hashPin, signKidSession } from "@/lib/kid-session"
 import { KID_SESSION_COOKIE } from "@/lib/kid-session-constants"
+import { consumeRateLimit } from "@/lib/rate-limit"
 
 export async function POST(request: NextRequest) {
   const form = await request.formData()
@@ -9,13 +10,42 @@ export async function POST(request: NextRequest) {
   const childId = (form.get("childId") as string | null)?.trim() ?? ""
   const pin = (form.get("pin") as string | null)?.trim() ?? ""
 
-  const fail = (msg: string) =>
-    NextResponse.redirect(
+  const fail = (msg: string, retryAfterSeconds?: number) => {
+    const response = NextResponse.redirect(
       new URL(`/kids?error=${encodeURIComponent(msg)}`, request.url),
       { status: 303 }
     )
+    if (retryAfterSeconds) response.headers.set("Retry-After", String(retryAfterSeconds))
+    return response
+  }
 
   if (!familyCode || !childId || pin.length !== 4) return fail("Invalid request.")
+
+  try {
+    const [addressLimit, childLimit] = await Promise.all([
+      consumeRateLimit({
+        action: "kid-pin-address",
+        maxAttempts: 20,
+        windowSeconds: 15 * 60,
+        blockSeconds: 30 * 60,
+      }),
+      consumeRateLimit({
+        action: "kid-pin-child",
+        subject: `${familyCode}:${childId}`,
+        maxAttempts: 5,
+        windowSeconds: 15 * 60,
+        blockSeconds: 30 * 60,
+      }),
+    ])
+    if (!addressLimit.allowed || !childLimit.allowed) {
+      return fail(
+        "Too many attempts. Please wait before trying again.",
+        Math.max(addressLimit.retryAfterSeconds, childLimit.retryAfterSeconds),
+      )
+    }
+  } catch {
+    return fail("Login is temporarily unavailable. Please try again shortly.")
+  }
 
   const admin = createAdminClient()
 
@@ -46,7 +76,7 @@ export async function POST(request: NextRequest) {
     { status: 303 }
   )
 
-  response.cookies.set(KID_SESSION_COOKIE, child.id, {
+  response.cookies.set(KID_SESSION_COOKIE, await signKidSession(child.id), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

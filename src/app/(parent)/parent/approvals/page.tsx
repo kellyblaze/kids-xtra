@@ -1,7 +1,11 @@
 export const dynamic = "force-dynamic"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import { ApprovalCard } from "@/components/parent/ApprovalCard"
+import {
+  ApprovalCard,
+  type ChoreItem,
+  type RewardItem,
+} from "@/components/parent/ApprovalCard"
 import { RealtimeApprovalsRefresh } from "@/components/parent/RealtimeApprovalsRefresh"
 
 export default async function ApprovalsPage() {
@@ -75,9 +79,15 @@ export default async function ApprovalsPage() {
                   if (!chores) return null
                   return Array.isArray(chores) ? chores[0] ?? null : chores
                 })() as ChoreInfo | null
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const item: ChoreItem = {
+                  id: c.id,
+                  completed_at: c.completed_at,
+                  photo_url: c.photo_url,
+                  child_profiles: child,
+                  chore_assignments: chore ? { chores: chore } : null,
+                }
                 return (
-                  <ApprovalCard key={c.id} type="chore" item={{ ...c, child_profiles: child as any, chore_assignments: chore ? { chores: chore } : null } as any} />
+                  <ApprovalCard key={c.id} type="chore" item={item} />
                 )
               })}
             </section>
@@ -91,8 +101,15 @@ export default async function ApprovalsPage() {
               {redemptions.map((r) => {
                 const child = Array.isArray(r.child_profiles) ? r.child_profiles[0] ?? null : r.child_profiles
                 const reward = Array.isArray(r.rewards) ? r.rewards[0] ?? null : r.rewards
+                const item: RewardItem = {
+                  id: r.id,
+                  requested_at: r.requested_at,
+                  credits_spent: r.credits_spent,
+                  child_profiles: child,
+                  rewards: reward,
+                }
                 return (
-                  <ApprovalCard key={r.id} type="reward" item={{ ...r, child_profiles: child, rewards: reward }} />
+                  <ApprovalCard key={r.id} type="reward" item={item} />
                 )
               })}
             </section>

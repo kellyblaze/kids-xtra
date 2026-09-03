@@ -1,22 +1,30 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
+import { createAdminClient } from "@/lib/supabase/admin"
 
 export const maxDuration = 300
 
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[character]!)
+}
+
 export async function POST(request: NextRequest) {
+  if (!process.env.CRON_SECRET) {
+    return NextResponse.json({ error: "Cron is not configured" }, { status: 503 })
+  }
+
   const authHeader = request.headers.get("authorization")
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   try {
-    const cookieStore = await cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { getAll: () => cookieStore.getAll() } },
-    )
+    const supabase = createAdminClient()
 
     const { data: families } = await supabase.from("families").select("id").eq("is_active", true)
 
@@ -128,7 +136,7 @@ export async function POST(request: NextRequest) {
   </head>
   <body>
     <div class="header">
-      <h1>Weekly Report: ${familyData?.name || "Family"}</h1>
+      <h1>Weekly Report: ${escapeHtml(familyData?.name || "Family")}</h1>
       <p>${dateRange}</p>
     </div>
 
@@ -137,7 +145,7 @@ export async function POST(request: NextRequest) {
         ? '<p style="text-align: center; color: #999;">No activity this week yet. Encourage your children to complete chores and earn credits!</p>'
         : summaries.map((s) => `
           <div class="child-card">
-            <div class="child-name">${s.childName}</div>
+            <div class="child-name">${escapeHtml(s.childName)}</div>
             <div class="stats">
               <div class="stat">
                 <div class="stat-number">${s.choresCompleted}</div>
@@ -189,7 +197,7 @@ export async function POST(request: NextRequest) {
         } else {
           results.failed += 1
         }
-      } catch (error) {
+      } catch {
         results.failed += 1
       }
     }

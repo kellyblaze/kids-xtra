@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic"
-import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { authorizeChildAccess } from "@/lib/kid-authorization"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { CheckCircle2, Clock, Gift, ChevronRight } from "lucide-react"
@@ -12,17 +12,18 @@ interface PageProps {
 export default async function KidDashboardPage({ params }: PageProps) {
   const { childId } = await params
 
-  const supabase = await createClient()
+  if (!await authorizeChildAccess(childId)) redirect("/kids")
+
   const admin = createAdminClient()
 
   const [{ data: child }, { data: completions }, { data: redemptions }, { data: streak }, { data: goalRow }] = await Promise.all([
-    supabase
+    admin
       .from("child_profiles")
       .select("id, name, credit_balance, level, xp_total")
       .eq("id", childId)
       .single(),
 
-    supabase
+    admin
       .from("chore_completions")
       .select(`id, status, completed_at, chore_assignments(chores(title, credit_value))`)
       .eq("child_id", childId)
@@ -30,7 +31,7 @@ export default async function KidDashboardPage({ params }: PageProps) {
       .order("completed_at", { ascending: false })
       .limit(5),
 
-    supabase
+    admin
       .from("reward_redemptions")
       .select("id, status, requested_at, rewards(title)")
       .eq("child_id", childId)
@@ -38,7 +39,7 @@ export default async function KidDashboardPage({ params }: PageProps) {
       .order("requested_at", { ascending: false })
       .limit(3),
 
-    supabase
+    admin
       .from("child_streaks")
       .select("current_streak, longest_streak")
       .eq("child_id", childId)

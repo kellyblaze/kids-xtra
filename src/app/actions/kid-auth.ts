@@ -1,13 +1,25 @@
 "use server"
 
 import { createAdminClient } from "@/lib/supabase/admin"
-import { signKidSession, hashPin } from "@/lib/kid-session"
+import { createClient } from "@/lib/supabase/server"
+import { hashPin } from "@/lib/kid-session"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { KID_SESSION_COOKIE } from "@/lib/kid-session-constants"
+import { consumeRateLimit } from "@/lib/rate-limit"
 
 export async function getChildrenByFamilyCode(familyCode: string) {
   try {
+    const rateLimit = await consumeRateLimit({
+      action: "family-code-lookup",
+      maxAttempts: 10,
+      windowSeconds: 10 * 60,
+      blockSeconds: 15 * 60,
+    })
+    if (!rateLimit.allowed) {
+      return { error: "Too many attempts. Please wait before trying again.", children: null }
+    }
+
     const admin = createAdminClient()
     const { data: family } = await admin
       .from("families")
@@ -30,49 +42,6 @@ export async function getChildrenByFamilyCode(familyCode: string) {
   }
 }
 
-export async function kidLogin(familyCode: string, childId: string, pin: string) {
-  try {
-    const admin = createAdminClient()
-
-    const { data: family } = await admin
-      .from("families")
-      .select("id")
-      .eq("family_code", familyCode.trim().toUpperCase())
-      .maybeSingle()
-
-    if (!family) return { error: "Family code not found." }
-
-    const { data: child } = await admin
-      .from("child_profiles")
-      .select("id, name, pin_hash, family_id")
-      .eq("id", childId)
-      .eq("family_id", family.id)
-      .eq("is_active", true)
-      .maybeSingle()
-
-    if (!child) return { error: "Profile not found." }
-    if (!child.pin_hash) return { error: "No PIN set yet. Ask a parent to set your PIN first." }
-
-    const pinHash = await hashPin(pin)
-    if (pinHash !== child.pin_hash) return { error: "Wrong PIN. Try again." }
-
-    const token = signKidSession(child.id)
-    const cookieStore = await cookies()
-    cookieStore.set(KID_SESSION_COOKIE, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/",
-    })
-
-    return { success: true, childId: child.id }
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unexpected error"
-    return { error: message }
-  }
-}
-
 export async function kidLogout() {
   const cookieStore = await cookies()
   cookieStore.delete(KID_SESSION_COOKIE)
@@ -84,13 +53,26 @@ export async function setChildPin(childId: string, pin: string) {
     return { error: "PIN must be exactly 4 digits." }
   }
   try {
-    const admin = createAdminClient()
-    const { error } = await admin
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: "Not authenticated" }
+
+    const { data: profile } = await supabase
+      .from("parent_profiles")
+      .select("family_id")
+      .eq("id", user.id)
+      .maybeSingle()
+    if (!profile) return { error: "Family not found" }
+
+    const { data: updatedChildren, error } = await supabase
       .from("child_profiles")
       .update({ pin_hash: await hashPin(pin) })
       .eq("id", childId)
+      .eq("family_id", profile.family_id)
+      .select("id")
 
     if (error) return { error: "Could not save PIN." }
+    if (!updatedChildren?.length) return { error: "Child not found." }
     return { success: true }
   } catch {
     return { error: "Something went wrong." }
