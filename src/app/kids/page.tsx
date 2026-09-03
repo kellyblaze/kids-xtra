@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Suspense, useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { Loader2, AlertCircle } from "lucide-react"
 import { getChildrenByFamilyCode } from "@/app/actions/kid-auth"
 import { AVATAR_EMOJI } from "@/lib/constants"
@@ -8,24 +9,22 @@ import { AVATAR_EMOJI } from "@/lib/constants"
 type Step = "code" | "pick" | "pin"
 type Child = { id: string; name: string; avatar_key: string | null }
 
-export default function KidLoginPage() {
+function KidLoginContent() {
+  const searchParams = useSearchParams()
   const [step, setStep] = useState<Step>("code")
   const [familyCode, setFamilyCode] = useState("")
   const [children, setChildren] = useState<Child[]>([])
   const [selectedChild, setSelectedChild] = useState<Child | null>(null)
   const [pin, setPin] = useState("")
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(() => searchParams.get("error"))
   const [pending, setPending] = useState(false)
 
   // Show errors redirected back from the API route
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const err = params.get("error")
-    if (err) {
-      setError(err)
+    if (searchParams.has("error")) {
       window.history.replaceState({}, "", "/kids")
     }
-  }, [])
+  }, [searchParams])
 
   async function handleCodeSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -200,5 +199,13 @@ export default function KidLoginPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function KidLoginPage() {
+  return (
+    <Suspense>
+      <KidLoginContent />
+    </Suspense>
   )
 }

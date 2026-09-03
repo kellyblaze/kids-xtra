@@ -19,7 +19,7 @@ import { CheckCircle, XCircle, Gift, Star, ChevronDown, Plus, Trash2 } from "luc
 
 type ChildInfo = { id: string; name: string; avatar_key: string | null }
 
-interface ChoreItem {
+export interface ChoreItem {
   id: string
   completed_at: string
   photo_url?: string | null
@@ -27,7 +27,7 @@ interface ChoreItem {
   chore_assignments: { chores: { title: string; category: string; credit_value: number } | null } | null
 }
 
-interface RewardItem {
+export interface RewardItem {
   id: string
   requested_at: string
   credits_spent: number

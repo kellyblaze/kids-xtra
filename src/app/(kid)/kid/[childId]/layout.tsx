@@ -1,9 +1,7 @@
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { createAdminClient } from "@/lib/supabase/admin"
-import { createClient } from "@/lib/supabase/server"
-import { KID_SESSION_COOKIE } from "@/lib/kid-session-constants"
+import { authorizeChildAccess } from "@/lib/kid-authorization"
 import { kidLogout } from "@/app/actions/kid-auth"
 import { AVATAR_EMOJI } from "@/lib/constants"
 
@@ -14,17 +12,8 @@ interface LayoutProps {
 
 export default async function KidSessionLayout({ children, params }: LayoutProps) {
   const { childId } = await params
-  const cookieStore = await cookies()
-
-  const kidCookie = cookieStore.get(KID_SESSION_COOKIE)?.value
-
-  let isParentSession = false
-  if (!kidCookie) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect("/kids")
-    isParentSession = true
-  }
+  const authorization = await authorizeChildAccess(childId)
+  if (!authorization) redirect("/kids")
 
   const admin = createAdminClient()
   const { data: child } = await admin
@@ -35,9 +24,6 @@ export default async function KidSessionLayout({ children, params }: LayoutProps
     .single()
 
   if (!child) redirect("/kids")
-
-  // Ensure kid cookie matches the requested child
-  if (kidCookie && kidCookie !== child.id) redirect("/kids")
 
   const emoji = AVATAR_EMOJI[child.avatar_key ?? "star"] ?? "⭐"
 
@@ -64,14 +50,14 @@ export default async function KidSessionLayout({ children, params }: LayoutProps
             <span className="text-base">⭐</span>
             <span className="font-black text-amber-700 text-sm">{child.credit_balance ?? 0}</span>
           </div>
-          {!isParentSession && (
+          {!authorization.isParentSession && (
             <form action={kidLogout}>
               <button type="submit" className="text-xs font-bold text-slate-400 hover:text-slate-600 px-2 py-1 rounded-xl hover:bg-slate-100 transition-colors">
                 Exit
               </button>
             </form>
           )}
-          {isParentSession && (
+          {authorization.isParentSession && (
             <Link href="/parent/dashboard" className="text-xs font-bold text-violet-600 hover:text-violet-800 px-2 py-1 rounded-xl hover:bg-violet-50 transition-colors">
               ← Parent
             </Link>

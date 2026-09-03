@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
-import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
+import { authorizeChildAccess } from "@/lib/kid-authorization"
 import { redirect } from "next/navigation"
 import { EmptyState } from "@/components/shared/EmptyState"
 import { MarkDoneButton } from "@/components/kid/MarkDoneButton"
@@ -13,7 +14,9 @@ interface PageProps {
 
 export default async function KidMissionsPage({ params }: PageProps) {
   const { childId } = await params
-  const supabase = await createClient()
+  if (!await authorizeChildAccess(childId)) redirect("/kids")
+
+  const supabase = createAdminClient()
 
   const { data: child } = await supabase
     .from("child_profiles")

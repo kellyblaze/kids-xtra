@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic"
 import { createAdminClient } from "@/lib/supabase/admin"
-import { createClient } from "@/lib/supabase/server"
+import { authorizeChildAccess } from "@/lib/kid-authorization"
 import { redirect } from "next/navigation"
 import { EmptyState } from "@/components/shared/EmptyState"
 import { RedeemButton } from "@/components/kid/RedeemButton"
@@ -14,23 +14,24 @@ interface PageProps {
 export default async function KidRewardsPage({ params }: PageProps) {
   const { childId } = await params
 
-  const supabase = await createClient()
+  if (!await authorizeChildAccess(childId)) redirect("/kids")
+
   const admin = createAdminClient()
 
   const [{ data: child }, { data: rewards }, { data: pendingRedemptions }, { data: goalRow }] = await Promise.all([
-    supabase
+    admin
       .from("child_profiles")
       .select("credit_balance, family_id")
       .eq("id", childId)
       .single(),
 
-    supabase
+    admin
       .from("rewards")
       .select("id, title, description, credit_cost, category, quantity_available, quantity_redeemed, family_id")
       .eq("is_active", true)
       .order("credit_cost"),
 
-    supabase
+    admin
       .from("reward_redemptions")
       .select("reward_id")
       .eq("child_id", childId)

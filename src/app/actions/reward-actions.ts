@@ -2,6 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { createAdminClient } from "@/lib/supabase/admin"
+import { authorizeChildAccess } from "@/lib/kid-authorization"
 
 async function getParentContext(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user } } = await supabase.auth.getUser()
@@ -47,35 +49,6 @@ export async function createReward(formData: FormData) {
   return { success: true, rewardId: reward.id }
 }
 
-export async function updateReward(rewardId: string, formData: FormData) {
-  const supabase = await createClient()
-  const ctx = await getParentContext(supabase)
-  if (!ctx) return { error: "Not authenticated" }
-
-  const childIdsRaw = formData.get("child_ids") as string | null
-  const childIds = childIdsRaw ? childIdsRaw.split(",").filter(Boolean) : []
-
-  const { error } = await supabase
-    .from("rewards")
-    .update({
-      title: formData.get("title") as string,
-      description: (formData.get("description") as string) || null,
-      credit_cost: parseInt(formData.get("credit_cost") as string, 10),
-      category: (formData.get("category") as string) || null,
-      available_to_child_ids: childIds.length > 0 ? childIds : null,
-      quantity_available: formData.get("quantity_available")
-        ? parseInt(formData.get("quantity_available") as string, 10)
-        : null,
-      is_active: formData.get("is_active") !== "false",
-    })
-    .eq("id", rewardId)
-    .eq("family_id", ctx.familyId)
-
-  if (error) return { error: error.message }
-  revalidatePath("/parent/rewards")
-  return { success: true }
-}
-
 export async function deleteReward(rewardId: string) {
   const supabase = await createClient()
   const ctx = await getParentContext(supabase)
@@ -93,12 +66,16 @@ export async function deleteReward(rewardId: string) {
 }
 
 export async function requestRewardRedemption(rewardId: string, childId: string) {
-  const supabase = await createClient()
+  const authorization = await authorizeChildAccess(childId)
+  if (!authorization) return { error: "Not authorized" }
+
+  const supabase = createAdminClient()
 
   const { data: reward } = await supabase
     .from("rewards")
     .select("id, family_id, credit_cost, quantity_available, quantity_redeemed, is_active, title")
     .eq("id", rewardId)
+    .eq("family_id", authorization.familyId)
     .single()
 
   if (!reward || !reward.is_active) return { error: "Reward not available" }

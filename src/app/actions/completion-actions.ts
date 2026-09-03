@@ -1,16 +1,21 @@
 "use server"
 
-import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
+import { authorizeChildAccess } from "@/lib/kid-authorization"
 import { revalidatePath } from "next/cache"
 
 export async function markChoreComplete(assignmentId: string, childId: string, photoUrl?: string) {
-  const supabase = await createClient()
+  const authorization = await authorizeChildAccess(childId)
+  if (!authorization) return { error: "Not authorized" }
+
+  const supabase = createAdminClient()
 
   const { data: assignment } = await supabase
     .from("chore_assignments")
     .select("id, chore_id, child_id, family_id, chores(title, requires_photo, times_per_period, period_unit)")
     .eq("id", assignmentId)
     .eq("child_id", childId)
+    .eq("family_id", authorization.familyId)
     .single()
 
   if (!assignment) return { error: "Assignment not found" }
