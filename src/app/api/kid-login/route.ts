@@ -59,19 +59,19 @@ export async function POST(request: NextRequest) {
 
   const { data: child } = await admin
     .from("child_profiles")
-    .select("id, pin_hash, family_id")
+    .select("id, pin_hash, pin_salt, family_id")
     .eq("id", childId)
     .eq("family_id", family.id)
     .eq("is_active", true)
     .maybeSingle()
 
   if (!child) return fail("Profile not found.")
-  if (!child.pin_hash) return fail("No PIN set. Ask a parent to set your PIN first.")
+  if (!child.pin_hash || !child.pin_salt) return fail("No PIN set. Ask a parent to set your PIN first.")
 
   let pinHash: string
   let sessionToken: string
   try {
-    pinHash = await hashPin(pin)
+    pinHash = await hashPin(pin, child.pin_salt)
     sessionToken = await signKidSession(child.id)
   } catch {
     return fail("Login is temporarily unavailable. Please try again shortly.")

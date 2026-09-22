@@ -55,10 +55,14 @@ export async function verifyKidSession(token: string): Promise<string | null> {
   }
 }
 
-export async function hashPin(pin: string): Promise<string> {
+export function generatePinSalt(): string {
+  return toBase64Url(crypto.getRandomValues(new Uint8Array(16)))
+}
+
+export async function hashPin(pin: string, salt: string): Promise<string> {
   const buf = await crypto.subtle.digest(
     "SHA-256",
-    enc.encode(getSecret() + pin).buffer as ArrayBuffer
+    enc.encode(getSecret() + salt + pin).buffer as ArrayBuffer
   )
   return toBase64Url(new Uint8Array(buf))
 }

@@ -135,65 +135,32 @@ export async function approveRewardRedemption(redemptionId: string) {
   const ctx = await getParentContext(supabase)
   if (!ctx) return { error: "Not authenticated" }
 
-  const { data: redemption, error: fetchError } = await supabase
-    .from("reward_redemptions")
-    .select("id, child_id, family_id, status, credits_spent, rewards(title)")
-    .eq("id", redemptionId)
-    .eq("family_id", ctx.familyId)
-    .single()
-
-  if (fetchError || !redemption) return { error: "Redemption not found" }
-  if (redemption.status !== "requested") return { error: "Already reviewed" }
-
-  const { data: child } = await supabase
-    .from("child_profiles")
-    .select("credit_balance")
-    .eq("id", redemption.child_id)
-    .single()
-
-  const { data: settings } = await supabase
-    .from("family_settings")
-    .select("allow_negative_balance")
-    .eq("family_id", ctx.familyId)
-    .single()
-
-  if (!(settings?.allow_negative_balance ?? false) && (child?.credit_balance ?? 0) < redemption.credits_spent) {
-    return { error: "Child does not have enough credits" }
-  }
-
-  const reward = (() => {
-    const raw = redemption.rewards
-    if (!raw) return null
-    return Array.isArray(raw) ? raw[0] ?? null : raw
-  })()
-  const rewardTitle = reward?.title ?? "reward"
-
-  const { error } = await supabase
-    .from("reward_redemptions")
-    .update({ status: "approved", reviewed_at: new Date().toISOString(), reviewed_by: ctx.userId })
-    .eq("id", redemptionId)
-
-  if (error) return { error: error.message }
-
-  await supabase.from("credit_transactions").insert({
-    family_id: ctx.familyId,
-    child_id: redemption.child_id,
-    type: "reward_redeemed",
-    amount: -redemption.credits_spent,
-    reference_id: redemptionId,
-    note: `Redeemed: ${rewardTitle}`,
-    created_by: ctx.userId,
+  // Atomic RPC: balance check, status update, and debit all happen inside one DB transaction
+  const { data: result, error: rpcError } = await supabase.rpc("approve_reward_redemption", {
+    p_redemption_id: redemptionId,
+    p_family_id: ctx.familyId,
+    p_reviewed_by: ctx.userId,
   })
 
-  await supabase.rpc("recalculate_child_balance", { p_child_id: redemption.child_id })
+  if (rpcError) return { error: rpcError.message }
+
+  const outcome = result as { error?: string; success?: boolean; reward_title?: string }
+  if (outcome?.error) return { error: outcome.error }
+
+  const rewardTitle = outcome?.reward_title ?? "reward"
+  const { data: redemption } = await supabase
+    .from("reward_redemptions")
+    .select("child_id")
+    .eq("id", redemptionId)
+    .single()
 
   await supabase.from("activity_logs").insert({
     family_id: ctx.familyId,
-    child_id: redemption.child_id,
+    child_id: redemption?.child_id,
     actor_type: "parent",
     actor_id: ctx.userId,
     event_type: "reward_approved",
-    metadata: { reward_title: rewardTitle, credits: String(redemption.credits_spent) },
+    metadata: { reward_title: rewardTitle },
   })
 
   revalidatePath("/parent/approvals")
