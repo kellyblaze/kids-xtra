@@ -66,9 +66,14 @@ export async function approveChoreCompletion(completionId: string) {
     created_by: ctx.userId,
   })
 
-  await supabase.rpc("recalculate_child_balance", { p_child_id: completion.child_id })
-  await supabase.rpc("award_xp", { p_child_id: completion.child_id, p_xp: xpValue })
-  await supabase.rpc("update_child_streak", { p_child_id: completion.child_id })
+  const [balanceResult, xpResult, streakResult] = await Promise.all([
+    supabase.rpc("recalculate_child_balance", { p_child_id: completion.child_id }),
+    supabase.rpc("award_xp", { p_child_id: completion.child_id, p_xp: xpValue }),
+    supabase.rpc("update_child_streak", { p_child_id: completion.child_id }),
+  ])
+  if (balanceResult.error) console.error("recalculate_child_balance failed", balanceResult.error)
+  if (xpResult.error) console.error("award_xp failed", xpResult.error)
+  if (streakResult.error) console.error("update_child_streak failed", streakResult.error)
 
   await supabase.from("activity_logs").insert({
     family_id: ctx.familyId,

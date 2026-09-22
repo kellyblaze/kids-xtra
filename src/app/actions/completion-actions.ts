@@ -1,5 +1,7 @@
 "use server"
 
+import "server-only"
+
 import { createAdminClient } from "@/lib/supabase/admin"
 import { authorizeChildAccess } from "@/lib/kid-authorization"
 import { revalidatePath } from "next/cache"

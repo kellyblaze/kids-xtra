@@ -68,7 +68,15 @@ export async function POST(request: NextRequest) {
   if (!child) return fail("Profile not found.")
   if (!child.pin_hash) return fail("No PIN set. Ask a parent to set your PIN first.")
 
-  const pinHash = await hashPin(pin)
+  let pinHash: string
+  let sessionToken: string
+  try {
+    pinHash = await hashPin(pin)
+    sessionToken = await signKidSession(child.id)
+  } catch {
+    return fail("Login is temporarily unavailable. Please try again shortly.")
+  }
+
   if (pinHash !== child.pin_hash) return fail("Wrong PIN. Try again.")
 
   const response = NextResponse.redirect(
@@ -76,7 +84,7 @@ export async function POST(request: NextRequest) {
     { status: 303 }
   )
 
-  response.cookies.set(KID_SESSION_COOKIE, await signKidSession(child.id), {
+  response.cookies.set(KID_SESSION_COOKIE, sessionToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

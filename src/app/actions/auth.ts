@@ -26,7 +26,7 @@ export async function signUp(formData: FormData) {
 
     const admin = createAdminClient()
 
-    const familyCode = Math.random().toString(36).slice(2, 8).toUpperCase()
+    const familyCode = Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) => (b % 36).toString(36)).join("").toUpperCase()
     const { data: family, error: familyError } = await admin
       .from("families")
       .insert({ name: familyName, family_code: familyCode })
@@ -101,7 +101,7 @@ export async function ensureFamilyCode(): Promise<{ code: string | null; error?:
 
   if (family?.family_code) return { code: family.family_code }
 
-  const newCode = Math.random().toString(36).slice(2, 8).toUpperCase()
+  const newCode = Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) => (b % 36).toString(36)).join("").toUpperCase()
   await admin.from("families").update({ family_code: newCode }).eq("id", profile.family_id)
   return { code: newCode }
 }
