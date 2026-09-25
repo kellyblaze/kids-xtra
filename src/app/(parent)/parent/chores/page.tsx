@@ -10,6 +10,7 @@ import { CATEGORY_EMOJI, CATEGORY_LABELS, FREQUENCY_LABELS } from "@/lib/constan
 import { Plus, CheckSquare, Pencil } from "lucide-react"
 import { DeleteChoreButton } from "@/components/parent/DeleteChoreButton"
 import { SuggestChoresButton } from "@/components/parent/SuggestChoresButton"
+import { ChoreTemplatePicker } from "@/components/parent/ChoreTemplatePicker"
 
 export default async function ChoresPage() {
   const supabase = await createClient()
@@ -47,6 +48,8 @@ export default async function ChoresPage() {
           </Button>
         </div>
       </div>
+
+      <ChoreTemplatePicker />
 
       {!chores?.length ? (
         <EmptyState

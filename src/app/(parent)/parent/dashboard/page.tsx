@@ -6,6 +6,8 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { AVATAR_EMOJI } from "@/lib/constants"
 import { ensureFamilyCode } from "@/app/actions/auth"
+import { WeeklyScheduleGrid } from "@/components/parent/WeeklyScheduleGrid"
+import { buildWeekSchedule, buildPeriodicChores } from "@/lib/schedule"
 
 export default async function ParentDashboardPage() {
   const supabase = await createClient()
@@ -33,6 +35,7 @@ export default async function ParentDashboardPage() {
     { data: pendingCompletions },
     { data: pendingRedemptions },
     { data: recentActivity },
+    { data: chores },
   ] = await Promise.all([
     supabase
       .from("child_profiles")
@@ -58,10 +61,25 @@ export default async function ParentDashboardPage() {
       .eq("family_id", familyId)
       .order("created_at", { ascending: false })
       .limit(8),
+
+    supabase
+      .from("chores")
+      .select("id, title, credit_value, category, period_unit, times_per_period, chore_assignments(child_profiles(name))")
+      .eq("family_id", familyId)
+      .eq("is_active", true)
+      .order("created_at"),
   ])
 
 
   const pendingCount = (pendingCompletions?.length ?? 0) + (pendingRedemptions?.length ?? 0)
+
+  const weekStart = new Date()
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay())
+  weekStart.setHours(0, 0, 0, 0)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const typedChores = (chores ?? []) as any[]
+  const weekDays = buildWeekSchedule(typedChores, weekStart)
+  const periodicChores = buildPeriodicChores(typedChores)
 
   return (
     <div className="space-y-6 max-w-6xl">
@@ -186,6 +204,8 @@ export default async function ParentDashboardPage() {
           </div>
         </div>
       </div>
+
+      <WeeklyScheduleGrid days={weekDays} periodicChores={periodicChores} />
 
       {/* Quick actions */}
       <div className="grid sm:grid-cols-3 gap-4">

@@ -4,6 +4,9 @@ import { authorizeChildAccess } from "@/lib/kid-authorization"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { CheckCircle2, Clock, Gift, ChevronRight } from "lucide-react"
+import { SiblingLeaderboard } from "@/components/kid/SiblingLeaderboard"
+import { BadgeGrid } from "@/components/kid/BadgeGrid"
+import { getWeeklyLeaderboard } from "@/lib/leaderboard"
 
 interface PageProps {
   params: Promise<{ childId: string }>
@@ -16,10 +19,10 @@ export default async function KidDashboardPage({ params }: PageProps) {
 
   const admin = createAdminClient()
 
-  const [{ data: child }, { data: completions }, { data: redemptions }, { data: streak }, { data: goalRow }] = await Promise.all([
+  const [{ data: child }, { data: completions }, { data: redemptions }, { data: streak }, { data: goalRow }, { data: earnedBadges }] = await Promise.all([
     admin
       .from("child_profiles")
-      .select("id, name, credit_balance, level, xp_total")
+      .select("id, name, credit_balance, level, xp_total, family_id")
       .eq("id", childId)
       .single(),
 
@@ -50,9 +53,20 @@ export default async function KidDashboardPage({ params }: PageProps) {
       .select("reward_id, rewards(title, credit_cost)")
       .eq("child_id", childId)
       .maybeSingle(),
+
+    admin
+      .from("child_badges")
+      .select("badge_key, earned_at")
+      .eq("child_id", childId)
+      .order("earned_at"),
   ])
 
   if (!child) redirect("/kid/select")
+
+  const weekStart = new Date()
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay())
+  weekStart.setHours(0, 0, 0, 0)
+  const leaderboard = await getWeeklyLeaderboard(admin, child.family_id as string, weekStart.toISOString())
 
   const pendingCount = completions?.filter((c) => c.status === "pending_approval").length ?? 0
 
@@ -211,6 +225,10 @@ export default async function KidDashboardPage({ params }: PageProps) {
           })}
         </div>
       )}
+
+      <SiblingLeaderboard entries={leaderboard} currentChildId={childId} />
+
+      <BadgeGrid earnedBadges={(earnedBadges ?? []) as { badge_key: string; earned_at: string }[]} />
     </div>
   )
 }

@@ -45,7 +45,7 @@ export async function getChildrenByFamilyCode(familyCode: string) {
 export async function kidLogout() {
   const cookieStore = await cookies()
   cookieStore.delete(KID_SESSION_COOKIE)
-  redirect("/kids")
+  redirect("/kids?clearKidCache=1")
 }
 
 export async function setChildPin(childId: string, pin: string) {

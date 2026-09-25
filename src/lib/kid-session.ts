@@ -28,6 +28,24 @@ async function getSigningKey() {
   )
 }
 
+export async function getKidSessionExpiry(token: string): Promise<number | null> {
+  const [childId, expiresAtRaw, signatureRaw, ...extra] = token.split(".")
+  if (!childId || !expiresAtRaw || !signatureRaw || extra.length > 0) return null
+  const expiresAt = Number(expiresAtRaw)
+  if (!Number.isSafeInteger(expiresAt)) return null
+  try {
+    const valid = await crypto.subtle.verify(
+      "HMAC",
+      await getSigningKey(),
+      fromBase64Url(signatureRaw),
+      enc.encode(`${childId}.${expiresAtRaw}`),
+    )
+    return valid ? expiresAt : null
+  } catch {
+    return null
+  }
+}
+
 export async function signKidSession(childId: string): Promise<string> {
   const expiresAt = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7
   const payload = `${childId}.${expiresAt}`

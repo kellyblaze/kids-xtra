@@ -23,6 +23,14 @@ function KidLoginContent() {
     return v ? parseInt(v, 10) : null
   })
 
+  // Clear kid page cache on logout so stale child data isn't served to the next user
+  useEffect(() => {
+    if (searchParams.get("clearKidCache") === "1" && "caches" in window) {
+      caches.keys().then((keys) => keys.forEach((k) => caches.delete(k))).catch(() => {})
+      window.history.replaceState({}, "", "/kids")
+    }
+  }, [searchParams])
+
   // Show errors redirected back from the API route
   useEffect(() => {
     if (searchParams.has("error")) {

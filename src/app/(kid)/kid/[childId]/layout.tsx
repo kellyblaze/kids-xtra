@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { authorizeChildAccess } from "@/lib/kid-authorization"
 import { kidLogout } from "@/app/actions/kid-auth"
 import { AVATAR_EMOJI } from "@/lib/constants"
+import { SessionExpiryBanner } from "@/components/kid/SessionExpiryBanner"
 
 interface LayoutProps {
   children: React.ReactNode
@@ -64,6 +65,8 @@ export default async function KidSessionLayout({ children, params }: LayoutProps
           )}
         </div>
       </header>
+
+      <SessionExpiryBanner />
 
       <main className="flex-1 px-4 py-5">{children}</main>
 

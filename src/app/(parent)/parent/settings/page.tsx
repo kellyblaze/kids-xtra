@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { FamilySettingsForm } from "@/components/parent/FamilySettingsForm"
+import { ExportActivityForm } from "@/components/parent/ExportActivityForm"
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -35,6 +36,8 @@ export default async function SettingsPage() {
         email={user.email ?? ""}
         familyCode={family?.family_code ?? ""}
       />
+
+      <ExportActivityForm />
     </div>
   )
 }

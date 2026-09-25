@@ -1,4 +1,4 @@
-const CACHE_NAME = "kids-xtra-v2"
+const CACHE_NAME = "kids-xtra-v3"
 
 self.addEventListener("install", () => {
   self.skipWaiting()
@@ -38,25 +38,50 @@ self.addEventListener("notificationclick", (event) => {
   )
 })
 
-// Network-first: always try the network; only serve cache if offline
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return
 
   const url = new URL(event.request.url)
 
-  // Never cache Supabase API calls
   if (url.hostname.includes("supabase")) return
+  // Skip RSC prefetch requests — each URL variant needs its own cache key
+  if (event.request.headers.get("RSC") || url.searchParams.has("_rsc")) return
 
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Cache Next.js static assets (content-hashed filenames — safe to cache long-term)
-        if (url.pathname.startsWith("/_next/static/")) {
-          const clone = response.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
-        }
-        return response
+  if (url.pathname.startsWith("/_next/static/")) {
+    // Cache-first for hashed static assets — these never change
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached
+        return fetch(event.request).then((res) => {
+          if (res.ok && res.type === "basic") {
+            const clone = res.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
+          }
+          return res
+        })
       })
-      .catch(() => caches.match(event.request))
+    )
+    return
+  }
+
+  if (url.pathname.startsWith("/kid/")) {
+    // Stale-while-revalidate for kid pages — serve from cache instantly, refresh in background
+    event.respondWith(
+      caches.open(CACHE_NAME).then((cache) =>
+        cache.match(event.request).then((cached) => {
+          const networkFetch = fetch(event.request).then((res) => {
+            if (res.ok && res.type === "basic") cache.put(event.request, res.clone())
+            return res
+          }).catch(() => cached)
+          return cached || networkFetch
+        })
+      )
+    )
+    return
+  }
+
+  // Network-first for all other pages (parent dashboard, etc.)
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match(event.request))
   )
 })

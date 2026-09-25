@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { revalidatePath } from "next/cache"
+import { awardMilestoneBadges } from "@/lib/badge-service"
 
 async function getParentContext(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user } } = await supabase.auth.getUser()
@@ -74,6 +75,11 @@ export async function approveChoreCompletion(completionId: string) {
   if (balanceResult.error) console.error("recalculate_child_balance failed", balanceResult.error)
   if (xpResult.error) console.error("award_xp failed", xpResult.error)
   if (streakResult.error) console.error("update_child_streak failed", streakResult.error)
+
+  const admin = createAdminClient()
+  awardMilestoneBadges(admin, completion.child_id as string, ctx.familyId as string).catch((e) =>
+    console.error("awardMilestoneBadges failed", e),
+  )
 
   await supabase.from("activity_logs").insert({
     family_id: ctx.familyId,
