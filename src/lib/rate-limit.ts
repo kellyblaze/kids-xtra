@@ -35,10 +35,14 @@ async function hashIdentifier(value: string): Promise<string> {
   return Array.from(new Uint8Array(signature), (byte) => byte.toString(16).padStart(2, "0")).join("")
 }
 
-export async function consumeRateLimit(options: RateLimitOptions): Promise<RateLimitResult> {
+export async function consumeRateLimit(options: RateLimitOptions, req?: { ip?: string }): Promise<RateLimitResult> {
   const requestHeaders = await headers()
-  const forwardedFor = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim()
-  const clientAddress = forwardedFor || requestHeaders.get("x-real-ip") || "unknown"
+  // Prefer infrastructure-set IP (Vercel `request.ip`, passed by caller) over spoofable headers
+  const clientAddress =
+    req?.ip ||
+    requestHeaders.get("x-real-ip") ||
+    requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "unknown"
   const bucketKey = await hashIdentifier(`${options.action}:${clientAddress}:${options.subject ?? ""}`)
 
   const admin = createAdminClient()

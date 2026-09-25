@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase/admin"
-import { hashPin, signKidSession } from "@/lib/kid-session"
+import { verifyPin, signKidSession } from "@/lib/kid-session"
 import { KID_SESSION_COOKIE } from "@/lib/kid-session-constants"
 import { consumeRateLimit } from "@/lib/rate-limit"
 
@@ -11,8 +11,10 @@ export async function POST(request: NextRequest) {
   const pin = (form.get("pin") as string | null)?.trim() ?? ""
 
   const fail = (msg: string, retryAfterSeconds?: number) => {
+    const params = new URLSearchParams({ error: msg })
+    if (retryAfterSeconds) params.set("retryAfter", String(retryAfterSeconds))
     const response = NextResponse.redirect(
-      new URL(`/kids?error=${encodeURIComponent(msg)}`, request.url),
+      new URL(`/kids?${params}`, request.url),
       { status: 303 }
     )
     if (retryAfterSeconds) response.headers.set("Retry-After", String(retryAfterSeconds))
@@ -22,20 +24,21 @@ export async function POST(request: NextRequest) {
   if (!familyCode || !childId || pin.length !== 4) return fail("Invalid request.")
 
   try {
+    const ip = (request as NextRequest & { ip?: string }).ip
     const [addressLimit, childLimit] = await Promise.all([
       consumeRateLimit({
         action: "kid-pin-address",
         maxAttempts: 20,
         windowSeconds: 15 * 60,
         blockSeconds: 30 * 60,
-      }),
+      }, { ip }),
       consumeRateLimit({
         action: "kid-pin-child",
         subject: `${familyCode}:${childId}`,
         maxAttempts: 5,
         windowSeconds: 15 * 60,
         blockSeconds: 30 * 60,
-      }),
+      }, { ip }),
     ])
     if (!addressLimit.allowed || !childLimit.allowed) {
       return fail(
@@ -66,18 +69,18 @@ export async function POST(request: NextRequest) {
     .maybeSingle()
 
   if (!child) return fail("Profile not found.")
-  if (!child.pin_hash || !child.pin_salt) return fail("No PIN set. Ask a parent to set your PIN first.")
+  if (!child.pin_hash) return fail("No PIN set. Ask a parent to set your PIN first.")
 
-  let pinHash: string
+  let pinMatches: boolean
   let sessionToken: string
   try {
-    pinHash = await hashPin(pin, child.pin_salt)
+    pinMatches = await verifyPin(pin, child.pin_hash, child.pin_salt)
     sessionToken = await signKidSession(child.id)
   } catch {
     return fail("Login is temporarily unavailable. Please try again shortly.")
   }
 
-  if (pinHash !== child.pin_hash) return fail("Wrong PIN. Try again.")
+  if (!pinMatches) return fail("Wrong PIN. Try again.")
 
   const response = NextResponse.redirect(
     new URL(`/kid/${child.id}/dashboard`, request.url),

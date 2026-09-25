@@ -2,7 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
-import { hashPin, generatePinSalt } from "@/lib/kid-session"
+import { hashPin } from "@/lib/kid-session"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { KID_SESSION_COOKIE } from "@/lib/kid-session-constants"
@@ -64,10 +64,9 @@ export async function setChildPin(childId: string, pin: string) {
       .maybeSingle()
     if (!profile) return { error: "Family not found" }
 
-    const salt = generatePinSalt()
     const { data: updatedChildren, error } = await supabase
       .from("child_profiles")
-      .update({ pin_hash: await hashPin(pin, salt), pin_salt: salt })
+      .update({ pin_hash: await hashPin(pin), pin_salt: null })
       .eq("id", childId)
       .eq("family_id", profile.family_id)
       .select("id")

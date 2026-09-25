@@ -17,7 +17,7 @@ export default async function SettingsPage() {
 
   const { data: family } = await supabase
     .from("families")
-    .select("id, name")
+    .select("id, name, family_code")
     .eq("id", profile.family_id)
     .single()
 
@@ -33,6 +33,7 @@ export default async function SettingsPage() {
         familyName={family?.name ?? ""}
         displayName={profile.display_name ?? ""}
         email={user.email ?? ""}
+        familyCode={family?.family_code ?? ""}
       />
     </div>
   )

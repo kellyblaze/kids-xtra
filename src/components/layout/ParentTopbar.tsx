@@ -14,6 +14,7 @@ import { signOut } from "@/app/actions/auth"
 import { LogOut, Settings, Star } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { PushNotificationToggle } from "@/components/parent/PushNotificationToggle"
 
 interface ParentTopbarProps {
   profile: {
@@ -36,6 +37,7 @@ export function ParentTopbar({ profile }: ParentTopbarProps) {
       </div>
 
       <div className="flex items-center gap-3">
+        <PushNotificationToggle />
         <Link
           href="/kid/select"
           className="flex items-center gap-1.5 text-sm font-semibold border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 rounded-md transition-colors"

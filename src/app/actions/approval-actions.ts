@@ -168,6 +168,27 @@ export async function approveRewardRedemption(redemptionId: string) {
   return { success: true }
 }
 
+export async function approveAllPendingChoreCompletions() {
+  const supabase = await createClient()
+  const ctx = await getParentContext(supabase)
+  if (!ctx) return { error: "Not authenticated" }
+
+  const { data: pending } = await supabase
+    .from("chore_completions")
+    .select("id")
+    .eq("family_id", ctx.familyId)
+    .eq("status", "pending_approval")
+
+  if (!pending?.length) return { success: true, count: 0 }
+
+  const results = await Promise.allSettled(pending.map((c) => approveChoreCompletion(c.id)))
+  const succeeded = results.filter((r) => r.status === "fulfilled").length
+
+  revalidatePath("/parent/approvals")
+  revalidatePath("/parent/dashboard")
+  return { success: true, count: succeeded }
+}
+
 export async function deleteChoreCompletion(completionId: string) {
   const supabase = await createClient()
   const ctx = await getParentContext(supabase)

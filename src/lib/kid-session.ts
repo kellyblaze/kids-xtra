@@ -59,10 +59,21 @@ export function generatePinSalt(): string {
   return toBase64Url(crypto.getRandomValues(new Uint8Array(16)))
 }
 
-export async function hashPin(pin: string, salt: string): Promise<string> {
+export async function hashPin(pin: string): Promise<string> {
+  const { hash } = await import("@node-rs/argon2")
+  return hash(pin)
+}
+
+export async function verifyPin(pin: string, storedHash: string, legacySalt?: string | null): Promise<boolean> {
+  if (storedHash.startsWith("$argon2")) {
+    const { verify } = await import("@node-rs/argon2")
+    return verify(storedHash, pin)
+  }
+  // Legacy SHA-256 path — accepts old hashes until parent resets the PIN
+  if (!legacySalt) return false
   const buf = await crypto.subtle.digest(
     "SHA-256",
-    enc.encode(getSecret() + salt + pin).buffer as ArrayBuffer
+    enc.encode(getSecret() + legacySalt + pin).buffer as ArrayBuffer
   )
-  return toBase64Url(new Uint8Array(buf))
+  return toBase64Url(new Uint8Array(buf)) === storedHash
 }

@@ -2,6 +2,7 @@
 
 import Anthropic from "@anthropic-ai/sdk"
 import { createClient } from "@/lib/supabase/server"
+import { consumeRateLimit } from "@/lib/rate-limit"
 
 export interface ChoreSuggestion {
   title: string
@@ -25,6 +26,15 @@ export async function suggestChores(childAge?: number): Promise<{ suggestions?: 
     .eq("id", user.id)
     .single()
   if (!profile) return { error: "Profile not found" }
+
+  const aiLimit = await consumeRateLimit({
+    action: "ai-suggest-chores",
+    subject: user.id,
+    maxAttempts: 10,
+    windowSeconds: 60 * 60,
+    blockSeconds: 60 * 60,
+  })
+  if (!aiLimit.allowed) return { error: "Too many AI requests. Please wait before trying again." }
 
   const { data: existingChores } = await supabase
     .from("chores")

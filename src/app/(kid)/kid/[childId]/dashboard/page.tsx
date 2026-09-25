@@ -25,7 +25,7 @@ export default async function KidDashboardPage({ params }: PageProps) {
 
     admin
       .from("chore_completions")
-      .select(`id, status, completed_at, chore_assignments(chores(title, credit_value))`)
+      .select(`id, status, completed_at, reviewed_at, chore_assignments(chores(title, credit_value))`)
       .eq("child_id", childId)
       .in("status", ["pending_approval", "approved"])
       .order("completed_at", { ascending: false })
@@ -174,10 +174,16 @@ export default async function KidDashboardPage({ params }: PageProps) {
             const assignment = Array.isArray(c.chore_assignments) ? c.chore_assignments[0] : c.chore_assignments
             const chore = Array.isArray(assignment?.chores) ? assignment?.chores[0] : assignment?.chores
             const approved = c.status === "approved"
+            const isNew = approved && c.reviewed_at
+              ? Date.now() - new Date(c.reviewed_at).getTime() < 2 * 60 * 60 * 1000
+              : false
             return (
               <div key={c.id} className={`rounded-2xl border-2 p-3 flex items-center gap-3 ${approved ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-white"}`}>
                 <CheckCircle2 className={`w-5 h-5 shrink-0 ${approved ? "text-emerald-500" : "text-slate-300"}`} />
                 <p className="text-sm font-bold flex-1 truncate text-slate-700">{chore?.title ?? "Chore"}</p>
+                {isNew && (
+                  <span className="text-xs font-black px-2 py-0.5 rounded-full bg-violet-600 text-white animate-pulse">New!</span>
+                )}
                 <span className={`text-xs font-black px-2 py-1 rounded-full ${approved ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
                   {approved ? `+${chore?.credit_value ?? 0} ⭐` : "⏳ Pending"}
                 </span>

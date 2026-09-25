@@ -20,16 +20,23 @@ export function MarkDoneButton({ assignmentId, childId, familyId, requiresPhoto 
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [showPhotoFlow, setShowPhotoFlow] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   function handleDoneClick() {
     if (requiresPhoto && !photoUrl) {
       setShowPhotoFlow(true)
       return
     }
+    setSubmitError(null)
+    setSubmitted(true) // optimistic — show success immediately
     startTransition(async () => {
-      await markChoreComplete(assignmentId, childId, photoUrl ?? undefined)
-      setSubmitted(true)
-      setTimeout(() => router.refresh(), 1200)
+      const result = await markChoreComplete(assignmentId, childId, photoUrl ?? undefined)
+      if ("error" in result && result.error) {
+        setSubmitted(false)
+        setSubmitError(result.error)
+      } else {
+        router.refresh()
+      }
     })
   }
 
@@ -38,6 +45,17 @@ export function MarkDoneButton({ assignmentId, childId, familyId, requiresPhoto 
       <div className="shrink-0 flex items-center gap-1.5 bg-emerald-100 text-emerald-700 font-black text-sm px-3 py-1.5 rounded-xl border-2 border-emerald-300">
         <CheckCircle2 className="w-4 h-4" />
         Submitted!
+      </div>
+    )
+  }
+
+  if (submitError) {
+    return (
+      <div className="shrink-0 flex flex-col items-end gap-1">
+        <p className="text-xs font-bold text-red-600">{submitError}</p>
+        <Button size="sm" onClick={() => setSubmitError(null)} className="rounded-xl bg-slate-200 text-slate-700 hover:bg-slate-300 text-xs">
+          Try again
+        </Button>
       </div>
     )
   }

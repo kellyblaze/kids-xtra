@@ -1,7 +1,6 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Camera, Check } from "lucide-react"
 
@@ -11,11 +10,10 @@ interface Props {
   onUploaded: (url: string) => void
 }
 
-export function PhotoUploadButton({ familyId, childId, onUploaded }: Props) {
+export function PhotoUploadButton({ familyId: _familyId, childId, onUploaded }: Props) {
   const [uploading, setUploading] = useState(false)
   const [uploaded, setUploaded] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const supabase = createClient()
 
   async function compressImage(file: File): Promise<Blob> {
     return new Promise((resolve) => {
@@ -48,20 +46,21 @@ export function PhotoUploadButton({ familyId, childId, onUploaded }: Props) {
     setUploading(true)
     try {
       const compressed = await compressImage(file)
-      const timestamp = Date.now()
-      const filename = `${familyId}/${childId}/${timestamp}.jpg`
+      const formData = new FormData()
+      formData.append("childId", childId)
+      formData.append("file", new File([compressed], "photo.jpg", { type: "image/jpeg" }))
 
-      const { error } = await supabase.storage.from("chore-photos").upload(filename, compressed, { contentType: "image/jpeg" })
-
-      if (error) {
-        alert("Upload failed: " + error.message)
+      const res = await fetch("/api/kid-upload-photo", { method: "POST", body: formData })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        alert("Upload failed: " + (body.error ?? res.statusText))
         setUploading(false)
         return
       }
 
-      const { data } = supabase.storage.from("chore-photos").getPublicUrl(filename)
+      const { url } = await res.json()
       setUploaded(true)
-      onUploaded(data.publicUrl)
+      onUploaded(url)
     } catch (error) {
       alert("Upload failed: " + (error instanceof Error ? error.message : "Unknown error"))
       setUploading(false)

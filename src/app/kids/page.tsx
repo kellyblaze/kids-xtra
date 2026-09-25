@@ -18,6 +18,10 @@ function KidLoginContent() {
   const [pin, setPin] = useState("")
   const [error, setError] = useState<string | null>(() => searchParams.get("error"))
   const [pending, setPending] = useState(false)
+  const [countdown, setCountdown] = useState<number | null>(() => {
+    const v = searchParams.get("retryAfter")
+    return v ? parseInt(v, 10) : null
+  })
 
   // Show errors redirected back from the API route
   useEffect(() => {
@@ -25,6 +29,18 @@ function KidLoginContent() {
       window.history.replaceState({}, "", "/kids")
     }
   }, [searchParams])
+
+  // Countdown timer for rate-limit lockout
+  useEffect(() => {
+    if (!countdown || countdown <= 0) return
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (!prev || prev <= 1) { clearInterval(timer); return null }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [countdown])
 
   async function handleCodeSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -75,9 +91,10 @@ function KidLoginContent() {
           <div className="rounded-3xl border-4 border-violet-200 bg-white p-6 shadow-[0_6px_0_#ddd6fe]">
             <h2 className="font-black text-xl text-slate-800 mb-1">Enter your family code</h2>
             <p className="text-sm text-slate-500 font-medium mb-4">Ask a parent for your family&apos;s code</p>
-            {error && (
+            {(error || countdown) && (
               <div className="flex items-center gap-2 rounded-2xl bg-red-50 border-2 border-red-200 px-4 py-3 text-sm font-bold text-red-700 mb-4">
-                <AlertCircle className="w-4 h-4 shrink-0" />{error}
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                {countdown ? `Too many attempts. Try again in ${countdown}s` : error}
               </div>
             )}
             <form onSubmit={handleCodeSubmit} className="space-y-4">
@@ -139,9 +156,10 @@ function KidLoginContent() {
               <p className="text-slate-500 font-medium mt-1">Enter your 4-digit PIN</p>
             </div>
 
-            {error && (
+            {(error || countdown) && (
               <div className="flex items-center gap-2 rounded-2xl bg-red-50 border-2 border-red-200 px-4 py-3 text-sm font-bold text-red-700 mb-4">
-                <AlertCircle className="w-4 h-4 shrink-0" />{error}
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                {countdown ? `Too many attempts. Try again in ${countdown}s` : error}
               </div>
             )}
 

@@ -5,6 +5,7 @@ import "server-only"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { authorizeChildAccess } from "@/lib/kid-authorization"
 import { revalidatePath } from "next/cache"
+import { notifyParentsOfChoreSubmission } from "@/lib/push"
 
 export async function markChoreComplete(assignmentId: string, childId: string, photoUrl?: string) {
   const authorization = await authorizeChildAccess(childId)
@@ -30,6 +31,15 @@ export async function markChoreComplete(assignmentId: string, childId: string, p
 
   if (chore?.requires_photo && !photoUrl) {
     return { error: "A photo is required for this chore" }
+  }
+
+  if (photoUrl) {
+    const supabaseStoragePrefix = process.env.NEXT_PUBLIC_SUPABASE_URL
+      ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/chore-photos/`
+      : null
+    if (!supabaseStoragePrefix || !photoUrl.startsWith(supabaseStoragePrefix)) {
+      return { error: "Invalid photo URL" }
+    }
   }
 
   const timesAllowed = chore?.times_per_period ?? 1
@@ -76,6 +86,17 @@ export async function markChoreComplete(assignmentId: string, childId: string, p
     event_type: "chore_completed",
     metadata: { chore_title: chore?.title ?? "a chore", assignment_id: assignmentId },
   })
+
+  // Fire push to parent — non-critical, don't await
+  void Promise.resolve(supabase.from("child_profiles").select("name").eq("id", childId).single())
+    .then(({ data }) =>
+      notifyParentsOfChoreSubmission(
+        assignment.family_id,
+        data?.name ?? "Your child",
+        chore?.title ?? "a chore",
+      )
+    )
+    .catch(() => {})
 
   revalidatePath(`/kid/${childId}/missions`)
   revalidatePath(`/kid/${childId}/dashboard`)

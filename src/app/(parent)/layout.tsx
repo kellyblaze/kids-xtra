@@ -1,13 +1,15 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { getParentUser } from "@/lib/parent-auth"
 import { ParentSidebar } from "@/components/layout/ParentSidebar"
 import { ParentTopbar } from "@/components/layout/ParentTopbar"
 
 export default async function ParentLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getParentUser()
 
   if (!user) redirect("/login")
+
+  const supabase = await createClient()
 
   const { data: profile } = await supabase
     .from("parent_profiles")

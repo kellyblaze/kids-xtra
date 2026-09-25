@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { timingSafeEqual } from "crypto"
 import { createAdminClient } from "@/lib/supabase/admin"
 
 export const maxDuration = 300
@@ -18,8 +19,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Cron is not configured" }, { status: 503 })
   }
 
-  const authHeader = request.headers.get("authorization")
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const authHeader = request.headers.get("authorization") ?? ""
+  const expected = `Bearer ${process.env.CRON_SECRET}`
+  const enc = new TextEncoder()
+  const a = enc.encode(authHeader)
+  const b = enc.encode(expected)
+  const authorized = a.length === b.length && timingSafeEqual(a, b)
+  if (!authorized) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 

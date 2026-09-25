@@ -7,6 +7,7 @@ import {
   type RewardItem,
 } from "@/components/parent/ApprovalCard"
 import { RealtimeApprovalsRefresh } from "@/components/parent/RealtimeApprovalsRefresh"
+import { BulkApproveButton } from "@/components/parent/BulkApproveButton"
 
 export default async function ApprovalsPage() {
   const supabase = await createClient()
@@ -67,9 +68,12 @@ export default async function ApprovalsPage() {
         <div className="space-y-6">
           {completions && completions.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">
-                Chore completions ({completions.length})
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                  Chore completions ({completions.length})
+                </h2>
+                {completions.length > 1 && <BulkApproveButton count={completions.length} />}
+              </div>
               {completions.map((c) => {
                 type ChoreInfo = { title: string; category: string; credit_value: number }
                 const child = Array.isArray(c.child_profiles) ? c.child_profiles[0] ?? null : c.child_profiles
