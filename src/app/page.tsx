@@ -40,7 +40,7 @@ export default function LandingPage() {
               href="/signup"
               className="bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm px-5 py-2.5 rounded-2xl shadow-[0_4px_0_#5b21b6] hover:shadow-[0_2px_0_#5b21b6] hover:translate-y-[2px] transition-all"
             >
-              Get started free
+              Start free month
             </Link>
           </div>
         </div>
@@ -73,7 +73,7 @@ export default function LandingPage() {
                     href="/signup"
                     className="inline-flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-700 text-white font-black text-lg px-8 py-4 rounded-2xl shadow-[0_6px_0_#5b21b6] hover:shadow-[0_3px_0_#5b21b6] hover:translate-y-[3px] transition-all"
                   >
-                    Start for free
+                    Start free month
                     <ArrowRight className="w-5 h-5" />
                   </Link>
                   <Link
@@ -286,13 +286,13 @@ export default function LandingPage() {
               Ready to build better habits?
             </h2>
             <p className="text-white/80 max-w-xl mx-auto mb-10 text-lg font-medium">
-              Join thousands of families. Free forever — no credit card required.
+              Join thousands of families. Your first month is free, then $6/month.
             </p>
             <Link
               href="/signup"
               className="inline-flex items-center gap-3 bg-amber-400 hover:bg-amber-500 text-slate-900 font-black text-xl px-10 py-5 rounded-2xl shadow-[0_6px_0_#b45309] hover:shadow-[0_3px_0_#b45309] hover:translate-y-[3px] transition-all"
             >
-              Create your family account — it&apos;s free!
+              Start your free month
               <ArrowRight className="w-6 h-6" />
             </Link>
           </div>

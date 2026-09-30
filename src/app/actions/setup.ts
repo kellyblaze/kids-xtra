@@ -31,7 +31,7 @@ export async function completeSetup(formData: FormData) {
       const familyCode = Math.random().toString(36).slice(2, 8).toUpperCase()
       const { data: family, error: familyError } = await admin
         .from("families")
-        .insert({ name: familyName, family_code: familyCode })
+        .insert({ name: familyName, family_code: familyCode, subscription_status: "incomplete" })
         .select()
         .single()
 
@@ -57,5 +57,5 @@ export async function completeSetup(formData: FormData) {
     return { error: message }
   }
 
-  redirect("/parent/onboarding")
+  redirect("/parent/billing")
 }

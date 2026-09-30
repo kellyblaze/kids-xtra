@@ -29,7 +29,7 @@ export async function signUp(formData: FormData) {
     const familyCode = Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) => (b % 36).toString(36)).join("").toUpperCase()
     const { data: family, error: familyError } = await admin
       .from("families")
-      .insert({ name: familyName, family_code: familyCode })
+      .insert({ name: familyName, family_code: familyCode, subscription_status: "incomplete" })
       .select()
       .single()
 
@@ -55,7 +55,7 @@ export async function signUp(formData: FormData) {
   }
 
   // redirect() must be outside try/catch — it throws NEXT_REDIRECT internally
-  redirect("/parent/onboarding")
+  redirect("/parent/billing")
 }
 
 export async function signIn(formData: FormData) {

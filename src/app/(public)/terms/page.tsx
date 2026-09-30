@@ -3,7 +3,7 @@ export default function TermsPage() {
     <div className="max-w-2xl mx-auto px-4 py-16 space-y-8">
       <div>
         <h1 className="text-3xl font-bold">Terms of Service</h1>
-        <p className="text-muted-foreground mt-2">Last updated: June 2025</p>
+        <p className="text-muted-foreground mt-2">Last updated: September 2026</p>
       </div>
 
       <section className="space-y-3">
@@ -50,7 +50,17 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">6. Disclaimers</h2>
+        <h2 className="text-xl font-semibold">6. Free Trial and Subscription</h2>
+        <p className="text-muted-foreground leading-relaxed">
+          New family accounts receive a 30-day free trial. A payment method is required to begin
+          the trial. Unless cancelled before the trial ends, the subscription automatically renews
+          at $6 per month until cancelled. You can cancel through the billing portal in Settings;
+          cancellation takes effect at the end of the current billing period.
+        </p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">7. Disclaimers</h2>
         <p className="text-muted-foreground leading-relaxed">
           Kids Xtra is provided &quot;as is&quot; without warranties of any kind. We are not liable for
           any indirect, incidental, or consequential damages arising from use of the service.
@@ -58,7 +68,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">7. Changes</h2>
+        <h2 className="text-xl font-semibold">8. Changes</h2>
         <p className="text-muted-foreground leading-relaxed">
           We may update these Terms at any time. Continued use of the service after changes
           are posted constitutes acceptance of the new Terms.
@@ -66,7 +76,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">8. Contact</h2>
+        <h2 className="text-xl font-semibold">9. Contact</h2>
         <p className="text-muted-foreground leading-relaxed">
           <a href="mailto:support@kidsxtra.app" className="text-primary underline underline-offset-2">
             support@kidsxtra.app

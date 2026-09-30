@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { FamilySettingsForm } from "@/components/parent/FamilySettingsForm"
 import { ExportActivityForm } from "@/components/parent/ExportActivityForm"
+import { openBillingPortal } from "@/app/actions/billing"
+import { Button } from "@/components/ui/button"
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -18,7 +20,7 @@ export default async function SettingsPage() {
 
   const { data: family } = await supabase
     .from("families")
-    .select("id, name, family_code")
+    .select("id, name, family_code, subscription_status, trial_ends_at, cancel_at_period_end, stripe_customer_id")
     .eq("id", profile.family_id)
     .single()
 
@@ -36,6 +38,20 @@ export default async function SettingsPage() {
         email={user.email ?? ""}
         familyCode={family?.family_code ?? ""}
       />
+
+      <section className="rounded-xl border bg-white p-5 shadow-sm">
+        <h2 className="font-semibold">Billing</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Plan status: <span className="font-medium capitalize text-foreground">{family?.subscription_status ?? "active"}</span>
+          {family?.trial_ends_at && ` · Trial ends ${new Date(family.trial_ends_at).toLocaleDateString()}`}
+          {family?.cancel_at_period_end && " · Cancels at the end of the billing period"}
+        </p>
+        {family?.stripe_customer_id && (
+          <form action={openBillingPortal} className="mt-4">
+            <Button type="submit" variant="outline">Manage subscription</Button>
+          </form>
+        )}
+      </section>
 
       <ExportActivityForm />
     </div>

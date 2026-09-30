@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { getParentUser } from "@/lib/parent-auth"
 import { ParentSidebar } from "@/components/layout/ParentSidebar"
 import { ParentTopbar } from "@/components/layout/ParentTopbar"
+import { hasSubscriptionAccess } from "@/lib/stripe"
 
 export default async function ParentLayout({ children }: { children: React.ReactNode }) {
   const user = await getParentUser()
@@ -13,11 +14,14 @@ export default async function ParentLayout({ children }: { children: React.React
 
   const { data: profile } = await supabase
     .from("parent_profiles")
-    .select("*, families(name)")
+    .select("*, families(name, subscription_status)")
     .eq("id", user.id)
     .single()
 
   if (!profile) redirect("/setup")
+
+  const family = Array.isArray(profile.families) ? profile.families[0] : profile.families
+  if (!hasSubscriptionAccess(family?.subscription_status)) redirect("/parent/billing")
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
