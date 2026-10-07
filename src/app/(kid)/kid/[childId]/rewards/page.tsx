@@ -39,7 +39,7 @@ export default async function KidRewardsPage({ params }: PageProps) {
 
     admin
       .from("child_goals")
-      .select("reward_id")
+      .select("reward_id, rewards(title, credit_cost)")
       .eq("child_id", childId)
       .maybeSingle(),
   ])
@@ -49,6 +49,11 @@ export default async function KidRewardsPage({ params }: PageProps) {
   const familyRewards = rewards?.filter((r) => r.family_id === child.family_id) ?? []
   const pendingSet = new Set(pendingRedemptions?.map((r) => r.reward_id) ?? [])
   const currentGoalRewardId = goalRow?.reward_id ?? null
+  const goalReward = (() => {
+    if (!goalRow) return null
+    const reward = Array.isArray(goalRow.rewards) ? goalRow.rewards[0] : goalRow.rewards
+    return reward as { title: string; credit_cost: number } | null
+  })()
   const balance = child.credit_balance ?? 0
 
   if (!familyRewards.length) {
@@ -56,7 +61,7 @@ export default async function KidRewardsPage({ params }: PageProps) {
       <EmptyState
         icon={Gift}
         title="No rewards yet"
-        description="Your parent will add rewards for you to earn!"
+        description="Your parent will add Rewards you can earn with Credits."
       />
     )
   }
@@ -67,7 +72,7 @@ export default async function KidRewardsPage({ params }: PageProps) {
         <h1 className="text-2xl font-black text-slate-800">Rewards 🎁</h1>
         <div className="mt-2 inline-flex items-center gap-2 bg-amber-100 border-2 border-amber-200 text-amber-700 font-black text-sm px-3 py-1.5 rounded-full">
           <Star className="w-4 h-4" />
-          {balance} credits to spend
+          {balance} Credits to spend
         </div>
       </div>
 
@@ -107,7 +112,7 @@ export default async function KidRewardsPage({ params }: PageProps) {
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <span className={`inline-flex items-center gap-1 text-xs font-black px-2 py-0.5 rounded-full border-2 ${canAfford ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
                       <Star className="w-3 h-3" />
-                      {reward.credit_cost} credits
+                      {reward.credit_cost} Credits
                     </span>
                     {remaining !== null && !outOfStock && (
                       <span className="text-xs font-bold text-slate-400">{remaining} left</span>
@@ -122,6 +127,9 @@ export default async function KidRewardsPage({ params }: PageProps) {
                     childId={childId}
                     canAfford={canAfford}
                     creditCost={reward.credit_cost}
+                    balance={balance}
+                    goalTitle={isGoal ? null : goalReward?.title}
+                    goalCost={isGoal ? null : goalReward?.credit_cost}
                   />
                 )}
               </div>

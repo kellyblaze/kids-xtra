@@ -7,6 +7,8 @@ import { CheckCircle2, Clock, Gift, ChevronRight } from "lucide-react";
 import { SiblingLeaderboard } from "@/components/kid/SiblingLeaderboard";
 import { BadgeGrid } from "@/components/kid/BadgeGrid";
 import { getWeeklyLeaderboard } from "@/lib/leaderboard";
+import { CelebrationList } from "@/components/kid/CelebrationList";
+import { getCelebrations } from "@/lib/mission-product";
 
 interface PageProps {
   params: Promise<{ childId: string }>;
@@ -18,6 +20,9 @@ export default async function KidDashboardPage({ params }: PageProps) {
   if (!(await authorizeChildAccess(childId))) redirect("/kids");
 
   const admin = createAdminClient();
+  const weekStart = new Date();
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+  weekStart.setHours(0, 0, 0, 0);
 
   const [
     { data: child },
@@ -26,6 +31,7 @@ export default async function KidDashboardPage({ params }: PageProps) {
     { data: streak },
     { data: goalRow },
     { data: earnedBadges },
+    { data: weekTransactions },
   ] = await Promise.all([
     admin
       .from("child_profiles")
@@ -36,10 +42,10 @@ export default async function KidDashboardPage({ params }: PageProps) {
     admin
       .from("chore_completions")
       .select(
-        `id, status, completed_at, reviewed_at, chore_assignments(chores(title, credit_value))`,
+        `id, status, completed_at, reviewed_at, credits_awarded, xp_awarded, chore_assignments(chores(title, credit_value))`,
       )
       .eq("child_id", childId)
-      .in("status", ["pending_approval", "approved"])
+      .in("status", ["pending_approval", "approved", "needs_more_work"])
       .order("completed_at", { ascending: false })
       .limit(5),
 
@@ -47,7 +53,7 @@ export default async function KidDashboardPage({ params }: PageProps) {
       .from("reward_redemptions")
       .select("id, status, requested_at, rewards(title)")
       .eq("child_id", childId)
-      .in("status", ["requested", "approved"])
+      .in("status", ["requested", "approved", "fulfilled"])
       .order("requested_at", { ascending: false })
       .limit(3),
 
@@ -68,13 +74,16 @@ export default async function KidDashboardPage({ params }: PageProps) {
       .select("badge_key, earned_at")
       .eq("child_id", childId)
       .order("earned_at"),
+
+    admin
+      .from("credit_transactions")
+      .select("amount")
+      .eq("child_id", childId)
+      .gte("created_at", weekStart.toISOString()),
   ]);
 
   if (!child) redirect("/kid/select");
 
-  const weekStart = new Date();
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-  weekStart.setHours(0, 0, 0, 0);
   const leaderboard = await getWeeklyLeaderboard(
     admin,
     child.family_id as string,
@@ -98,6 +107,14 @@ export default async function KidDashboardPage({ params }: PageProps) {
       : 100;
   const currentStreakCount = streak?.current_streak ?? 0;
   const balance = child.credit_balance ?? 0;
+  const earnedThisWeek = (weekTransactions ?? [])
+    .filter((tx) => (tx.amount ?? 0) > 0)
+    .reduce((sum, tx) => sum + (tx.amount ?? 0), 0);
+  const spentThisWeek = Math.abs(
+    (weekTransactions ?? [])
+      .filter((tx) => (tx.amount ?? 0) < 0)
+      .reduce((sum, tx) => sum + (tx.amount ?? 0), 0),
+  );
 
   const goalReward = (() => {
     if (!goalRow) return null;
@@ -109,6 +126,31 @@ export default async function KidDashboardPage({ params }: PageProps) {
   const goalProgress = goalReward
     ? Math.min(100, Math.round((balance / goalReward.credit_cost) * 100))
     : 0;
+  const latestApproved = (completions ?? []).find((completion) => {
+    if (completion.status !== "approved" || !completion.reviewed_at) return false;
+    return new Date().getTime() - new Date(completion.reviewed_at).getTime() < 2 * 60 * 60 * 1000;
+  });
+  const goalProgressBeforeWeek = goalReward
+    ? Math.max(
+        0,
+        Math.min(
+          100,
+          Math.round(((balance - earnedThisWeek) / goalReward.credit_cost) * 100),
+        ),
+      )
+    : 0;
+  const firstRewardRedeemed =
+    (redemptions ?? []).length === 1 && redemptions?.[0]?.status === "fulfilled";
+  const celebrations = getCelebrations({
+    approvedMissionCredits: latestApproved?.credits_awarded ?? 0,
+    approvedMissionXp: latestApproved?.xp_awarded ?? 0,
+    goalProgressBefore: goalProgressBeforeWeek,
+    goalProgressAfter: goalProgress,
+    previousLevel: currentLevel > 1 && latestApproved ? currentLevel - 1 : currentLevel,
+    currentLevel,
+    streakCount: currentStreakCount,
+    firstRewardRedeemed,
+  });
 
   return (
     <div className="space-y-5 pb-6">
@@ -116,25 +158,31 @@ export default async function KidDashboardPage({ params }: PageProps) {
         <p className="text-3xl mb-1">👋</p>
         <h1 className="text-2xl font-black">Hey, {child.name}!</h1>
         <p className="text-white/80 text-sm font-medium mt-1">
-          Keep going — you&apos;re doing amazing! 🌟
+          Missions help you earn, save, and grow.
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-3xl border-4 border-amber-200 bg-amber-50 p-3 text-center shadow-[0_4px_0_#fde68a]">
-          <p className="text-2xl">⭐</p>
-          <p className="text-2xl font-black text-amber-700">{balance}</p>
-          <p className="text-xs font-bold text-amber-600 uppercase tracking-wide">
-            Credits
+      <CelebrationList celebrations={celebrations} />
+
+      <div className="rounded-3xl border-4 border-amber-200 bg-amber-50 p-5 text-center shadow-[0_4px_0_#fde68a]">
+          <p className="text-xs font-black text-amber-600 uppercase tracking-wide">
+            My Credits
           </p>
-        </div>
+          <p className="text-5xl font-black text-amber-700">{balance}</p>
+          <div className="mt-3 grid grid-cols-2 gap-2 text-xs font-black">
+            <span className="rounded-xl bg-white/70 px-2 py-1 text-emerald-700">Earned this week +{earnedThisWeek}</span>
+            <span className="rounded-xl bg-white/70 px-2 py-1 text-slate-600">Spent this week -{spentThisWeek}</span>
+          </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
         <div className="rounded-3xl border-4 border-violet-200 bg-violet-50 p-3 text-center shadow-[0_4px_0_#ddd6fe]">
           <p className="text-2xl">🏆</p>
           <p className="text-2xl font-black text-violet-700">
             Lv {currentLevel}
           </p>
-          <p className="text-xs font-bold text-violet-600 uppercase tracking-wide">
-            Level
+          <p className="text-xs font-bold text-amber-600 uppercase tracking-wide">
+            Growth
           </p>
         </div>
         <div
@@ -265,6 +313,7 @@ export default async function KidDashboardPage({ params }: PageProps) {
               ? assignment?.chores[0]
               : assignment?.chores;
             const approved = c.status === "approved";
+            const needsWork = c.status === "needs_more_work";
             const isNew =
               approved && c.reviewed_at
                 ? new Date().getTime() - new Date(c.reviewed_at).getTime() <
@@ -273,13 +322,13 @@ export default async function KidDashboardPage({ params }: PageProps) {
             return (
               <div
                 key={c.id}
-                className={`rounded-2xl border-2 p-3 flex items-center gap-3 ${approved ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-white"}`}
+                className={`rounded-2xl border-2 p-3 flex items-center gap-3 ${approved ? "border-emerald-200 bg-emerald-50" : needsWork ? "border-red-200 bg-red-50" : "border-slate-200 bg-white"}`}
               >
                 <CheckCircle2
-                  className={`w-5 h-5 shrink-0 ${approved ? "text-emerald-500" : "text-slate-300"}`}
+                  className={`w-5 h-5 shrink-0 ${approved ? "text-emerald-500" : needsWork ? "text-red-400" : "text-slate-300"}`}
                 />
                 <p className="text-sm font-bold flex-1 truncate text-slate-700">
-                  {chore?.title ?? "Chore"}
+                  {chore?.title ?? "Mission"}
                 </p>
                 {isNew && (
                   <span className="text-xs font-black px-2 py-0.5 rounded-full bg-violet-600 text-white animate-pulse">
@@ -287,9 +336,9 @@ export default async function KidDashboardPage({ params }: PageProps) {
                   </span>
                 )}
                 <span
-                  className={`text-xs font-black px-2 py-1 rounded-full ${approved ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
+                  className={`text-xs font-black px-2 py-1 rounded-full ${approved ? "bg-emerald-100 text-emerald-700" : needsWork ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-500"}`}
                 >
-                  {approved ? `+${chore?.credit_value ?? 0} ⭐` : "⏳ Pending"}
+                  {approved ? `+${chore?.credit_value ?? 0} ⭐` : needsWork ? "Needs Work" : "Pending"}
                 </span>
               </div>
             );

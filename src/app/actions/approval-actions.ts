@@ -42,7 +42,7 @@ export async function approveChoreCompletion(completionId: string) {
   const chore = chores ? (Array.isArray(chores) ? chores[0] ?? null : chores) : null
   const creditValue = chore?.credit_value ?? 0
   const xpValue = chore?.xp_value ?? 0
-  const choreTitle = chore?.title ?? "chore"
+  const choreTitle = chore?.title ?? "Mission"
 
   const { error: updateError } = await supabase
     .from("chore_completions")
@@ -67,16 +67,16 @@ export async function approveChoreCompletion(completionId: string) {
     created_by: ctx.userId,
   })
 
+  const admin = createAdminClient()
   const [balanceResult, xpResult, streakResult] = await Promise.all([
-    supabase.rpc("recalculate_child_balance", { p_child_id: completion.child_id }),
-    supabase.rpc("award_xp", { p_child_id: completion.child_id, p_xp: xpValue }),
-    supabase.rpc("update_child_streak", { p_child_id: completion.child_id }),
+    admin.rpc("recalculate_child_balance", { p_child_id: completion.child_id }),
+    admin.rpc("award_xp", { p_child_id: completion.child_id, p_xp: xpValue }),
+    admin.rpc("update_child_streak", { p_child_id: completion.child_id }),
   ])
   if (balanceResult.error) console.error("recalculate_child_balance failed", balanceResult.error)
   if (xpResult.error) console.error("award_xp failed", xpResult.error)
   if (streakResult.error) console.error("update_child_streak failed", streakResult.error)
 
-  const admin = createAdminClient()
   awardMilestoneBadges(admin, completion.child_id as string, ctx.familyId as string).catch((e) =>
     console.error("awardMilestoneBadges failed", e),
   )
@@ -113,7 +113,7 @@ export async function rejectChoreCompletion(completionId: string, rejectionNote:
   const { error } = await supabase
     .from("chore_completions")
     .update({
-      status: "rejected",
+      status: "needs_more_work",
       reviewed_at: new Date().toISOString(),
       reviewed_by: ctx.userId,
       rejection_note: rejectionNote || null,
@@ -127,12 +127,14 @@ export async function rejectChoreCompletion(completionId: string, rejectionNote:
     child_id: completion.child_id,
     actor_type: "parent",
     actor_id: ctx.userId,
-    event_type: "chore_rejected",
+    event_type: "mission_needs_work",
     metadata: { completion_id: completionId, note: rejectionNote },
   })
 
   revalidatePath("/parent/approvals")
   revalidatePath("/parent/dashboard")
+  revalidatePath(`/kid/${completion.child_id}/missions`)
+  revalidatePath(`/kid/${completion.child_id}/dashboard`)
   return { success: true }
 }
 
@@ -142,7 +144,8 @@ export async function approveRewardRedemption(redemptionId: string) {
   if (!ctx) return { error: "Not authenticated" }
 
   // Atomic RPC: balance check, status update, and debit all happen inside one DB transaction
-  const { data: result, error: rpcError } = await supabase.rpc("approve_reward_redemption", {
+  const admin = createAdminClient()
+  const { data: result, error: rpcError } = await admin.rpc("approve_reward_redemption", {
     p_redemption_id: redemptionId,
     p_family_id: ctx.familyId,
     p_reviewed_by: ctx.userId,
@@ -261,5 +264,49 @@ export async function denyRewardRedemption(redemptionId: string, denialNote: str
 
   revalidatePath("/parent/approvals")
   revalidatePath("/parent/dashboard")
+  return { success: true }
+}
+
+export async function fulfillRewardRedemption(redemptionId: string) {
+  const supabase = await createClient()
+  const ctx = await getParentContext(supabase)
+  if (!ctx) return { error: "Not authenticated" }
+
+  const { data: redemption } = await supabase
+    .from("reward_redemptions")
+    .select("child_id, family_id, status, rewards(title)")
+    .eq("id", redemptionId)
+    .eq("family_id", ctx.familyId)
+    .single()
+
+  if (!redemption || redemption.status !== "approved") {
+    return { error: "Reward must be approved before fulfillment" }
+  }
+
+  const { error } = await supabase
+    .from("reward_redemptions")
+    .update({
+      status: "fulfilled",
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: ctx.userId,
+    })
+    .eq("id", redemptionId)
+    .eq("family_id", ctx.familyId)
+
+  if (error) return { error: error.message }
+
+  const reward = Array.isArray(redemption.rewards) ? redemption.rewards[0] : redemption.rewards
+  await supabase.from("activity_logs").insert({
+    family_id: ctx.familyId,
+    child_id: redemption.child_id,
+    actor_type: "parent",
+    actor_id: ctx.userId,
+    event_type: "reward_fulfilled",
+    metadata: { reward_title: reward?.title ?? "reward" },
+  })
+
+  revalidatePath("/parent/rewards")
+  revalidatePath("/parent/dashboard")
+  revalidatePath(`/kid/${redemption.child_id}/dashboard`)
   return { success: true }
 }

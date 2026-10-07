@@ -11,7 +11,7 @@ export type TaskCategory =
 
 export type TaskFrequency = 'one_time' | 'daily' | 'weekly' | 'custom'
 
-export type CompletionStatus = 'pending_approval' | 'approved' | 'rejected'
+export type CompletionStatus = 'pending_approval' | 'approved' | 'needs_more_work' | 'rejected'
 
 export type RedemptionStatus =
   | 'requested'
@@ -77,6 +77,8 @@ export interface Chore {
   due_time: string | null
   credit_value: number
   xp_value: number
+  requires_photo: boolean
+  checklist_items: string[]
   is_active: boolean
   created_by: string
   created_at: string
@@ -90,6 +92,7 @@ export interface ChoreAssignment {
   family_id: string
   assigned_at: string
   assigned_by: string
+  is_active: boolean
 }
 
 export interface ChoreCompletion {
@@ -105,6 +108,9 @@ export interface ChoreCompletion {
   due_date: string | null
   credits_awarded: number
   xp_awarded: number
+  photo_url: string | null
+  chore_id: string | null
+  checklist_completed: string[]
 }
 
 export interface CreditTransaction {
@@ -129,6 +135,9 @@ export interface Reward {
   image_url: string | null
   is_active: boolean
   quantity_limit: number | null
+  quantity_available: number | null
+  quantity_redeemed: number
+  available_to_child_ids: string[] | null
   created_by: string
   created_at: string
   updated_at: string
@@ -167,6 +176,31 @@ export interface FamilySettings {
   allowance_mode: 'credits_only' | 'convert' | 'mixed'
   credits_per_dollar: number | null
   updated_at: string
+}
+
+export interface ChildGoal {
+  child_id: string
+  family_id: string
+  reward_id: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ChildBadge {
+  id: string
+  family_id: string
+  child_id: string
+  badge_key: string
+  earned_at: string
+}
+
+export interface RejectionReason {
+  id: string
+  family_id: string
+  reason: string
+  is_default: boolean
+  created_by: string | null
+  created_at: string
 }
 
 // ─── Joined / Enriched Types ─────────────────────────────────────────────────

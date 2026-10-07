@@ -65,6 +65,63 @@ export async function deleteReward(rewardId: string) {
   return { success: true }
 }
 
+export async function awardBonusCredits(childId: string, formData: FormData) {
+  const supabase = await createClient()
+  const ctx = await getParentContext(supabase)
+  if (!ctx) return { error: "Not authenticated" }
+
+  const amount = parseInt((formData.get("amount") as string) || "0", 10)
+  const description = ((formData.get("description") as string) || "").trim()
+
+  if (!Number.isInteger(amount) || amount < 1 || amount > 500) {
+    return { error: "Bonus Credits must be between 1 and 500." }
+  }
+  if (description.length < 3 || description.length > 160) {
+    return { error: "Add a short reason for the bonus." }
+  }
+
+  const { data: child } = await supabase
+    .from("child_profiles")
+    .select("id, family_id, name")
+    .eq("id", childId)
+    .eq("family_id", ctx.familyId)
+    .eq("is_active", true)
+    .single()
+
+  if (!child) return { error: "Child not found" }
+
+  const { error } = await supabase.from("credit_transactions").insert({
+    family_id: ctx.familyId,
+    child_id: childId,
+    type: "bonus",
+    amount,
+    note: `Bonus: ${description}`,
+    created_by: ctx.userId,
+  })
+
+  if (error) return { error: error.message }
+
+  const admin = createAdminClient()
+  const { error: balanceError } = await admin.rpc("recalculate_child_balance", {
+    p_child_id: childId,
+  })
+  if (balanceError) return { error: "Bonus saved, but balance could not be refreshed." }
+
+  await supabase.from("activity_logs").insert({
+    family_id: ctx.familyId,
+    child_id: childId,
+    actor_type: "parent",
+    actor_id: ctx.userId,
+    event_type: "bonus_credits_awarded",
+    metadata: { child_name: child.name, credits: String(amount), reason: description },
+  })
+
+  revalidatePath(`/parent/children/${childId}`)
+  revalidatePath("/parent/dashboard")
+  revalidatePath(`/kid/${childId}/dashboard`)
+  return { success: true }
+}
+
 export async function requestRewardRedemption(rewardId: string, childId: string) {
   const authorization = await authorizeChildAccess(childId)
   if (!authorization) return { error: "Not authorized" }

@@ -9,7 +9,7 @@ export default function PrivacyPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">1. Overview</h2>
         <p className="text-muted-foreground leading-relaxed">
-          Kids Xtra is a family chore and reward app. We take the privacy of children seriously and
+          Kids Xtra is a family Mission and reward app. We take the privacy of children seriously and
           comply with applicable children&apos;s privacy laws including COPPA. This policy explains
           what data we collect, how we use it, and the controls parents have.
         </p>
@@ -32,14 +32,14 @@ export default function PrivacyPage() {
           <li>Family name chosen by the parent</li>
           <li>Child profiles: first name, avatar, color theme (no contact info)</li>
           <li>Chores, rewards, credit transactions, and completion history</li>
-          <li>Optional photos of completed chores (stored securely, visible only to the family)</li>
+          <li>Optional photos of completed Missions (stored securely, visible only to the family)</li>
         </ul>
       </section>
 
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">4. How We Use Your Data</h2>
         <p className="text-muted-foreground leading-relaxed">
-          Data is used solely to provide the Kids Xtra service — tracking chores, credits, and
+          Data is used solely to provide the Kids Xtra service — tracking Missions, Credits, and
           rewards within your family. We do not sell data, share it with third-party advertisers,
           or use it for profiling. AI features, if enabled, process only the minimum data needed
           and never make disciplinary, medical, or legal decisions.
@@ -49,11 +49,11 @@ export default function PrivacyPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">5. Parental Controls</h2>
         <p className="text-muted-foreground leading-relaxed">
-          Parents can view, edit, or delete any child profile, chore, reward, or activity record
+          Parents can view, edit, or delete any child profile, Mission, Reward, or activity record
           at any time from the parent dashboard. To delete your entire account and all associated
           data, contact us at{" "}
-          <a href="mailto:support@kidsxtra.app" className="text-primary underline underline-offset-2">
-            support@kidsxtra.app
+          <a href="mailto:info@seethestarsllc.com" className="text-primary underline underline-offset-2">
+            info@seethestarsllc.com
           </a>.
         </p>
       </section>
@@ -70,8 +70,8 @@ export default function PrivacyPage() {
         <h2 className="text-xl font-semibold">7. Contact</h2>
         <p className="text-muted-foreground leading-relaxed">
           Questions about this policy?{" "}
-          <a href="mailto:support@kidsxtra.app" className="text-primary underline underline-offset-2">
-            support@kidsxtra.app
+          <a href="mailto:info@seethestarsllc.com" className="text-primary underline underline-offset-2">
+            info@seethestarsllc.com
           </a>
         </p>
       </section>

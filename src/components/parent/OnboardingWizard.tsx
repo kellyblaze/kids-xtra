@@ -44,9 +44,9 @@ type InstallPrompt = Event & {
 };
 const STEPS = [
   "Welcome",
-  "Children",
-  "Chores",
-  "Rewards",
+  "Add child",
+  "First Missions",
+  "First Reward",
   "Install",
   "Extras",
   "Kid view",
@@ -110,7 +110,7 @@ export function OnboardingWizard(props: {
             Kids Xtra
           </Link>
           <a
-            href="mailto:support@kidsxtra.com?subject=Onboarding%20help"
+            href="mailto:info@seethestarsllc.com?subject=Onboarding%20help"
             className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-slate-600 hover:bg-white"
           >
             <HelpCircle className="size-4" /> Need help?
@@ -294,7 +294,7 @@ function Welcome({
           ["Family", "Account ready"],
           [
             "Progress",
-            `${counts[0]} kids · ${counts[1]} chores · ${counts[2]} rewards`,
+            `${counts[0]} kids · ${counts[1]} Missions · ${counts[2]} Rewards`,
           ],
         ].map(([a, b]) => (
           <div key={a} className="rounded-2xl bg-emerald-50 p-4">
@@ -305,7 +305,7 @@ function Welcome({
         ))}
       </div>
       <Button size="lg" onClick={onNext}>
-        Start family setup <ArrowRight className="size-4" />
+        Start earning setup <ArrowRight className="size-4" />
       </Button>
     </div>
   );
@@ -361,7 +361,7 @@ function Children({
       <Heading
         eyebrow="Meet the team"
         title="Add your children"
-        text="Choose a name, avatar, and optional private PIN."
+        text="Step one: add the child who will complete Missions and earn Credits."
       />
       {childProfiles.length > 0 && (
         <div className="mb-6 flex flex-wrap gap-3">
@@ -451,7 +451,7 @@ function Children({
         disabled={!childProfiles.length}
         onClick={onNext}
       >
-        Choose starter chores <ArrowRight className="size-4" />
+        Choose first Missions <ArrowRight className="size-4" />
       </Button>
     </div>
   );
@@ -517,8 +517,8 @@ function Chores({
     <div>
       <Heading
         eyebrow="First missions"
-        title="Pick starter chores"
-        text="Age ranges recommend suitable ideas but are never saved."
+        title="Pick starter Mission packs"
+        text="Start with clear responsibility packs, then adjust Credit and XP values later."
       />
       <div className="mb-5 flex flex-wrap gap-2">
         {(["3-5", "6-8", "9-12", "13+"] as AgeGroup[]).map((x) => (
@@ -548,7 +548,7 @@ function Chores({
             <span>
               <b>{x.title}</b>
               <small className="block text-slate-500">
-                {x.creditValue} credits · {x.timesPerPeriod}× per {x.periodUnit}
+                {x.creditValue} Credits · {x.timesPerPeriod}× per {x.periodUnit}
               </small>
             </span>
           </button>
@@ -614,8 +614,8 @@ function Rewards({
     <div>
       <Heading
         eyebrow="Something to earn"
-        title="Create the first rewards"
-        text="Choose rewards that motivate your family. Values can be edited later."
+        title="Add something to earn"
+        text="Choose one or two simple Rewards so kids immediately see why saving Credits matters."
       />
       <div className="grid gap-3 sm:grid-cols-2">
         {STARTER_REWARDS.map((x) => (
@@ -628,7 +628,7 @@ function Rewards({
             <span className="text-3xl">{x.emoji}</span>
             <b className="mt-2 block">{x.title}</b>
             <span className="text-sm text-amber-700">
-              {x.creditCost} credits
+              {x.creditCost} Credits
             </span>
           </button>
         ))}
@@ -737,7 +737,7 @@ function Extras({
     [
       "choreReminders",
       "⏰",
-      "Chore reminders",
+      "Mission reminders",
       "Notify you about unfinished daily missions.",
     ],
     [

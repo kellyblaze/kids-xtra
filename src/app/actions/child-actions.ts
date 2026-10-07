@@ -97,7 +97,7 @@ export async function deleteChildProfile(childId: string) {
   const familyId = await getParentFamilyId(supabase, user.id);
   if (!familyId) return { error: "Family not found" };
 
-  // Soft delete to preserve credit/chore history
+  // Soft delete to preserve Credit and Mission history.
   const { error } = await supabase
     .from("child_profiles")
     .update({ is_active: false })

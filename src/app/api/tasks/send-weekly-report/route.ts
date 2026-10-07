@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authorizeCronRequest } from "@/lib/cron-auth";
 import { parseOnboardingState } from "@/lib/onboarding";
+import { summarizeWeeklyChild } from "@/lib/weekly-report";
 
 export const maxDuration = 300;
 
@@ -55,6 +56,7 @@ export async function GET(request: NextRequest) {
         { data: activities },
         { data: children },
         { data: streaks },
+        { data: transactions },
       ] = await Promise.all([
         supabase
           .from("parent_profiles")
@@ -68,13 +70,18 @@ export async function GET(request: NextRequest) {
           .gte("created_at", sevenDaysAgo),
         supabase
           .from("child_profiles")
-          .select("id, name")
+          .select("id, name, level, xp_total")
           .eq("family_id", family.id)
           .eq("is_active", true),
         supabase
           .from("child_streaks")
           .select("child_id, current_streak")
           .eq("family_id", family.id),
+        supabase
+          .from("credit_transactions")
+          .select("child_id, amount")
+          .eq("family_id", family.id)
+          .gte("created_at", sevenDaysAgo),
       ]);
 
       if (!parents || parents.length === 0) continue;
@@ -86,49 +93,25 @@ export async function GET(request: NextRequest) {
       const parentEmail = authUser.user?.email;
       if (!parentEmail) continue;
 
-      const summaryMap = new Map<
-        string,
-        {
-          childName: string;
-          choresCompleted: number;
-          creditsEarned: number;
-          currentStreak: number;
-          rewardsRedeemed: number;
-        }
-      >();
-
-      children?.forEach((child) => {
-        summaryMap.set(child.id, {
+      const summaries = (children ?? []).map((child) => {
+        const streak = streaks?.find((item) => item.child_id === child.id)
+        return summarizeWeeklyChild({
+          childId: child.id,
           childName: child.name,
-          choresCompleted: 0,
-          creditsEarned: 0,
-          currentStreak: 0,
-          rewardsRedeemed: 0,
-        });
+          level: child.level ?? 1,
+          xpTotal: child.xp_total ?? 0,
+          currentStreak: streak?.current_streak ?? 0,
+          activities: (activities ?? [])
+            .filter((activity) => activity.child_id === child.id)
+            .map((activity) => ({
+              event_type: activity.event_type,
+              metadata: activity.metadata as Record<string, string> | null,
+            })),
+          transactions: (transactions ?? [])
+            .filter((transaction) => transaction.child_id === child.id)
+            .map((transaction) => ({ amount: transaction.amount ?? 0 })),
+        })
       });
-
-      streaks?.forEach((streak) => {
-        const summary = summaryMap.get(streak.child_id);
-        if (summary) summary.currentStreak = streak.current_streak;
-      });
-
-      activities?.forEach((activity) => {
-        const summary = summaryMap.get(activity.child_id);
-        if (!summary) return;
-
-        if (activity.event_type === "chore_approved") {
-          summary.choresCompleted += 1;
-          const credits = parseInt(
-            (activity.metadata as Record<string, string>)?.credits ?? "0",
-            10,
-          );
-          summary.creditsEarned += credits;
-        } else if (activity.event_type === "reward_approved") {
-          summary.rewardsRedeemed += 1;
-        }
-      });
-
-      const summaries = Array.from(summaryMap.values());
 
       const today = new Date();
       const weekStart = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -164,20 +147,30 @@ export async function GET(request: NextRequest) {
     <div class="content">
       ${
         summaries.length === 0
-          ? '<p style="text-align: center; color: #999;">No activity this week yet. Encourage your children to complete chores and earn credits!</p>'
+          ? '<p style="text-align: center; color: #999;">No activity this week yet. Start with one simple Mission your child can complete today.</p>'
           : summaries
               .map(
                 (s) => `
           <div class="child-card">
             <div class="child-name">${escapeHtml(s.childName)}</div>
+            <p><strong>Biggest win:</strong> ${escapeHtml(s.biggestWin)}</p>
+            <p><strong>Next step:</strong> ${escapeHtml(s.nextStep)}</p>
             <div class="stats">
               <div class="stat">
-                <div class="stat-number">${s.choresCompleted}</div>
-                <div class="stat-label">Chores Done</div>
+                <div class="stat-number">${s.missionsCompleted}</div>
+                <div class="stat-label">Missions Done</div>
               </div>
               <div class="stat">
                 <div class="stat-number">${s.creditsEarned}</div>
                 <div class="stat-label">Credits Earned</div>
+              </div>
+              <div class="stat">
+                <div class="stat-number">${s.creditsSaved}</div>
+                <div class="stat-label">Credits Saved</div>
+              </div>
+              <div class="stat">
+                <div class="stat-number">${s.creditsSpent}</div>
+                <div class="stat-label">Credits Spent</div>
               </div>
               <div class="stat">
                 <div class="stat-number">${s.currentStreak}</div>
@@ -186,6 +179,14 @@ export async function GET(request: NextRequest) {
               <div class="stat">
                 <div class="stat-number">${s.rewardsRedeemed}</div>
                 <div class="stat-label">Rewards Redeemed</div>
+              </div>
+              <div class="stat">
+                <div class="stat-number">${s.level}</div>
+                <div class="stat-label">Level</div>
+              </div>
+              <div class="stat">
+                <div class="stat-number">${s.levelProgress}%</div>
+                <div class="stat-label">Level Progress</div>
               </div>
             </div>
           </div>

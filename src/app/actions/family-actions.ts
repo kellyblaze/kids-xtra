@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { revalidatePath } from "next/cache"
 
 function generateFamilyCode(): string {
@@ -25,13 +26,14 @@ export async function updateFamilySettings(formData: FormData) {
   const displayName = (formData.get("display_name") as string)?.trim()
 
   if (!familyName) return { error: "Family name is required" }
+  const admin = createAdminClient()
 
   const [familyResult, profileResult] = await Promise.all([
-    supabase
+    admin
       .from("families")
       .update({ name: familyName })
       .eq("id", profile.family_id),
-    supabase
+    admin
       .from("parent_profiles")
       .update({ display_name: displayName || null })
       .eq("id", user.id),
@@ -57,7 +59,8 @@ export async function regenerateFamilyCode() {
   if (!profile) return { error: "Profile not found" }
 
   const newCode = generateFamilyCode()
-  const { error } = await supabase
+  const admin = createAdminClient()
+  const { error } = await admin
     .from("families")
     .update({ family_code: newCode })
     .eq("id", profile.family_id)

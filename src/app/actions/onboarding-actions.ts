@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { CHORE_TEMPLATES } from "@/lib/chore-templates";
 import { STARTER_REWARDS, type OnboardingPreferences } from "@/lib/onboarding";
 export type { OnboardingPreferences } from "@/lib/onboarding";
@@ -49,7 +50,8 @@ export async function saveOnboardingProgress(
     ...(completed ? { completedAt: new Date().toISOString() } : {}),
     ...(preferences ? { preferences } : {}),
   };
-  const { error } = await ctx.supabase
+  const admin = createAdminClient();
+  const { error } = await admin
     .from("families")
     .update({ settings: { ...current, onboarding } })
     .eq("id", ctx.familyId);
@@ -78,7 +80,7 @@ export async function addStarterChores(
     .map((id) => CHORE_TEMPLATES.find((item) => item.id === id))
     .filter(Boolean);
   if (!selected.length || selected.length > 8)
-    return { error: "Choose between 1 and 8 chores" };
+    return { error: "Choose between 1 and 8 Missions" };
 
   const { data: ownedChildren } = await ctx.supabase
     .from("child_profiles")
@@ -119,7 +121,7 @@ export async function addStarterChores(
     .from("chores")
     .insert(rows)
     .select("id, title");
-  if (error || !chores) return { error: "Could not add starter chores" };
+  if (error || !chores) return { error: "Could not add starter Missions" };
   const assignments = chores.flatMap((chore) =>
     safeChildIds.map((childId) => ({
       chore_id: chore.id,
@@ -140,7 +142,7 @@ export async function addStarterChores(
         "id",
         chores.map((chore) => chore.id),
       );
-    return { error: "Could not add and assign starter chores" };
+    return { error: "Could not add and assign starter Missions" };
   }
   revalidatePath("/parent/chores");
   revalidatePath("/parent/dashboard");

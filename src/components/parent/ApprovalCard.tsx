@@ -23,8 +23,17 @@ export interface ChoreItem {
   id: string
   completed_at: string
   photo_url?: string | null
+  checklist_completed?: string[]
   child_profiles: ChildInfo | null
-  chore_assignments: { chores: { title: string; category: string; credit_value: number } | null } | null
+  chore_assignments: {
+    chores: {
+      title: string
+      category: string
+      credit_value: number
+      xp_value?: number | null
+      checklist_items?: string[] | null
+    } | null
+  } | null
 }
 
 export interface RewardItem {
@@ -105,8 +114,8 @@ export function ApprovalCard({ type, item }: Props) {
 
   const title = type === "chore" ? choreInfo?.title : rewardInfo?.title
   const subtitle = type === "chore"
-    ? `${choreInfo?.credit_value ?? 0} credits · ${CATEGORY_EMOJI[choreInfo?.category as keyof typeof CATEGORY_EMOJI] ?? "📋"} ${choreInfo?.category ?? ""}`
-    : `${rewardItem?.credits_spent ?? 0} credits`
+    ? `${choreInfo?.credit_value ?? 0} Credits · ${choreInfo?.xp_value ?? 0} XP · ${CATEGORY_EMOJI[choreInfo?.category as keyof typeof CATEGORY_EMOJI] ?? "📋"} ${choreInfo?.category ?? ""}`
+    : `${rewardItem?.credits_spent ?? 0} Credits`
   const dateStr = new Date(
     type === "chore" ? choreItem!.completed_at : rewardItem!.requested_at
   ).toLocaleString()
@@ -145,9 +154,30 @@ export function ApprovalCard({ type, item }: Props) {
           />
         )}
 
+        {type === "chore" && (choreInfo?.checklist_items?.length ?? 0) > 0 && (
+          <div className="rounded-xl border bg-slate-50 p-3">
+            <p className="mb-2 text-xs font-black uppercase tracking-wide text-slate-500">Checklist</p>
+            <div className="space-y-1">
+              {(choreInfo?.checklist_items ?? []).map((item) => {
+                const checked = choreItem?.checklist_completed?.includes(item) ?? false
+                return (
+                  <div key={item} className="flex items-center gap-2 text-sm">
+                    <span className={checked ? "text-emerald-600" : "text-slate-300"}>
+                      {checked ? "✓" : "□"}
+                    </span>
+                    <span className={checked ? "font-medium text-slate-700" : "text-slate-500"}>{item}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
         {showReject ? (
           <div className="space-y-3 border-t pt-3">
-            <p className="text-sm font-semibold text-slate-700">Select a reason</p>
+            <p className="text-sm font-semibold text-slate-700">
+              {type === "chore" ? "What needs more work?" : "Select a reason"}
+            </p>
 
             <div className="relative">
               <select
@@ -190,7 +220,7 @@ export function ApprovalCard({ type, item }: Props) {
                 className="flex-1"
               >
                 <XCircle className="w-3.5 h-3.5 mr-1.5" />
-                Send Rejection
+                {type === "chore" ? "Needs More Work" : "Deny Request"}
               </Button>
               <Button
                 size="sm"
@@ -230,11 +260,11 @@ export function ApprovalCard({ type, item }: Props) {
           <div className="flex gap-2">
             <Button size="sm" onClick={handleApprove} disabled={isPending} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white">
               <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
-              Approve
+              {type === "chore" ? "Approve Mission" : "Approve Reward"}
             </Button>
             <Button size="sm" variant="outline" onClick={() => setShowReject(true)} disabled={isPending} className="flex-1 text-destructive border-destructive/30 hover:bg-destructive/10">
               <XCircle className="w-3.5 h-3.5 mr-1.5" />
-              Reject
+              {type === "chore" ? "Needs More Work" : "Deny"}
             </Button>
             <Button size="sm" variant="outline" onClick={() => setShowDelete(true)} disabled={isPending} className="text-slate-500 border-slate-200 hover:bg-slate-100 hover:text-slate-700">
               <Trash2 className="w-3.5 h-3.5" />

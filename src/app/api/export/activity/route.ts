@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     .order("created_at")
     .limit(10000)
 
-  const headers = ["date", "child", "event", "chore_title", "credits", "reward_title", "note"]
+  const headers = ["date", "child", "event", "mission_title", "credits", "reward_title", "note"]
   const rows = (logs ?? []).map((log) => {
     const child = Array.isArray(log.child_profiles) ? log.child_profiles[0] : log.child_profiles
     const meta = (log.metadata ?? {}) as Record<string, string>
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
       new Date(log.created_at).toISOString().slice(0, 10),
       child?.name ?? "",
       log.event_type,
-      meta.chore_title ?? "",
+      meta.mission_title ?? meta.chore_title ?? "",
       meta.credits ?? "",
       meta.reward_title ?? "",
       meta.note ?? "",

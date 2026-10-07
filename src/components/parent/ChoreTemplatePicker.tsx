@@ -41,7 +41,7 @@ export function ChoreTemplatePicker() {
         setMessage(`Error: ${result.error}`);
       } else {
         setMessage(
-          `✅ Imported ${result.imported} chore${result.imported !== 1 ? "s" : ""}!`,
+          `Imported ${result.imported} Mission${result.imported !== 1 ? "s" : ""}.`,
         );
         setSelected(new Set());
         setOpen(false);
@@ -68,7 +68,7 @@ export function ChoreTemplatePicker() {
   return (
     <div className="rounded-3xl border-4 border-violet-200 bg-violet-50 p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-black text-slate-700">Chore template library</h3>
+        <h3 className="font-black text-slate-700">Mission starter library</h3>
         <button
           onClick={() => setOpen(false)}
           className="text-slate-400 hover:text-slate-600 text-lg"
@@ -136,7 +136,7 @@ export function ChoreTemplatePicker() {
         >
           {isPending
             ? "Importing…"
-            : `Import ${selected.size > 0 ? selected.size : ""} chore${selected.size !== 1 ? "s" : ""}`}
+            : `Import ${selected.size > 0 ? selected.size : ""} Mission${selected.size !== 1 ? "s" : ""}`}
         </button>
       </div>
     </div>

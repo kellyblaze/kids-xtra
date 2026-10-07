@@ -65,9 +65,9 @@ export function PhotoUploadButton({ childId, onUploaded }: Props) {
         return;
       }
 
-      const { url } = await res.json();
+      const { path } = await res.json();
       setUploaded(true);
-      onUploaded(url);
+      onUploaded(path);
     } catch (error) {
       alert(
         "Upload failed: " +

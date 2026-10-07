@@ -42,7 +42,7 @@ export default async function ChildrenPage() {
         <EmptyState
           icon={Users}
           title="No children yet"
-          description="Add your first child to get started with chores and rewards."
+          description="Add your first child to get started with Missions and Rewards."
         />
       ) : (
         <div className="grid sm:grid-cols-2 gap-4">
@@ -59,7 +59,7 @@ export default async function ChildrenPage() {
                   )}
                   <p className="text-sm mt-0.5">
                     <span className="font-medium">{child.credit_balance}</span>
-                    <span className="text-muted-foreground"> credits · Level {child.level}</span>
+                    <span className="text-muted-foreground"> Credits · Level {child.level}</span>
                   </p>
                 </div>
                 <Button variant="ghost" size="icon" className="shrink-0">

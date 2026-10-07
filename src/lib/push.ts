@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin"
 export async function notifyParentsOfChoreSubmission(
   familyId: string,
   childName: string,
-  choreTitle: string,
+  missionTitle: string,
 ) {
   if (!process.env.VAPID_PRIVATE_KEY || !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) return
 
@@ -25,8 +25,8 @@ export async function notifyParentsOfChoreSubmission(
     if (!subscriptions?.length) return
 
     const payload = JSON.stringify({
-      title: "Chore submitted! ✅",
-      body: `${childName} completed "${choreTitle}" — tap to review`,
+      title: "Mission Check ready",
+      body: `${childName} finished ${missionTitle} and is waiting for your Mission Check.`,
       url: "/parent/approvals",
     })
 

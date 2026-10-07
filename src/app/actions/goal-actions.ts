@@ -24,7 +24,10 @@ export async function setGoal(childId: string, rewardId: string): Promise<{ erro
 
     const { error } = await admin
       .from("child_goals")
-      .upsert({ child_id: childId, reward_id: rewardId }, { onConflict: "child_id" })
+      .upsert(
+        { child_id: childId, family_id: authorization.familyId, reward_id: rewardId },
+        { onConflict: "child_id" },
+      )
     if (error) return { error: error.message }
     revalidatePath(`/kid/${childId}/rewards`)
     revalidatePath(`/kid/${childId}/dashboard`)
@@ -36,10 +39,15 @@ export async function setGoal(childId: string, rewardId: string): Promise<{ erro
 
 export async function clearGoal(childId: string): Promise<{ error?: string }> {
   try {
-    if (!await authorizeChildAccess(childId)) return { error: "Not authorized" }
+    const authorization = await authorizeChildAccess(childId)
+    if (!authorization) return { error: "Not authorized" }
 
     const admin = createAdminClient()
-    const { error } = await admin.from("child_goals").delete().eq("child_id", childId)
+    const { error } = await admin
+      .from("child_goals")
+      .delete()
+      .eq("child_id", childId)
+      .eq("family_id", authorization.familyId)
     if (error) return { error: error.message }
     revalidatePath(`/kid/${childId}/rewards`)
     revalidatePath(`/kid/${childId}/dashboard`)

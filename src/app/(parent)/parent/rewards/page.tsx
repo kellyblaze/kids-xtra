@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/shared/EmptyState"
 import { Gift, Plus, Star } from "lucide-react"
 import { DeleteRewardButton } from "@/components/parent/DeleteRewardButton"
 import { RewardsTabs } from "@/components/parent/RewardsTabs"
+import { FulfillRewardButton } from "@/components/parent/FulfillRewardButton"
 
 export default async function RewardsPage() {
   const supabase = await createClient()
@@ -48,7 +49,7 @@ export default async function RewardsPage() {
         <EmptyState
           icon={Gift}
           title="No rewards yet"
-          description="Add rewards your children can redeem using their earned credits."
+          description="Add something your children care about so saving Credits has a clear purpose."
           action={{ label: "Add a reward", href: "/parent/rewards/new" }}
         />
       ) : (
@@ -68,7 +69,7 @@ export default async function RewardsPage() {
                       )}
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
                         <Badge className="bg-amber-100 text-amber-700 border-amber-200">
-                          <Star className="w-3 h-3 mr-1" />{reward.credit_cost} credits
+                          <Star className="w-3 h-3 mr-1" />{reward.credit_cost} Credits
                         </Badge>
                         {reward.category && (
                           <Badge variant="outline" className="text-xs">{reward.category}</Badge>
@@ -100,7 +101,7 @@ export default async function RewardsPage() {
   const redemptionsList = (
     <div className="space-y-2">
       {!redemptions?.length ? (
-        <EmptyState icon={Gift} title="No redemptions yet" description="Redemptions will appear here when children request rewards." />
+        <EmptyState icon={Gift} title="No reward requests yet" description="Requests appear here after a child chooses to spend Credits." />
       ) : redemptions.map((r) => {
         const child = Array.isArray(r.child_profiles) ? r.child_profiles[0] : r.child_profiles
         const reward = Array.isArray(r.rewards) ? r.rewards[0] : r.rewards
@@ -117,6 +118,7 @@ export default async function RewardsPage() {
             <div className="flex items-center gap-2 shrink-0">
               <span className="text-xs font-semibold text-amber-600">{r.credits_spent}⭐</span>
               <Badge className={`text-xs border ${color}`}>{label}</Badge>
+              {r.status === "approved" && <FulfillRewardButton redemptionId={r.id} />}
             </div>
           </div>
         )

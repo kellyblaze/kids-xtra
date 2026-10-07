@@ -33,7 +33,7 @@ export async function importChoreTemplates(templateIds: string[]) {
     .filter((t): t is NonNullable<typeof t> => !!t)
     .filter((t) => !existingTitles.has(t.title.toLowerCase()))
 
-  if (!templates.length) return { error: "All selected templates already exist in your chore list" }
+  if (!templates.length) return { error: "All selected templates already exist in your Mission list" }
 
   const choresToInsert = templates.map((t) => ({
     family_id: profile.family_id,

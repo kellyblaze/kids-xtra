@@ -10,6 +10,7 @@ import { ArrowLeft, Star, CheckCircle, XCircle, Clock } from "lucide-react"
 import { EditChildDialog } from "@/components/parent/EditChildDialog"
 import { DeleteChildButton } from "@/components/parent/DeleteChildButton"
 import { SetChildPinForm } from "@/components/parent/SetChildPinForm"
+import { AwardBonusCreditsForm } from "@/components/parent/AwardBonusCreditsForm"
 
 interface PageProps {
   params: Promise<{ childId: string }>
@@ -91,9 +92,9 @@ export default async function ChildDetailPage({ params }: PageProps) {
             {child.nickname && <span className="text-muted-foreground text-sm">({child.nickname})</span>}
           </div>
           <div className="flex items-center gap-4 mt-2 text-sm flex-wrap">
-            <span><span className="font-semibold text-primary">{child.credit_balance}</span> credits</span>
+            <span><span className="font-semibold text-primary">{child.credit_balance}</span> Credits</span>
             <span>Level <span className="font-semibold">{child.level}</span></span>
-            <span><span className="font-semibold">{approvedCount}</span> chores done</span>
+            <span><span className="font-semibold">{approvedCount}</span> missions done</span>
           </div>
         </div>
         <div className="flex gap-2 shrink-0">
@@ -102,14 +103,22 @@ export default async function ChildDetailPage({ params }: PageProps) {
         </div>
       </div>
 
+      <div className="rounded-3xl border-4 border-amber-200 bg-amber-50 p-5 shadow-[0_4px_0_#fde68a]">
+        <h2 className="font-black text-amber-900 mb-1">Bonus Credits</h2>
+        <p className="text-sm text-amber-800 font-medium mb-4">
+          Award small Credits with a clear reason so {child.name} understands what behavior you noticed.
+        </p>
+        <AwardBonusCreditsForm childId={child.id} />
+      </div>
+
       <div className="grid sm:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Assigned chores ({assignments?.length ?? 0})</CardTitle>
+            <CardTitle className="text-base">Assigned missions ({assignments?.length ?? 0})</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {!assignments?.length ? (
-              <p className="text-sm text-muted-foreground">No chores assigned yet.</p>
+              <p className="text-sm text-muted-foreground">No missions assigned yet.</p>
             ) : (
               assignments.map((a) => {
                 type ChoreShape = { id: string; title: string; category: string; credit_value: number; frequency: string }
@@ -160,7 +169,7 @@ export default async function ChildDetailPage({ params }: PageProps) {
                 return (
                   <div key={c.id} className="flex items-center gap-2 text-sm">
                     <StatusIcon className={`w-4 h-4 shrink-0 ${iconColor}`} />
-                    <span className="flex-1 truncate">{chore?.title ?? "Chore"}</span>
+                    <span className="flex-1 truncate">{chore?.title ?? "Mission"}</span>
                     <span className="text-xs text-muted-foreground shrink-0">
                       {new Date(c.completed_at).toLocaleDateString()}
                     </span>

@@ -87,7 +87,7 @@ export function PushNotificationToggle() {
       ? "Notifications blocked — enable in browser settings"
       : subscribed
         ? "Disable push notifications"
-        : "Get notified when kids submit chores";
+        : "Get notified when kids submit Missions";
 
   return (
     <button

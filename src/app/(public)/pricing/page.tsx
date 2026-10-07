@@ -4,13 +4,13 @@ import { Check, ShieldCheck, Sparkles } from "lucide-react"
 
 const FEATURES_INCLUDED = [
   "Unlimited children",
-  "Unlimited chores",
+  "Unlimited Missions",
   "Unlimited rewards",
   "Credit tracking",
   "Approval workflow",
   "Activity history",
-  "Photo proof for chores",
-  "AI chore suggestions",
+  "Photo proof for Missions",
+  "Xtra Coach Mission plans",
   "Weekly family reports",
   "Schedules and reminders",
   "Streaks, XP, and leaderboards",

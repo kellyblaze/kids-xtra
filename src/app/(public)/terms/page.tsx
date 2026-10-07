@@ -17,7 +17,7 @@ export default function TermsPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">2. Service Description</h2>
         <p className="text-muted-foreground leading-relaxed">
-          Kids Xtra is a household chore management and reward tracking tool for families. It is not
+          Kids Xtra is a household Mission management and reward tracking tool for families. It is not
           a financial product. Credits are virtual points with no monetary value.
         </p>
       </section>
@@ -27,7 +27,7 @@ export default function TermsPage() {
         <ul className="list-disc list-inside text-muted-foreground space-y-1">
           <li>You are responsible for all activity under your account</li>
           <li>You must supervise your children&apos;s use of the app</li>
-          <li>You control all chores, rewards, approvals, and child profile data</li>
+          <li>You control all Missions, rewards, approvals, and child profile data</li>
           <li>You must not share your login credentials with your children</li>
         </ul>
       </section>
@@ -78,8 +78,8 @@ export default function TermsPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">9. Contact</h2>
         <p className="text-muted-foreground leading-relaxed">
-          <a href="mailto:support@kidsxtra.app" className="text-primary underline underline-offset-2">
-            support@kidsxtra.app
+          <a href="mailto:info@seethestarsllc.com" className="text-primary underline underline-offset-2">
+            info@seethestarsllc.com
           </a>
         </p>
       </section>

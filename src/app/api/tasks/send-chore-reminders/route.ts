@@ -102,18 +102,18 @@ export async function GET(request: NextRequest) {
       ...new Set(
         overdueChores.map((a) => {
           const chore = Array.isArray(a.chores) ? a.chores[0] : a.chores;
-          return (chore as { title?: string } | null)?.title ?? "a chore";
+          return (chore as { title?: string } | null)?.title ?? "a Mission";
         }),
       ),
     ].slice(0, 3);
 
     const body =
       overdueNames.length === 1
-        ? `${overdueNames[0]} hasn't been done yet today`
-        : `${overdueNames.slice(0, -1).join(", ")} and more haven't been done yet`;
+        ? `${overdueNames[0]} is still waiting as today's Mission.`
+        : `${overdueNames.slice(0, -1).join(", ")} and more Missions are still waiting today.`;
 
     const payload = JSON.stringify({
-      title: "⏰ Chore reminder",
+      title: "Mission reminder",
       body,
       url: "/parent/approvals",
     });

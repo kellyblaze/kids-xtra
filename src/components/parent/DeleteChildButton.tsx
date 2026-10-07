@@ -16,7 +16,7 @@ export function DeleteChildButton({ childId, childName }: Props) {
   const [isPending, startTransition] = useTransition()
 
   function handleDelete() {
-    if (!confirm(`Remove ${childName}? Their chore and credit history will be kept.`)) return
+    if (!confirm(`Remove ${childName}? Their Mission and Credit history will be kept.`)) return
     startTransition(async () => {
       await deleteChildProfile(childId)
       router.push("/parent/children")

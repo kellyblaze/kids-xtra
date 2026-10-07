@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, Target } from "lucide-react";
 import { AVATAR_EMOJI } from "@/lib/constants";
 import { ensureFamilyCode } from "@/app/actions/auth";
 import { WeeklyScheduleGrid } from "@/components/parent/WeeklyScheduleGrid";
@@ -42,12 +42,18 @@ export default async function ParentDashboardPage() {
     familyCode = result.code;
   }
 
+  const weekStart = new Date();
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+  weekStart.setHours(0, 0, 0, 0);
+
   const [
     { data: children },
     { data: pendingCompletions },
     { data: pendingRedemptions },
     { data: recentActivity },
     { data: chores },
+    { data: goals },
+    { data: weekTransactions },
   ] = await Promise.all([
     supabase
       .from("child_profiles")
@@ -82,16 +88,30 @@ export default async function ParentDashboardPage() {
       .eq("family_id", familyId)
       .eq("is_active", true)
       .order("created_at"),
+    supabase
+      .from("child_goals")
+      .select("child_id, child_profiles(name, credit_balance), rewards(title, credit_cost)")
+      .eq("family_id", familyId),
+    supabase
+      .from("credit_transactions")
+      .select("amount")
+      .eq("family_id", familyId)
+      .gte("created_at", weekStart.toISOString()),
   ]);
 
   const pendingCount =
     (pendingCompletions?.length ?? 0) + (pendingRedemptions?.length ?? 0);
 
-  const weekStart = new Date();
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-  weekStart.setHours(0, 0, 0, 0);
   const weekDays = buildWeekSchedule(chores ?? [], weekStart);
   const periodicChores = buildPeriodicChores(chores ?? []);
+  const earnedThisWeek = (weekTransactions ?? [])
+    .filter((tx) => (tx.amount ?? 0) > 0)
+    .reduce((sum, tx) => sum + (tx.amount ?? 0), 0);
+  const spentThisWeek = Math.abs(
+    (weekTransactions ?? [])
+      .filter((tx) => (tx.amount ?? 0) < 0)
+      .reduce((sum, tx) => sum + (tx.amount ?? 0), 0),
+  );
 
   return (
     <div className="space-y-6 max-w-6xl">
@@ -176,7 +196,7 @@ export default async function ParentDashboardPage() {
           },
           {
             emoji: "✅",
-            label: "Pending chores",
+            label: "Mission Checks",
             value: pendingCompletions?.length ?? 0,
             border: "border-amber-200",
             bg: "bg-amber-50",
@@ -194,12 +214,21 @@ export default async function ParentDashboardPage() {
           },
           {
             emoji: "⭐",
-            label: "Total credits",
-            value: children?.reduce((s, c) => s + c.credit_balance, 0) ?? 0,
+            label: "Earned this week",
+            value: earnedThisWeek,
             border: "border-emerald-200",
             bg: "bg-emerald-50",
             shadow: "shadow-emerald-200",
             text: "text-emerald-700",
+          },
+          {
+            emoji: "🎯",
+            label: "Savings goals",
+            value: goals?.length ?? 0,
+            border: "border-pink-200",
+            bg: "bg-pink-50",
+            shadow: "shadow-pink-200",
+            text: "text-pink-700",
           },
         ].map(({ emoji, label, value, border, bg, shadow, text }) => (
           <div
@@ -211,6 +240,20 @@ export default async function ParentDashboardPage() {
             <p className="text-xs font-bold text-slate-500 mt-1">{label}</p>
           </div>
         ))}
+      </div>
+
+      <div className="rounded-3xl border-4 border-amber-200 bg-amber-50 p-4 shadow-[0_4px_0_#fde68a]">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-black text-amber-900">Credit activity this week</h2>
+            <p className="text-sm font-medium text-amber-700">
+              Earned +{earnedThisWeek} Credits · Spent -{spentThisWeek} Credits
+            </p>
+          </div>
+          <Link href="/parent/activity" className="text-xs font-black text-amber-700 hover:underline">
+            View ledger
+          </Link>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -261,6 +304,46 @@ export default async function ParentDashboardPage() {
                   </p>
                 </Link>
               ))
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-3xl border-4 border-slate-200 bg-white shadow-[0_4px_0_#e2e8f0] overflow-hidden">
+          <div className="flex items-center justify-between px-5 pt-5 pb-3">
+            <h2 className="font-black text-slate-800">Savings goals</h2>
+            <Target className="w-5 h-5 text-pink-500" />
+          </div>
+          <div className="px-4 pb-4 space-y-3">
+            {!goals?.length ? (
+              <p className="text-slate-500 text-sm text-center py-6 font-medium">
+                No active goals yet
+              </p>
+            ) : (
+              goals.map((goal) => {
+                const child = Array.isArray(goal.child_profiles)
+                  ? goal.child_profiles[0] ?? null
+                  : goal.child_profiles
+                const reward = Array.isArray(goal.rewards)
+                  ? goal.rewards[0] ?? null
+                  : goal.rewards
+                const balance = child?.credit_balance ?? 0
+                const cost = reward?.credit_cost ?? 0
+                const progress = cost > 0 ? Math.min(100, Math.round((balance / cost) * 100)) : 0
+                return (
+                  <div key={goal.child_id} className="rounded-2xl border bg-slate-50 p-3">
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                      <div className="min-w-0">
+                        <p className="font-black text-slate-800 truncate">{child?.name ?? "Child"}</p>
+                        <p className="text-xs font-medium text-slate-500 truncate">{reward?.title ?? "Reward goal"}</p>
+                      </div>
+                      <p className="text-xs font-black text-pink-600">{progress}%</p>
+                    </div>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-pink-100">
+                      <div className="h-full rounded-full bg-pink-500" style={{ width: `${progress}%` }} />
+                    </div>
+                  </div>
+                )
+              })
             )}
           </div>
         </div>
@@ -320,7 +403,7 @@ export default async function ParentDashboardPage() {
         {[
           {
             href: "/parent/chores/new",
-            label: "Add a chore",
+            label: "Add a Mission",
             emoji: "✅",
             border: "border-blue-200",
             shadow: "shadow-blue-200",
@@ -374,13 +457,15 @@ function activityLabel(
 ): string {
   const m = metadata ?? {};
   const map: Record<string, string> = {
-    chore_completed: `completed "${m.chore_title ?? "a chore"}"`,
-    chore_approved: `earned ${m.credits ?? ""} credits`,
-    chore_rejected: `got feedback on a chore`,
+    chore_completed: `completed "${m.mission_title ?? m.chore_title ?? "a Mission"}"`,
+    mission_completed: `completed "${m.mission_title ?? "a Mission"}"`,
+    chore_approved: `earned ${m.credits ?? ""} Credits`,
+    chore_rejected: `got feedback on a Mission`,
+    mission_needs_work: `got feedback on a Mission`,
     reward_requested: `requested "${m.reward_title ?? "a reward"}"`,
     reward_approved: `redeemed "${m.reward_title ?? "a reward"}"`,
     child_created: "profile was created",
-    chore_created: `new chore "${m.chore_title ?? ""}" added`,
+    chore_created: `new Mission "${m.chore_title ?? ""}" added`,
   };
   return map[eventType] ?? eventType.replace(/_/g, " ");
 }

@@ -1,13 +1,24 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { authorizeChildAccess } from "@/lib/kid-authorization"
+import {
+  CHORE_PHOTO_BUCKET,
+  CHORE_PHOTO_MAX_BYTES,
+  getChorePhotoExtension,
+  hasValidImageSignature,
+} from "@/lib/chore-photos"
+import { isSameOriginRequest } from "@/lib/request-security"
 
 export async function POST(request: NextRequest) {
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ error: "Invalid request origin" }, { status: 403 })
+  }
+
   const form = await request.formData()
   const childId = (form.get("childId") as string | null)?.trim() ?? ""
-  const file = form.get("file") as File | null
+  const file = form.get("file")
 
-  if (!childId || !file) {
+  if (!childId || !(file instanceof File)) {
     return NextResponse.json({ error: "Missing childId or file" }, { status: 400 })
   }
 
@@ -16,20 +27,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Not authorized" }, { status: 401 })
   }
 
-  if (file.size > 20 * 1024 * 1024) {
-    return NextResponse.json({ error: "Photo must be under 20MB" }, { status: 413 })
+  if (file.size === 0 || file.size > CHORE_PHOTO_MAX_BYTES) {
+    return NextResponse.json({ error: "Photo must be under 5MB" }, { status: 413 })
   }
 
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"]
-  if (!allowedTypes.includes(file.type)) {
-    return NextResponse.json({ error: "Only JPEG, PNG, WebP, or GIF images are allowed" }, { status: 415 })
+  const extension = getChorePhotoExtension(file.type)
+  if (!extension) {
+    return NextResponse.json({ error: "Only JPEG, PNG, or WebP images are allowed" }, { status: 415 })
   }
 
-  const filename = `${authorization.familyId}/${childId}/${Date.now()}.jpg`
+  const bytes = new Uint8Array(await file.arrayBuffer())
+  if (!hasValidImageSignature(bytes, file.type)) {
+    return NextResponse.json({ error: "The uploaded file is not a valid image" }, { status: 415 })
+  }
+
+  const filename = `${authorization.familyId}/${childId}/${crypto.randomUUID()}.${extension}`
 
   const admin = createAdminClient()
-  const { error } = await admin.storage.from("chore-photos").upload(filename, file, {
-    contentType: "image/jpeg",
+  const { error } = await admin.storage.from(CHORE_PHOTO_BUCKET).upload(filename, bytes, {
+    contentType: file.type,
     upsert: false,
   })
 
@@ -37,6 +53,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Upload failed" }, { status: 500 })
   }
 
-  const { data } = admin.storage.from("chore-photos").getPublicUrl(filename)
-  return NextResponse.json({ url: data.publicUrl })
+  return NextResponse.json({ path: filename })
 }

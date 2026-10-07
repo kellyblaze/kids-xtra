@@ -7,6 +7,7 @@ import { openBillingPortal } from "@/app/actions/billing";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
+import { HelpAndFaq } from "@/components/parent/HelpAndFaq";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -82,6 +83,8 @@ export default async function SettingsPage() {
       </section>
 
       <ExportActivityForm />
+
+      <HelpAndFaq accountEmail={user.email ?? ""} />
     </div>
   );
 }

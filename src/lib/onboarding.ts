@@ -22,10 +22,10 @@ export const STARTER_REWARDS = [
   {
     id: "movie",
     emoji: "🎬",
-    title: "Family movie night",
+    title: "Choose family movie",
     description: "Pick the movie for family movie night",
     creditCost: 50,
-    category: "experience",
+    category: "Family Time",
   },
   {
     id: "screen",
@@ -33,7 +33,7 @@ export const STARTER_REWARDS = [
     title: "30 minutes of screen time",
     description: "Enjoy an extra 30 minutes of screen time",
     creditCost: 30,
-    category: "privilege",
+    category: "Screen Time",
   },
   {
     id: "dessert",
@@ -41,15 +41,15 @@ export const STARTER_REWARDS = [
     title: "Choose dessert",
     description: "Choose a special family dessert",
     creditCost: 40,
-    category: "treat",
+    category: "Food & Treats",
   },
   {
     id: "outing",
     emoji: "🚲",
-    title: "Choose a family outing",
+    title: "Park or ice cream trip",
     description: "Help choose our next family adventure",
     creditCost: 100,
-    category: "experience",
+    category: "Experiences",
   },
 ] as const;
 
