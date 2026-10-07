@@ -1,8 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 650" role="img" aria-labelledby="title desc">
   <title id="title">Parent Mission Checks screen screenshot</title>
   <desc id="desc">A screenshot-style parent approvals screen showing Mission Check details, photo proof, checklist progress, approve, and needs more work controls.</desc>
+  <defs>
+    <filter id="soft-shadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="16" stdDeviation="14" flood-color="#064e3b" flood-opacity=".12"/>
+    </filter>
+  </defs>
   <rect width="940" height="650" fill="#ecfdf5"/>
-  <rect x="74" y="54" width="792" height="542" rx="38" fill="#fff" stroke="#bbf7d0" stroke-width="8"/>
+  <rect x="74" y="54" width="792" height="542" rx="38" fill="#fff" stroke="#bbf7d0" stroke-width="8" filter="url(#soft-shadow)"/>
   <rect x="74" y="54" width="190" height="542" rx="38" fill="#f8fafc"/>
   <rect x="74" y="54" width="190" height="542" rx="38" fill="none" stroke="#e2e8f0" stroke-width="4"/>
   <text x="112" y="112" font-family="Arial, sans-serif" font-size="25" font-weight="900" fill="#7c3aed">Kids Xtra</text>
@@ -26,10 +31,10 @@
   <text x="384" y="408" font-family="Arial, sans-serif" font-size="16" font-weight="800" fill="#334155">Bed made</text>
   <path d="m338 444 10 10 20-25" fill="none" stroke="#16a34a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
   <text x="384" y="450" font-family="Arial, sans-serif" font-size="16" font-weight="800" fill="#334155">Toys put away</text>
-  <rect x="576" y="380" width="184" height="48" rx="18" fill="#16a34a"/>
+  <rect x="548" y="380" width="212" height="48" rx="18" fill="#16a34a"/>
   <text x="620" y="411" font-family="Arial, sans-serif" font-size="18" font-weight="900" fill="#fff">Approve</text>
-  <rect x="576" y="444" width="184" height="48" rx="18" fill="#fff1f2" stroke="#fda4af" stroke-width="4"/>
-  <text x="602" y="475" font-family="Arial, sans-serif" font-size="18" font-weight="900" fill="#be123c">Needs More Work</text>
+  <rect x="548" y="444" width="212" height="48" rx="18" fill="#fff1f2" stroke="#fda4af" stroke-width="4"/>
+  <text x="607" y="475" font-family="Arial, sans-serif" font-size="17" font-weight="900" fill="#be123c">Needs Work</text>
   <rect x="306" y="536" width="500" height="32" rx="16" fill="#f0fdf4"/>
   <text x="334" y="558" font-family="Arial, sans-serif" font-size="15" font-weight="900" fill="#047857">Credits ledger updates after approval</text>
 </svg>
