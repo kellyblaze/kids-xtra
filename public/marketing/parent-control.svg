@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 650" role="img" aria-labelledby="title desc">
+  <title id="title">Parent reviewing Mission Checks</title>
+  <desc id="desc">A parent reviews Mission Check cards on a dashboard with approval controls.</desc>
+  <rect width="940" height="650" fill="#ecfdf5"/>
+  <rect x="108" y="98" width="724" height="440" rx="48" fill="#ffffff" stroke="#a7f3d0" stroke-width="10"/>
+  <rect x="172" y="164" width="270" height="310" rx="34" fill="#f1f5f9"/>
+  <circle cx="306" cy="254" r="62" fill="#8b5cf6"/>
+  <circle cx="306" cy="232" r="35" fill="#4c1d95"/>
+  <path d="M222 420c20-92 148-92 168 0z" fill="#7c3aed"/>
+  <rect x="500" y="164" width="246" height="70" rx="22" fill="#ede9fe"/>
+  <rect x="500" y="264" width="246" height="70" rx="22" fill="#dcfce7"/>
+  <rect x="500" y="364" width="246" height="70" rx="22" fill="#ffedd5"/>
+  <path d="m532 199 18 18 38-44" fill="none" stroke="#16a34a" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m532 299 18 18 38-44" fill="none" stroke="#16a34a" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="552" cy="399" r="24" fill="#fed7aa"/>
+  <text x="610" y="207" font-family="Arial, sans-serif" font-size="24" font-weight="900" fill="#312e81">Approve</text>
+  <text x="610" y="307" font-family="Arial, sans-serif" font-size="24" font-weight="900" fill="#166534">Credits</text>
+  <text x="610" y="407" font-family="Arial, sans-serif" font-size="24" font-weight="900" fill="#9a3412">Needs Work</text>
+  <text x="148" y="590" font-family="Arial, sans-serif" font-size="46" font-weight="900" fill="#0f172a">Parent-controlled</text>
+</svg>

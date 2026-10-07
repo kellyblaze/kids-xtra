@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 650" role="img" aria-labelledby="title desc">
+  <title id="title">Child finishing a Room Reset Mission</title>
+  <desc id="desc">A child tidies a bright bedroom with a checklist card showing completed Mission steps.</desc>
+  <rect width="940" height="650" fill="#f8fafc"/>
+  <rect x="80" y="92" width="780" height="420" rx="48" fill="#ede9fe"/>
+  <rect x="120" y="146" width="350" height="278" rx="32" fill="#fff"/>
+  <rect x="158" y="190" width="228" height="28" rx="14" fill="#c4b5fd"/>
+  <rect x="158" y="250" width="252" height="28" rx="14" fill="#bbf7d0"/>
+  <rect x="158" y="304" width="204" height="28" rx="14" fill="#bbf7d0"/>
+  <rect x="158" y="358" width="236" height="28" rx="14" fill="#fed7aa"/>
+  <path d="M584 222h206v238H584z" fill="#fef3c7"/>
+  <path d="M596 458h182v34H596z" fill="#78350f"/>
+  <circle cx="622" cy="248" r="54" fill="#8b5cf6"/>
+  <circle cx="622" cy="226" r="30" fill="#4c1d95"/>
+  <path d="M550 426c16-82 128-82 144 0z" fill="#7c3aed"/>
+  <path d="M672 388c58-28 104-86 124-154" fill="none" stroke="#f59e0b" stroke-width="24" stroke-linecap="round"/>
+  <path d="M740 232h92" stroke="#78350f" stroke-width="16" stroke-linecap="round"/>
+  <g fill="none" stroke="#16a34a" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m126 254 18 18 38-44"/>
+    <path d="m126 308 18 18 38-44"/>
+  </g>
+  <text x="120" y="558" font-family="Arial, sans-serif" font-size="48" font-weight="900" fill="#0f172a">Room Reset</text>
+  <text x="120" y="604" font-family="Arial, sans-serif" font-size="30" font-weight="800" fill="#7c3aed">Checklist complete</text>
+</svg>

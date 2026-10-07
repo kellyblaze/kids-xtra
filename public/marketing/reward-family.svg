@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 650" role="img" aria-labelledby="title desc">
+  <title id="title">Family celebrating a Reward</title>
+  <desc id="desc">A family celebrates a redeemed Reward with Credits and a gift box.</desc>
+  <rect width="940" height="650" fill="#fff7ed"/>
+  <circle cx="468" cy="284" r="206" fill="#fde68a"/>
+  <rect x="332" y="270" width="272" height="190" rx="30" fill="#8b5cf6"/>
+  <path d="M468 270v190M332 340h272" stroke="#fef3c7" stroke-width="26"/>
+  <path d="M388 266c-52-72 56-96 80-6 24-90 132-66 80 6" fill="none" stroke="#7c3aed" stroke-width="28" stroke-linecap="round"/>
+  <circle cx="210" cy="322" r="54" fill="#34d399"/>
+  <circle cx="210" cy="302" r="31" fill="#064e3b"/>
+  <path d="M148 486c14-70 110-70 124 0z" fill="#10b981"/>
+  <circle cx="730" cy="322" r="54" fill="#f59e0b"/>
+  <circle cx="730" cy="302" r="31" fill="#78350f"/>
+  <path d="M668 486c14-70 110-70 124 0z" fill="#fbbf24"/>
+  <g fill="#fff" stroke="#f59e0b" stroke-width="8">
+    <circle cx="176" cy="156" r="34"/>
+    <circle cx="764" cy="162" r="34"/>
+    <circle cx="666" cy="92" r="28"/>
+  </g>
+  <text x="133" y="568" font-family="Arial, sans-serif" font-size="48" font-weight="900" fill="#0f172a">Reward redeemed</text>
+  <text x="133" y="612" font-family="Arial, sans-serif" font-size="30" font-weight="800" fill="#c2410c">Credits well earned</text>
+</svg>

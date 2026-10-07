@@ -102,12 +102,11 @@ export default function LandingPage() {
               <div className="relative hidden md:block">
                 <div className="relative rounded-3xl overflow-hidden border-4 border-violet-200 shadow-2xl">
                   <Image
-                    src="https://images.pexels.com/photos/7114188/pexels-photo-7114188.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-                    alt="Happy Black family with young children enjoying time together at home"
+                    src="/marketing/family-missions.svg"
+                    alt="Family reviewing Missions together"
                     width={940}
                     height={650}
                     className="w-full h-80 object-cover object-top"
-                    unoptimized
                   />
                 </div>
                 {/* Floating cards */}
@@ -169,12 +168,11 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="rounded-3xl overflow-hidden border-4 border-violet-200 shadow-xl">
                   <Image
-                    src="https://images.pexels.com/photos/5063099/pexels-photo-5063099.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-                    alt="Black girl dusting and cleaning at home"
+                    src="/marketing/mission-cleanup.svg"
+                    alt="Child finishing a Room Reset Mission"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
-                    unoptimized
                   />
                 </div>
                 <div>
@@ -189,12 +187,11 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="md:order-2 rounded-3xl overflow-hidden border-4 border-amber-200 shadow-xl">
                   <Image
-                    src="https://images.pexels.com/photos/6624384/pexels-photo-6624384.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-                    alt="Diverse family playing and having fun together at home"
+                    src="/marketing/reward-family.svg"
+                    alt="Family celebrating a redeemed Reward"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
-                    unoptimized
                   />
                 </div>
                 <div className="md:order-1">
@@ -209,12 +206,11 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="rounded-3xl overflow-hidden border-4 border-emerald-200 shadow-xl">
                   <Image
-                    src="https://images.pexels.com/photos/4866876/pexels-photo-4866876.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-                    alt="Black mother enjoying quality time with her children in the kitchen"
+                    src="/marketing/parent-control.svg"
+                    alt="Parent reviewing Mission Checks"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
-                    unoptimized
                   />
                 </div>
                 <div>
