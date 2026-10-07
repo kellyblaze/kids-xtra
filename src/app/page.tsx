@@ -103,7 +103,7 @@ export default function LandingPage() {
                 <div className="relative rounded-3xl overflow-hidden border-4 border-violet-200 shadow-2xl">
                   <Image
                     src="/marketing/family-missions.svg"
-                    alt="Family reviewing Missions together"
+                    alt="Kids Xtra dashboard screenshot with Mission activity, Credits, and streaks"
                     width={940}
                     height={650}
                     className="w-full h-80 object-cover object-top"
@@ -169,7 +169,7 @@ export default function LandingPage() {
                 <div className="rounded-3xl overflow-hidden border-4 border-violet-200 shadow-xl">
                   <Image
                     src="/marketing/mission-cleanup.svg"
-                    alt="Child finishing a Room Reset Mission"
+                    alt="Child Missions screen screenshot with available and in-progress Mission cards"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
@@ -188,7 +188,7 @@ export default function LandingPage() {
                 <div className="md:order-2 rounded-3xl overflow-hidden border-4 border-amber-200 shadow-xl">
                   <Image
                     src="/marketing/reward-family.svg"
-                    alt="Family celebrating a redeemed Reward"
+                    alt="Child Rewards store screenshot with Credits and savings goal progress"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
@@ -207,7 +207,7 @@ export default function LandingPage() {
                 <div className="rounded-3xl overflow-hidden border-4 border-emerald-200 shadow-xl">
                   <Image
                     src="/marketing/parent-control.svg"
-                    alt="Parent reviewing Mission Checks"
+                    alt="Parent Mission Checks screenshot with approval and needs more work controls"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
