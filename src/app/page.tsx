@@ -187,8 +187,8 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="md:order-2 rounded-3xl overflow-hidden border-4 border-amber-200 shadow-xl">
                   <Image
-                    src="/marketing/reward-family.jpg"
-                    alt="Family playing and having fun together at home"
+                    src="/marketing/reward-family-hispanic.jpg"
+                    alt="Hispanic family celebrating together at home"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
@@ -206,8 +206,8 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="rounded-3xl overflow-hidden border-4 border-emerald-200 shadow-xl">
                   <Image
-                    src="/marketing/parent-control.jpg"
-                    alt="Parent enjoying quality time with children at home"
+                    src="/marketing/parent-control-asian.jpg"
+                    alt="Asian mother and children spending time together at home"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
