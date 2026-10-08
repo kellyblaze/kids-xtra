@@ -102,8 +102,8 @@ export default function LandingPage() {
               <div className="relative hidden md:block">
                 <div className="relative rounded-3xl overflow-hidden border-4 border-violet-200 shadow-2xl">
                   <Image
-                    src="/marketing/family-missions.svg"
-                    alt="Kids Xtra dashboard screenshot with Mission activity, Credits, and streaks"
+                    src="/marketing/family-missions.jpg"
+                    alt="Happy family with young children enjoying time together at home"
                     width={940}
                     height={650}
                     className="w-full h-80 object-cover object-top"
@@ -168,8 +168,8 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="rounded-3xl overflow-hidden border-4 border-violet-200 shadow-xl">
                   <Image
-                    src="/marketing/mission-cleanup.svg"
-                    alt="Child Missions screen screenshot with available and in-progress Mission cards"
+                    src="/marketing/mission-cleanup.jpg"
+                    alt="Child helping clean at home"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
@@ -187,8 +187,8 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="md:order-2 rounded-3xl overflow-hidden border-4 border-amber-200 shadow-xl">
                   <Image
-                    src="/marketing/reward-family.svg"
-                    alt="Child Rewards store screenshot with Credits and savings goal progress"
+                    src="/marketing/reward-family.jpg"
+                    alt="Family playing and having fun together at home"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
@@ -206,8 +206,8 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="rounded-3xl overflow-hidden border-4 border-emerald-200 shadow-xl">
                   <Image
-                    src="/marketing/parent-control.svg"
-                    alt="Parent Mission Checks screenshot with approval and needs more work controls"
+                    src="/marketing/parent-control.jpg"
+                    alt="Parent enjoying quality time with children at home"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
