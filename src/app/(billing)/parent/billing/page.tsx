@@ -7,11 +7,11 @@ import { createClient } from "@/lib/supabase/server"
 import { hasSubscriptionAccess } from "@/lib/stripe"
 
 const features = [
-  "Unlimited children, chores, and rewards",
+  "Unlimited children, Missions, and Rewards",
   "Credit tracking, streaks, and XP levels",
   "Parent approvals and photo proof",
   "Schedules, reminders, and activity history",
-  "AI chore suggestions and weekly reports",
+  "Xtra Coach Mission plans and weekly reports",
 ]
 
 export default async function BillingPage({

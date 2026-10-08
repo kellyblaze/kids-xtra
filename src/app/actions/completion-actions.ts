@@ -6,8 +6,14 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { authorizeChildAccess } from "@/lib/kid-authorization"
 import { revalidatePath } from "next/cache"
 import { notifyParentsOfChoreSubmission } from "@/lib/push"
+import { isAuthorizedChorePhotoPath } from "@/lib/chore-photos"
 
-export async function markChoreComplete(assignmentId: string, childId: string, photoUrl?: string) {
+export async function markChoreComplete(
+  assignmentId: string,
+  childId: string,
+  photoPath?: string,
+  checklistCompleted: string[] = [],
+) {
   const authorization = await authorizeChildAccess(childId)
   if (!authorization) return { error: "Not authorized" }
 
@@ -15,7 +21,7 @@ export async function markChoreComplete(assignmentId: string, childId: string, p
 
   const { data: assignment } = await supabase
     .from("chore_assignments")
-    .select("id, chore_id, child_id, family_id, chores(title, requires_photo, times_per_period, period_unit)")
+    .select("id, chore_id, child_id, family_id, chores(title, requires_photo, times_per_period, period_unit, checklist_items)")
     .eq("id", assignmentId)
     .eq("child_id", childId)
     .eq("family_id", authorization.familyId)
@@ -27,23 +33,31 @@ export async function markChoreComplete(assignmentId: string, childId: string, p
     const raw = assignment.chores
     if (!raw) return null
     return Array.isArray(raw) ? raw[0] ?? null : raw
-  })() as { title: string; requires_photo: boolean; times_per_period: number; period_unit: string } | null
+  })() as {
+    title: string
+    requires_photo: boolean
+    times_per_period: number
+    period_unit: string
+    checklist_items?: string[] | null
+  } | null
 
-  if (chore?.requires_photo && !photoUrl) {
-    return { error: "A photo is required for this chore" }
+  if (chore?.requires_photo && !photoPath) {
+    return { error: "A photo is required for this Mission" }
   }
 
-  if (photoUrl) {
-    const supabaseStoragePrefix = process.env.NEXT_PUBLIC_SUPABASE_URL
-      ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/chore-photos/`
-      : null
-    if (!supabaseStoragePrefix || !photoUrl.startsWith(supabaseStoragePrefix)) {
-      return { error: "Invalid photo URL" }
+  if (photoPath) {
+    if (!isAuthorizedChorePhotoPath(photoPath, authorization.familyId, childId)) {
+      return { error: "Invalid photo path" }
     }
   }
 
   const timesAllowed = chore?.times_per_period ?? 1
   const periodUnit = chore?.period_unit ?? "day"
+  const checklistItems = chore?.checklist_items ?? []
+  const checklistSet = new Set(checklistItems)
+  const safeChecklistCompleted = checklistCompleted
+    .filter((item) => checklistSet.has(item))
+    .slice(0, checklistItems.length)
 
   const now = new Date()
   let periodStart: Date
@@ -73,7 +87,8 @@ export async function markChoreComplete(assignmentId: string, childId: string, p
     child_id: childId,
     family_id: assignment.family_id,
     status: "pending_approval",
-    photo_url: photoUrl ?? null,
+    photo_url: photoPath ?? null,
+    checklist_completed: safeChecklistCompleted,
     completed_at: new Date().toISOString(),
   })
 
@@ -83,8 +98,8 @@ export async function markChoreComplete(assignmentId: string, childId: string, p
     family_id: assignment.family_id,
     child_id: childId,
     actor_type: "child",
-    event_type: "chore_completed",
-    metadata: { chore_title: chore?.title ?? "a chore", assignment_id: assignmentId },
+    event_type: "mission_completed",
+    metadata: { mission_title: chore?.title ?? "a Mission", assignment_id: assignmentId },
   })
 
   // Fire push to parent — non-critical, don't await
@@ -93,7 +108,7 @@ export async function markChoreComplete(assignmentId: string, childId: string, p
       notifyParentsOfChoreSubmission(
         assignment.family_id,
         data?.name ?? "Your child",
-        chore?.title ?? "a chore",
+        chore?.title ?? "a Mission",
       )
     )
     .catch(() => {})

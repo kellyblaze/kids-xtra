@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --test --experimental-strip-types tests/*.test.mts",
+    "qa:workflow": "node scripts/final-workflow-qa.mjs",
+    "qa:cleanup": "node scripts/cleanup-qa-data.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.1",

@@ -26,6 +26,7 @@ export async function createChore(formData: FormData) {
   const customDays = customDaysRaw
     ? customDaysRaw.split(",").map(Number).filter((n) => !isNaN(n))
     : null
+  const checklistItems = parseChecklistItems(formData.get("checklist_items"))
 
   const { data: chore, error } = await supabase
     .from("chores")
@@ -40,13 +41,15 @@ export async function createChore(formData: FormData) {
       period_unit: (formData.get("period_unit") as string) || "day",
       due_time: (formData.get("due_time") as string) || null,
       credit_value: parseInt(formData.get("credit_value") as string, 10),
+      requires_photo: formData.get("requires_photo") === "true",
+      checklist_items: checklistItems,
       xp_value: parseInt((formData.get("xp_value") as string) || "0", 10),
       created_by: ctx.userId,
     })
     .select()
     .single()
 
-  if (error || !chore) return { error: error?.message ?? "Failed to create chore" }
+  if (error || !chore) return { error: error?.message ?? "Failed to create Mission" }
 
   if (childIds.length > 0) {
     const { error: assignError } = await supabase.from("chore_assignments").insert(
@@ -68,6 +71,16 @@ export async function createChore(formData: FormData) {
     metadata: { chore_title: chore.title, chore_id: chore.id },
   })
 
+  if (formData.get("source") === "xtra_coach") {
+    await supabase.from("activity_logs").insert({
+      family_id: ctx.familyId,
+      actor_type: "parent",
+      actor_id: ctx.userId,
+      event_type: "xtra_coach_plan_activated",
+      metadata: { chore_title: chore.title, chore_id: chore.id },
+    })
+  }
+
   revalidatePath("/parent/chores")
   revalidatePath("/parent/dashboard")
   return { success: true, choreId: chore.id }
@@ -82,6 +95,7 @@ export async function updateChore(choreId: string, formData: FormData) {
   const customDays = customDaysRaw
     ? customDaysRaw.split(",").map(Number).filter((n) => !isNaN(n))
     : null
+  const checklistItems = parseChecklistItems(formData.get("checklist_items"))
 
   const { error } = await supabase
     .from("chores")
@@ -95,6 +109,9 @@ export async function updateChore(choreId: string, formData: FormData) {
       period_unit: (formData.get("period_unit") as string) || "day",
       due_time: (formData.get("due_time") as string) || null,
       credit_value: parseInt(formData.get("credit_value") as string, 10),
+      requires_photo: formData.get("requires_photo") === "true",
+      checklist_items: checklistItems,
+      xp_value: parseInt((formData.get("xp_value") as string) || "0", 10),
       is_active: formData.get("is_active") === "true",
     })
     .eq("id", choreId)
@@ -103,6 +120,15 @@ export async function updateChore(choreId: string, formData: FormData) {
   if (error) return { error: error.message }
   revalidatePath("/parent/chores")
   return { success: true }
+}
+
+function parseChecklistItems(value: FormDataEntryValue | null): string[] {
+  if (typeof value !== "string") return []
+  return value
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 12)
 }
 
 export async function deleteChore(choreId: string) {

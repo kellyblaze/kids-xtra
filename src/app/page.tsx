@@ -54,19 +54,19 @@ export default function LandingPage() {
               <div className="text-left">
                 <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 font-bold text-sm px-4 py-2 rounded-full mb-6 border-2 border-amber-200">
                   <Sparkles className="w-4 h-4" />
-                  The #1 chore app for families
+                  The responsibility and earning system for families
                 </div>
                 <h1 className="text-5xl md:text-6xl font-black tracking-tight text-slate-800 mb-6 leading-[1.1]">
-                  Turn chores into{" "}
+                  Turn responsibilities into{" "}
                   <span className="text-violet-600 relative inline-block">
-                    adventures!
+                    Missions!
                     <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 300 12" fill="none" aria-hidden="true">
                       <path d="M2 8 Q75 2 150 8 Q225 14 298 8" stroke="#7c3aed" strokeWidth="3" strokeLinecap="round" fill="none"/>
                     </svg>
                   </span>
                 </h1>
                 <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-                  Kids earn credits for chores, unlock rewards, and build real-life habits — while parents stay fully in control.
+                  Kids complete real-world Missions, earn Credits, save toward Rewards, and build real-life habits while parents stay fully in control.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link
@@ -87,7 +87,7 @@ export default function LandingPage() {
                 <div className="flex gap-6 mt-10">
                   {[
                     { emoji: "👨‍👩‍👧‍👦", value: "1,000+", label: "Families" },
-                    { emoji: "✅", value: "50k+", label: "Chores done" },
+                    { emoji: "✅", value: "50k+", label: "Missions done" },
                     { emoji: "⭐", value: "4.9/5", label: "Rating" },
                   ].map((s) => (
                     <div key={s.label} className="text-center">
@@ -102,12 +102,11 @@ export default function LandingPage() {
               <div className="relative hidden md:block">
                 <div className="relative rounded-3xl overflow-hidden border-4 border-violet-200 shadow-2xl">
                   <Image
-                    src="https://images.pexels.com/photos/7114188/pexels-photo-7114188.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-                    alt="Happy Black family with young children enjoying time together at home"
+                    src="/marketing/family-missions.jpg"
+                    alt="Happy family with young children enjoying time together at home"
                     width={940}
                     height={650}
                     className="w-full h-80 object-cover object-top"
-                    unoptimized
                   />
                 </div>
                 {/* Floating cards */}
@@ -116,8 +115,8 @@ export default function LandingPage() {
                     <CheckCircle className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-xs font-black text-slate-700">Chore approved!</p>
-                    <p className="text-xs text-emerald-600 font-bold">+20 ⭐ credits</p>
+                    <p className="text-xs font-black text-slate-700">Mission approved!</p>
+                    <p className="text-xs text-emerald-600 font-bold">+20 Credits</p>
                   </div>
                 </div>
                 <div className="absolute -right-6 bottom-16 bg-white rounded-2xl border-2 border-amber-200 shadow-lg p-3 flex items-center gap-2">
@@ -161,7 +160,7 @@ export default function LandingPage() {
                 Everything your family needs 🏡
               </h2>
               <p className="text-slate-500 max-w-xl mx-auto text-lg font-medium">
-                Assign chores, approve completions, and reward great effort — all in one place.
+                Assign Missions, approve completions, and reward great effort — all in one place.
               </p>
             </div>
 
@@ -169,19 +168,18 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="rounded-3xl overflow-hidden border-4 border-violet-200 shadow-xl">
                   <Image
-                    src="https://images.pexels.com/photos/5063099/pexels-photo-5063099.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-                    alt="Black girl dusting and cleaning at home"
+                    src="/marketing/mission-cleanup.jpg"
+                    alt="Child helping clean at home"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
-                    unoptimized
                   />
                 </div>
                 <div>
                   <div className="text-5xl mb-4">🧹</div>
-                  <h3 className="text-3xl font-black text-slate-800 mb-3">Chores become missions</h3>
+                  <h3 className="text-3xl font-black text-slate-800 mb-3">Responsibilities become Missions</h3>
                   <p className="text-slate-600 text-lg leading-relaxed">
-                    Transform everyday tasks into exciting missions with credit rewards, streaks, and XP levels. Kids actually <em>want</em> to help out.
+                    Transform everyday responsibilities into clear Missions with Credit rewards, streaks, and XP growth. Kids understand what effort earns.
                   </p>
                 </div>
               </div>
@@ -189,19 +187,18 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="md:order-2 rounded-3xl overflow-hidden border-4 border-amber-200 shadow-xl">
                   <Image
-                    src="https://images.pexels.com/photos/6624384/pexels-photo-6624384.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-                    alt="Diverse family playing and having fun together at home"
+                    src="/marketing/reward-family-boardgame.jpg"
+                    alt="Family enjoying a board game reward together at home"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
-                    unoptimized
                   />
                 </div>
                 <div className="md:order-1">
                   <div className="text-5xl mb-4">🎁</div>
                   <h3 className="text-3xl font-black text-slate-800 mb-3">Earn real rewards</h3>
                   <p className="text-slate-600 text-lg leading-relaxed">
-                    Parents create a custom reward store — screen time, treats, experiences. Kids browse and redeem with credits they&apos;ve earned.
+                    Parents create a custom reward store — screen time, treats, experiences. Kids browse and redeem with Credits they&apos;ve earned.
                   </p>
                 </div>
               </div>
@@ -209,12 +206,11 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="rounded-3xl overflow-hidden border-4 border-emerald-200 shadow-xl">
                   <Image
-                    src="https://images.pexels.com/photos/4866876/pexels-photo-4866876.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-                    alt="Black mother enjoying quality time with her children in the kitchen"
+                    src="/marketing/parent-control-asian.jpg"
+                    alt="Asian mother and children spending time together at home"
                     width={940}
                     height={650}
                     className="w-full h-64 object-cover"
-                    unoptimized
                   />
                 </div>
                 <div>
@@ -321,16 +317,16 @@ export default function LandingPage() {
 }
 
 const features = [
-  { emoji: "✅", title: "Chore Missions", desc: "Create tasks with schedules, credit values, and photo proof options.", borderColor: "border-emerald-200", shadowColor: "shadow-emerald-200" },
-  { emoji: "⭐", title: "Credit System", desc: "Kids earn credits for every approved chore. Fully transparent.", borderColor: "border-amber-200", shadowColor: "shadow-amber-200" },
+  { emoji: "✅", title: "Mission System", desc: "Create Missions with schedules, Credit values, XP, checklists, and photo proof options.", borderColor: "border-emerald-200", shadowColor: "shadow-emerald-200" },
+  { emoji: "⭐", title: "Credit System", desc: "Kids earn Credits for every approved Mission. Fully transparent.", borderColor: "border-amber-200", shadowColor: "shadow-amber-200" },
   { emoji: "🎁", title: "Reward Store", desc: "Custom rewards parents create. Kids browse and redeem.", borderColor: "border-violet-200", shadowColor: "shadow-violet-200" },
   { emoji: "🔥", title: "Streaks & XP", desc: "Daily streaks and XP levels keep kids motivated and engaged.", borderColor: "border-orange-200", shadowColor: "shadow-orange-200" },
   { emoji: "🛡️", title: "Parent Controls", desc: "Approve every completion and redemption. You're always in control.", borderColor: "border-blue-200", shadowColor: "shadow-blue-200" },
-  { emoji: "📊", title: "Activity Feed", desc: "Track chores, credits, and rewards in a live family activity log.", borderColor: "border-pink-200", shadowColor: "shadow-pink-200" },
+  { emoji: "📊", title: "Activity Feed", desc: "Track Missions, Credits, and Rewards in a live family activity log.", borderColor: "border-pink-200", shadowColor: "shadow-pink-200" },
 ]
 
 const steps = [
   { emoji: "👨‍👩‍👧", title: "Create your family", desc: "Sign up as a parent and add children's profiles. No email needed for kids." },
-  { emoji: "🗂️", title: "Assign missions", desc: "Create chores with credit values. Kids see them instantly on their dashboard." },
-  { emoji: "🎉", title: "Earn and celebrate", desc: "Approve completions, award credits, and let kids redeem amazing rewards." },
+  { emoji: "🗂️", title: "Assign Missions", desc: "Create Missions with Credit values. Kids see them instantly on their dashboard." },
+  { emoji: "🎉", title: "Earn and celebrate", desc: "Approve completions, award Credits, and let kids redeem meaningful Rewards." },
 ]

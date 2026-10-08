@@ -38,13 +38,13 @@ export default async function ChoresPage() {
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Chores</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage tasks your children can complete for credits</p>
+          <h1 className="text-2xl font-bold">Missions</h1>
+          <p className="text-muted-foreground text-sm mt-1">Manage responsibilities your children can complete for Credits and XP</p>
         </div>
         <div className="flex gap-2">
           <SuggestChoresButton />
           <Button>
-            <Link href="/parent/chores/new"><Plus className="mr-2 w-4 h-4" /> Add chore</Link>
+            <Link href="/parent/chores/new"><Plus className="mr-2 w-4 h-4" /> Add Mission</Link>
           </Button>
         </div>
       </div>
@@ -54,9 +54,9 @@ export default async function ChoresPage() {
       {!chores?.length ? (
         <EmptyState
           icon={CheckSquare}
-          title="No chores yet"
-          description="Add your first chore so your children can start earning credits."
-          action={{ label: "Add a chore", href: "/parent/chores/new" }}
+          title="No missions yet"
+          description="Start with one simple responsibility your child can complete today."
+          action={{ label: "Add a Mission", href: "/parent/chores/new" }}
         />
       ) : (
         <div className="space-y-3">
@@ -75,7 +75,7 @@ export default async function ChoresPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-semibold">{chore.title}</p>
-                      <Badge variant="secondary">{chore.credit_value} credits</Badge>
+                      <Badge variant="secondary">{chore.credit_value} Credits</Badge>
                       <Badge variant="outline" className="text-xs">
                         {FREQUENCY_LABELS[chore.frequency] ?? chore.frequency}
                       </Badge>

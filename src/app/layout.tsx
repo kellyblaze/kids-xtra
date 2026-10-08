@@ -12,7 +12,7 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   title: "Kids Xtra — Extra effort. Extra rewards. Extra growth.",
   description:
-    "A parent-controlled chore credit and reward app for children ages 6–10. Turn chores into wins.",
+    "A parent-controlled Mission, Credit, and Reward system for children ages 6–10.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

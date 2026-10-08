@@ -1,7 +1,7 @@
 import type { TaskCategory } from "@/types/database"
 
 export const CATEGORY_LABELS: Record<TaskCategory, string> = {
-  chore: "Chore",
+  chore: "Mission",
   morning_routine: "Morning Routine",
   bedtime_routine: "Bedtime Routine",
   kindness: "Kindness",

@@ -17,8 +17,8 @@ import {
 const navItems = [
   { href: "/parent/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/parent/children", label: "Children", icon: Users },
-  { href: "/parent/chores", label: "Chores", icon: ClipboardList },
-  { href: "/parent/approvals", label: "Approvals", icon: CheckSquare },
+  { href: "/parent/chores", label: "Missions", icon: ClipboardList },
+  { href: "/parent/approvals", label: "Mission Checks", icon: CheckSquare },
   { href: "/parent/rewards", label: "Rewards", icon: Gift },
   { href: "/parent/activity", label: "Activity", icon: Activity },
   { href: "/parent/settings", label: "Settings", icon: Settings },

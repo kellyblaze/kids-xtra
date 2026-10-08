@@ -1,0 +1,20 @@
+{
+  "source": "pexels",
+  "type": "photo",
+  "id": 8205372,
+  "url": "https://www.pexels.com/photo/a-family-playing-board-game-8205372/",
+  "download_url": "https://images.pexels.com/photos/8205372/pexels-photo-8205372.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+  "downloaded_size": "custom_940x650",
+  "width": 940,
+  "height": 650,
+  "photographer": "Pavel Danilyuk",
+  "photographer_url": "https://www.pexels.com/@pavel-danilyuk/",
+  "photographer_id": null,
+  "avg_color": null,
+  "alt": "Family enjoying a board game reward together at home",
+  "license": "Pexels License - Free for personal and commercial use",
+  "attribution": "Photo by Pavel Danilyuk on Pexels",
+  "downloaded_at": "2026-10-08T00:00:00-04:00",
+  "api_response": null,
+  "note": "Downloaded directly from the Pexels image CDN because PEXELS_API_KEY was not available in the local environment."
+}

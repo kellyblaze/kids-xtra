@@ -3,8 +3,13 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { verifyPin, signKidSession } from "@/lib/kid-session"
 import { KID_SESSION_COOKIE } from "@/lib/kid-session-constants"
 import { consumeRateLimit } from "@/lib/rate-limit"
+import { isSameOriginRequest } from "@/lib/request-security"
 
 export async function POST(request: NextRequest) {
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ error: "Invalid request origin" }, { status: 403 })
+  }
+
   const form = await request.formData()
   const familyCode = (form.get("familyCode") as string | null)?.trim().toUpperCase() ?? ""
   const childId = (form.get("childId") as string | null)?.trim() ?? ""
@@ -58,7 +63,7 @@ export async function POST(request: NextRequest) {
     .eq("family_code", familyCode)
     .maybeSingle()
 
-  if (!family) return fail("Family code not found.")
+  if (!family) return fail("Family code, profile, or PIN is incorrect.")
 
   const { data: child } = await admin
     .from("child_profiles")
@@ -68,8 +73,7 @@ export async function POST(request: NextRequest) {
     .eq("is_active", true)
     .maybeSingle()
 
-  if (!child) return fail("Profile not found.")
-  if (!child.pin_hash) return fail("No PIN set. Ask a parent to set your PIN first.")
+  if (!child?.pin_hash) return fail("Family code, profile, or PIN is incorrect.")
 
   let pinMatches: boolean
   let sessionToken: string
@@ -80,7 +84,7 @@ export async function POST(request: NextRequest) {
     return fail("Login is temporarily unavailable. Please try again shortly.")
   }
 
-  if (!pinMatches) return fail("Wrong PIN. Try again.")
+  if (!pinMatches) return fail("Family code, profile, or PIN is incorrect.")
 
   const response = NextResponse.redirect(
     new URL(`/kid/${child.id}/dashboard`, request.url),

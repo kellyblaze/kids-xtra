@@ -6,14 +6,14 @@ export interface BadgeDefinition {
 }
 
 export const BADGE_DEFINITIONS: BadgeDefinition[] = [
-  { key: "first_chore", emoji: "⭐", title: "First Steps", description: "Completed your very first chore!" },
-  { key: "chores_10", emoji: "🔟", title: "Double Digits", description: "Completed 10 chores total" },
-  { key: "chores_50", emoji: "🏅", title: "Chore Champion", description: "Completed 50 chores total" },
-  { key: "chores_100", emoji: "💯", title: "Century Club", description: "Completed 100 chores total" },
-  { key: "streak_3", emoji: "🔥", title: "On Fire", description: "Completed chores 3 days in a row" },
-  { key: "streak_7", emoji: "🌟", title: "Week Warrior", description: "Completed chores 7 days in a row" },
-  { key: "credits_100", emoji: "💰", title: "Saver", description: "Earned 100 credits total" },
-  { key: "credits_500", emoji: "🏦", title: "Big Saver", description: "Earned 500 credits total" },
+  { key: "first_chore", emoji: "⭐", title: "First Steps", description: "Completed your very first Mission!" },
+  { key: "chores_10", emoji: "🔟", title: "Double Digits", description: "Completed 10 Missions total" },
+  { key: "chores_50", emoji: "🏅", title: "Mission Champion", description: "Completed 50 Missions total" },
+  { key: "chores_100", emoji: "💯", title: "Century Club", description: "Completed 100 Missions total" },
+  { key: "streak_3", emoji: "🔥", title: "On Fire", description: "Completed Missions 3 days in a row" },
+  { key: "streak_7", emoji: "🌟", title: "Week Warrior", description: "Completed Missions 7 days in a row" },
+  { key: "credits_100", emoji: "💰", title: "Saver", description: "Earned 100 Credits total" },
+  { key: "credits_500", emoji: "🏦", title: "Big Saver", description: "Earned 500 Credits total" },
   { key: "first_reward", emoji: "🎁", title: "Treat Yourself", description: "Redeemed your first reward" },
 ]
 

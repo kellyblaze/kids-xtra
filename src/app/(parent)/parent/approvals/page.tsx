@@ -8,6 +8,7 @@ import {
 } from "@/components/parent/ApprovalCard"
 import { RealtimeApprovalsRefresh } from "@/components/parent/RealtimeApprovalsRefresh"
 import { BulkApproveButton } from "@/components/parent/BulkApproveButton"
+import { chorePhotoUrl, normalizeStoredChorePhotoPath } from "@/lib/chore-photos"
 
 export default async function ApprovalsPage() {
   const supabase = await createClient()
@@ -25,9 +26,9 @@ export default async function ApprovalsPage() {
     supabase
       .from("chore_completions")
       .select(`
-        id, status, completed_at, photo_url,
+        id, status, completed_at, photo_url, checklist_completed,
         child_profiles(id, name, avatar_key),
-        chore_assignments(chores(title, category, credit_value))
+        chore_assignments(chores(title, category, credit_value, xp_value, checklist_items))
       `)
       .eq("family_id", profile.family_id)
       .eq("status", "pending_approval")
@@ -50,10 +51,10 @@ export default async function ApprovalsPage() {
     <div className="space-y-6 max-w-3xl">
       <RealtimeApprovalsRefresh familyId={profile.family_id} />
       <div>
-        <h1 className="text-2xl font-black text-slate-800">Approvals ✅</h1>
+        <h1 className="text-2xl font-black text-slate-800">Mission Checks</h1>
         <p className="text-slate-500 text-sm mt-1 font-medium">
           {total > 0
-            ? `${total} item${total !== 1 ? "s" : ""} waiting for review`
+            ? `${total} item${total !== 1 ? "s" : ""} waiting for parent check`
             : "Nothing pending review"}
         </p>
       </div>
@@ -62,7 +63,7 @@ export default async function ApprovalsPage() {
         <div className="rounded-3xl border-4 border-emerald-200 bg-emerald-50 p-10 text-center shadow-[0_4px_0_#a7f3d0]">
           <div className="text-5xl mb-4">🎉</div>
           <h2 className="font-black text-xl text-emerald-800">All caught up!</h2>
-          <p className="text-emerald-700 font-medium mt-1 text-sm">No chore completions or reward requests waiting.</p>
+          <p className="text-emerald-700 font-medium mt-1 text-sm">No Mission Checks or reward requests waiting.</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -70,12 +71,18 @@ export default async function ApprovalsPage() {
             <section className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">
-                  Chore completions ({completions.length})
+                  Mission Checks ({completions.length})
                 </h2>
                 {completions.length > 1 && <BulkApproveButton count={completions.length} />}
               </div>
               {completions.map((c) => {
-                type ChoreInfo = { title: string; category: string; credit_value: number }
+                type ChoreInfo = {
+                  title: string
+                  category: string
+                  credit_value: number
+                  xp_value?: number | null
+                  checklist_items?: string[] | null
+                }
                 const child = Array.isArray(c.child_profiles) ? c.child_profiles[0] ?? null : c.child_profiles
                 const assignment = Array.isArray(c.chore_assignments) ? c.chore_assignments[0] ?? null : c.chore_assignments
                 const chore = (() => {
@@ -86,8 +93,14 @@ export default async function ApprovalsPage() {
                 const item: ChoreItem = {
                   id: c.id,
                   completed_at: c.completed_at,
-                  photo_url: c.photo_url,
+                  photo_url: c.photo_url
+                    ? (() => {
+                        const path = normalizeStoredChorePhotoPath(c.photo_url)
+                        return path ? chorePhotoUrl(path) : null
+                      })()
+                    : null,
                   child_profiles: child,
+                  checklist_completed: c.checklist_completed ?? [],
                   chore_assignments: chore ? { chores: chore } : null,
                 }
                 return (

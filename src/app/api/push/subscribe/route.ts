@@ -1,15 +1,40 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { isSameOriginRequest } from "@/lib/request-security"
+
+function isValidSubscription(subscription: unknown): subscription is {
+  endpoint: string
+  keys: { p256dh: string; auth: string }
+} {
+  if (!subscription || typeof subscription !== "object") return false
+  const value = subscription as Record<string, unknown>
+  const keys = value.keys as Record<string, unknown> | undefined
+  if (typeof value.endpoint !== "string" || value.endpoint.length > 2048) return false
+  try {
+    if (new URL(value.endpoint).protocol !== "https:") return false
+  } catch {
+    return false
+  }
+  return typeof keys?.p256dh === "string"
+    && keys.p256dh.length <= 512
+    && typeof keys.auth === "string"
+    && keys.auth.length <= 512
+}
 
 export async function POST(req: NextRequest) {
+  if (!isSameOriginRequest(req)) {
+    return NextResponse.json({ error: "Invalid request origin" }, { status: 403 })
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const body = await req.json()
+  const body = await req.json().catch(() => null) as { subscription?: unknown } | null
+  if (!body) return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
   const { subscription } = body
-  if (!subscription?.endpoint || !subscription?.keys?.p256dh || !subscription?.keys?.auth) {
+  if (!isValidSubscription(subscription)) {
     return NextResponse.json({ error: "Invalid subscription" }, { status: 400 })
   }
 
@@ -32,13 +57,21 @@ export async function POST(req: NextRequest) {
     { onConflict: "endpoint" }
   )
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: "Could not save subscription" }, { status: 500 })
   return NextResponse.json({ success: true })
 }
 
 export async function DELETE(req: NextRequest) {
-  const { endpoint } = await req.json()
-  if (!endpoint) return NextResponse.json({ error: "Missing endpoint" }, { status: 400 })
+  if (!isSameOriginRequest(req)) {
+    return NextResponse.json({ error: "Invalid request origin" }, { status: 403 })
+  }
+
+  const body = await req.json().catch(() => null) as { endpoint?: unknown } | null
+  if (!body) return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
+  const { endpoint } = body
+  if (typeof endpoint !== "string" || endpoint.length > 2048) {
+    return NextResponse.json({ error: "Invalid endpoint" }, { status: 400 })
+  }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

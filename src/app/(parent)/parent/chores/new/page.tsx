@@ -33,6 +33,7 @@ export default function NewChorePage() {
   const [customDays, setCustomDays] = useState<number[]>([])
   const [timesPeriod, setTimesPeriod] = useState(1)
   const [periodUnit, setPeriodUnit] = useState("day")
+  const [requiresPhoto, setRequiresPhoto] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -66,6 +67,7 @@ export default function NewChorePage() {
     if (frequency === "custom") formData.set("custom_days", customDays.join(","))
     formData.set("times_per_period", String(timesPeriod))
     formData.set("period_unit", periodUnit)
+    formData.set("requires_photo", String(requiresPhoto))
     setError(null)
     startTransition(async () => {
       const result = await createChore(formData)
@@ -80,20 +82,31 @@ export default function NewChorePage() {
         <Button variant="ghost" size="icon">
           <Link href="/parent/chores"><ArrowLeft className="w-4 h-4" /></Link>
         </Button>
-        <h1 className="text-2xl font-bold">Add a chore</h1>
+        <h1 className="text-2xl font-bold">Add a Mission</h1>
       </div>
 
       <Card>
         <CardContent className="pt-6">
           <form action={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <Label htmlFor="title">Title *</Label>
-              <Input id="title" name="title" placeholder="e.g. Make your bed" required autoFocus />
+              <Label htmlFor="title">Mission name *</Label>
+              <Input id="title" name="title" placeholder="e.g. Room Reset" required autoFocus />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="description">Description (optional)</Label>
-              <Textarea id="description" name="description" placeholder="Any extra instructions…" rows={2} />
+              <Label htmlFor="description">Short description (optional)</Label>
+              <Textarea id="description" name="description" placeholder="What should your child understand before starting?" rows={2} />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="checklist_items">Checklist (optional)</Label>
+              <Textarea
+                id="checklist_items"
+                name="checklist_items"
+                placeholder={"Make your bed\nPut clothes away\nClear the floor"}
+                rows={4}
+              />
+              <p className="text-xs text-muted-foreground">One simple step per line. Kids check these before Mission Check.</p>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
@@ -125,7 +138,7 @@ export default function NewChorePage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label>How many times?</Label>
+              <Label>Schedule</Label>
               <div className="flex items-center gap-3">
                 <Input
                   type="number"
@@ -147,7 +160,7 @@ export default function NewChorePage() {
               </div>
               {timesPeriod > 1 && (
                 <p className="text-xs text-muted-foreground">
-                  Kids can complete this {timesPeriod}× per {periodUnit}
+                  Kids can complete this mission {timesPeriod}× per {periodUnit}
                 </p>
               )}
             </div>
@@ -176,9 +189,36 @@ export default function NewChorePage() {
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="credit_value">Credits *</Label>
+                <Label htmlFor="credit_value">Credit reward *</Label>
                 <Input id="credit_value" name="credit_value" type="number" min="1" max="1000" defaultValue="10" required />
               </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="xp_value">XP reward</Label>
+                <Input id="xp_value" name="xp_value" type="number" min="0" max="1000" defaultValue="10" />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              role="switch"
+              aria-checked={requiresPhoto}
+              onClick={() => setRequiresPhoto((value) => !value)}
+              className="flex w-full items-center justify-between rounded-xl border border-slate-200 p-4 text-left transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-violet-600 active:scale-[.99]"
+            >
+              <span>
+                <span className="block text-sm font-semibold">Require Mission Photo</span>
+                <span className="text-xs text-muted-foreground">Child must attach photo proof before Mission Check.</span>
+              </span>
+              <span
+                className={`relative h-7 w-12 rounded-full transition-colors ${requiresPhoto ? "bg-violet-600" : "bg-slate-200"}`}
+              >
+                <span
+                  className={`absolute top-1 size-5 rounded-full bg-white transition-transform ${requiresPhoto ? "translate-x-6" : "translate-x-1"}`}
+                />
+              </span>
+            </button>
+
+            <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="due_time">Due time (optional)</Label>
                 <Input id="due_time" name="due_time" type="time" />
@@ -211,7 +251,7 @@ export default function NewChorePage() {
 
             <div className="flex gap-3 pt-2">
               <Button type="submit" disabled={isPending} className="flex-1">
-                {isPending ? "Saving…" : "Add chore"}
+                {isPending ? "Saving…" : "Add Mission"}
               </Button>
               <Button type="button" variant="outline" onClick={() => router.push("/parent/chores")}>
                 Cancel

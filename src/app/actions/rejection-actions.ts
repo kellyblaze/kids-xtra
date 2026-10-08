@@ -6,7 +6,7 @@ const DEFAULT_REASONS = [
   "Needs more effort",
   "Photo is unclear",
   "Not done correctly",
-  "Wrong chore completed",
+  "Wrong Mission completed",
   "Already counted today",
   "Please try again",
 ]

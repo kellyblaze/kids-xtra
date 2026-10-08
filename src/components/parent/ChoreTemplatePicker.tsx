@@ -1,8 +1,12 @@
-"use client"
+"use client";
 
-import { useState, useTransition } from "react"
-import { importChoreTemplates } from "@/app/actions/template-actions"
-import { CHORE_TEMPLATES, AGE_GROUPS, type AgeGroup } from "@/lib/chore-templates"
+import { useState, useTransition } from "react";
+import { importChoreTemplates } from "@/app/actions/template-actions";
+import {
+  CHORE_TEMPLATES,
+  AGE_GROUPS,
+  type AgeGroup,
+} from "@/lib/chore-templates";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   chore: "🧹",
@@ -10,36 +14,39 @@ const CATEGORY_EMOJI: Record<string, string> = {
   health_hygiene: "🪥",
   learning: "📚",
   kindness: "💛",
-}
+};
 
 export function ChoreTemplatePicker() {
-  const [open, setOpen] = useState(false)
-  const [activeAge, setActiveAge] = useState<AgeGroup>("6-8")
-  const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [message, setMessage] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
+  const [open, setOpen] = useState(false);
+  const [activeAge, setActiveAge] = useState<AgeGroup>("6-8");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [message, setMessage] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  const templates = CHORE_TEMPLATES.filter((t) => t.ageGroup === activeAge)
+  const templates = CHORE_TEMPLATES.filter((t) => t.ageGroup === activeAge);
 
   function toggle(id: string) {
     setSelected((prev) => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   }
 
   function handleImport() {
     startTransition(async () => {
-      const result = await importChoreTemplates(Array.from(selected))
+      const result = await importChoreTemplates(Array.from(selected));
       if ("error" in result) {
-        setMessage(`Error: ${result.error}`)
+        setMessage(`Error: ${result.error}`);
       } else {
-        setMessage(`✅ Imported ${result.imported} chore${result.imported !== 1 ? "s" : ""}!`)
-        setSelected(new Set())
-        setOpen(false)
+        setMessage(
+          `Imported ${result.imported} Mission${result.imported !== 1 ? "s" : ""}.`,
+        );
+        setSelected(new Set());
+        setOpen(false);
       }
-    })
+    });
   }
 
   if (!open) {
@@ -51,16 +58,23 @@ export function ChoreTemplatePicker() {
         >
           📚 Import from library
         </button>
-        {message && <p className="mt-2 text-sm font-bold text-emerald-600">{message}</p>}
+        {message && (
+          <p className="mt-2 text-sm font-bold text-emerald-600">{message}</p>
+        )}
       </div>
-    )
+    );
   }
 
   return (
     <div className="rounded-3xl border-4 border-violet-200 bg-violet-50 p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-black text-slate-700">Chore template library</h3>
-        <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+        <h3 className="font-black text-slate-700">Mission starter library</h3>
+        <button
+          onClick={() => setOpen(false)}
+          className="text-slate-400 hover:text-slate-600 text-lg"
+        >
+          ✕
+        </button>
       </div>
 
       <div className="flex gap-2 flex-wrap">
@@ -98,8 +112,12 @@ export function ChoreTemplatePicker() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span>{CATEGORY_EMOJI[t.category] ?? "📋"}</span>
-                <span className="font-bold text-sm text-slate-800">{t.title}</span>
-                <span className="ml-auto text-xs font-black text-amber-600 shrink-0">{t.creditValue} ⭐</span>
+                <span className="font-bold text-sm text-slate-800">
+                  {t.title}
+                </span>
+                <span className="ml-auto text-xs font-black text-amber-600 shrink-0">
+                  {t.creditValue} ⭐
+                </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">{t.description}</p>
             </div>
@@ -108,15 +126,19 @@ export function ChoreTemplatePicker() {
       </div>
 
       <div className="flex items-center justify-between pt-1">
-        <p className="text-sm font-bold text-slate-600">{selected.size} selected</p>
+        <p className="text-sm font-bold text-slate-600">
+          {selected.size} selected
+        </p>
         <button
           onClick={handleImport}
           disabled={selected.size === 0 || isPending}
           className="bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white font-black text-sm px-5 py-2 rounded-2xl shadow-[0_3px_0_#5b21b6] transition-colors"
         >
-          {isPending ? "Importing…" : `Import ${selected.size > 0 ? selected.size : ""} chore${selected.size !== 1 ? "s" : ""}`}
+          {isPending
+            ? "Importing…"
+            : `Import ${selected.size > 0 ? selected.size : ""} Mission${selected.size !== 1 ? "s" : ""}`}
         </button>
       </div>
     </div>
-  )
+  );
 }

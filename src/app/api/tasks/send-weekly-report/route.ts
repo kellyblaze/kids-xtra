@@ -1,123 +1,121 @@
-import { NextRequest, NextResponse } from "next/server"
-import { timingSafeEqual } from "crypto"
-import { createAdminClient } from "@/lib/supabase/admin"
+import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { authorizeCronRequest } from "@/lib/cron-auth";
+import { parseOnboardingState } from "@/lib/onboarding";
+import { summarizeWeeklyChild } from "@/lib/weekly-report";
 
-export const maxDuration = 300
+export const maxDuration = 300;
 
 function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
-  })[character]!)
+  return value.replace(
+    /[&<>"']/g,
+    (character) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[character]!,
+  );
 }
 
-export async function POST(request: NextRequest) {
-  if (!process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Cron is not configured" }, { status: 503 })
-  }
-
-  const authHeader = request.headers.get("authorization") ?? ""
-  const expected = `Bearer ${process.env.CRON_SECRET}`
-  const enc = new TextEncoder()
-  const a = enc.encode(authHeader)
-  const b = enc.encode(expected)
-  const authorized = a.length === b.length && timingSafeEqual(a, b)
-  if (!authorized) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+export async function GET(request: NextRequest) {
+  const authError = authorizeCronRequest(request);
+  if (authError) return authError;
 
   try {
-    const supabase = createAdminClient()
+    const supabase = createAdminClient();
 
-    const { data: families } = await supabase.from("families").select("id").eq("is_active", true)
+    const { data: families } = await supabase
+      .from("families")
+      .select("id, name, settings");
 
     if (!families || families.length === 0) {
-      return NextResponse.json({ success: true, message: "No families to process" })
+      return NextResponse.json({
+        success: true,
+        message: "No families to process",
+      });
     }
 
     const results = {
       total: families.length,
       sent: 0,
       failed: 0,
-    }
+    };
 
     for (const family of families) {
-      const { data: parents } = await supabase
-        .from("parent_profiles")
-        .select("user_id, email, display_name")
-        .eq("family_id", family.id)
-        .limit(1)
+      if (!parseOnboardingState(family.settings).preferences.weeklyReport)
+        continue;
 
-      if (!parents || parents.length === 0) continue
+      const sevenDaysAgo = new Date(
+        new Date().getTime() - 7 * 24 * 60 * 60 * 1000,
+      ).toISOString();
+      const [
+        { data: parents },
+        { data: activities },
+        { data: children },
+        { data: streaks },
+        { data: transactions },
+      ] = await Promise.all([
+        supabase
+          .from("parent_profiles")
+          .select("id, display_name")
+          .eq("family_id", family.id)
+          .limit(1),
+        supabase
+          .from("activity_logs")
+          .select("child_id, event_type, metadata")
+          .eq("family_id", family.id)
+          .gte("created_at", sevenDaysAgo),
+        supabase
+          .from("child_profiles")
+          .select("id, name, level, xp_total")
+          .eq("family_id", family.id)
+          .eq("is_active", true),
+        supabase
+          .from("child_streaks")
+          .select("child_id, current_streak")
+          .eq("family_id", family.id),
+        supabase
+          .from("credit_transactions")
+          .select("child_id, amount")
+          .eq("family_id", family.id)
+          .gte("created_at", sevenDaysAgo),
+      ]);
 
-      const parent = parents[0]
+      if (!parents || parents.length === 0) continue;
 
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      const parent = parents[0];
+      const { data: authUser } = await supabase.auth.admin.getUserById(
+        parent.id,
+      );
+      const parentEmail = authUser.user?.email;
+      if (!parentEmail) continue;
 
-      const { data: activities } = await supabase
-        .from("activity_logs")
-        .select("child_id, event_type, metadata")
-        .eq("family_id", family.id)
-        .gte("created_at", sevenDaysAgo)
-
-      const { data: children } = await supabase
-        .from("child_profiles")
-        .select("id, name")
-        .eq("family_id", family.id)
-        .eq("is_active", true)
-
-      const { data: streaks } = await supabase
-        .from("child_streaks")
-        .select("child_id, current_streak")
-        .eq("family_id", family.id)
-
-      const summaryMap = new Map<
-        string,
-        { childName: string; choresCompleted: number; creditsEarned: number; currentStreak: number; rewardsRedeemed: number }
-      >()
-
-      children?.forEach((child) => {
-        summaryMap.set(child.id, {
+      const summaries = (children ?? []).map((child) => {
+        const streak = streaks?.find((item) => item.child_id === child.id)
+        return summarizeWeeklyChild({
+          childId: child.id,
           childName: child.name,
-          choresCompleted: 0,
-          creditsEarned: 0,
-          currentStreak: 0,
-          rewardsRedeemed: 0,
+          level: child.level ?? 1,
+          xpTotal: child.xp_total ?? 0,
+          currentStreak: streak?.current_streak ?? 0,
+          activities: (activities ?? [])
+            .filter((activity) => activity.child_id === child.id)
+            .map((activity) => ({
+              event_type: activity.event_type,
+              metadata: activity.metadata as Record<string, string> | null,
+            })),
+          transactions: (transactions ?? [])
+            .filter((transaction) => transaction.child_id === child.id)
+            .map((transaction) => ({ amount: transaction.amount ?? 0 })),
         })
-      })
+      });
 
-      streaks?.forEach((streak) => {
-        const summary = summaryMap.get(streak.child_id)
-        if (summary) summary.currentStreak = streak.current_streak
-      })
-
-      activities?.forEach((activity) => {
-        const summary = summaryMap.get(activity.child_id)
-        if (!summary) return
-
-        if (activity.event_type === "chore_approved") {
-          summary.choresCompleted += 1
-          const credits = parseInt((activity.metadata as Record<string, string>)?.credits ?? "0", 10)
-          summary.creditsEarned += credits
-        } else if (activity.event_type === "reward_approved") {
-          summary.rewardsRedeemed += 1
-        }
-      })
-
-      const summaries = Array.from(summaryMap.values())
-
-      const today = new Date()
-      const weekStart = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
-      const dateRange = `${weekStart.toLocaleDateString()} - ${today.toLocaleDateString()}`
-
-      const { data: familyData } = await supabase
-        .from("families")
-        .select("name")
-        .eq("id", family.id)
-        .single()
+      const today = new Date();
+      const weekStart = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const dateRange = `${weekStart.toLocaleDateString()} - ${today.toLocaleDateString()}`;
 
       const htmlBody = `
 <!DOCTYPE html>
@@ -142,24 +140,37 @@ export async function POST(request: NextRequest) {
   </head>
   <body>
     <div class="header">
-      <h1>Weekly Report: ${escapeHtml(familyData?.name || "Family")}</h1>
+      <h1>Weekly Report: ${escapeHtml(family.name || "Family")}</h1>
       <p>${dateRange}</p>
     </div>
 
     <div class="content">
-      ${summaries.length === 0
-        ? '<p style="text-align: center; color: #999;">No activity this week yet. Encourage your children to complete chores and earn credits!</p>'
-        : summaries.map((s) => `
+      ${
+        summaries.length === 0
+          ? '<p style="text-align: center; color: #999;">No activity this week yet. Start with one simple Mission your child can complete today.</p>'
+          : summaries
+              .map(
+                (s) => `
           <div class="child-card">
             <div class="child-name">${escapeHtml(s.childName)}</div>
+            <p><strong>Biggest win:</strong> ${escapeHtml(s.biggestWin)}</p>
+            <p><strong>Next step:</strong> ${escapeHtml(s.nextStep)}</p>
             <div class="stats">
               <div class="stat">
-                <div class="stat-number">${s.choresCompleted}</div>
-                <div class="stat-label">Chores Done</div>
+                <div class="stat-number">${s.missionsCompleted}</div>
+                <div class="stat-label">Missions Done</div>
               </div>
               <div class="stat">
                 <div class="stat-number">${s.creditsEarned}</div>
                 <div class="stat-label">Credits Earned</div>
+              </div>
+              <div class="stat">
+                <div class="stat-number">${s.creditsSaved}</div>
+                <div class="stat-label">Credits Saved</div>
+              </div>
+              <div class="stat">
+                <div class="stat-number">${s.creditsSpent}</div>
+                <div class="stat-label">Credits Spent</div>
               </div>
               <div class="stat">
                 <div class="stat-number">${s.currentStreak}</div>
@@ -169,9 +180,19 @@ export async function POST(request: NextRequest) {
                 <div class="stat-number">${s.rewardsRedeemed}</div>
                 <div class="stat-label">Rewards Redeemed</div>
               </div>
+              <div class="stat">
+                <div class="stat-number">${s.level}</div>
+                <div class="stat-label">Level</div>
+              </div>
+              <div class="stat">
+                <div class="stat-number">${s.levelProgress}%</div>
+                <div class="stat-label">Level Progress</div>
+              </div>
             </div>
           </div>
-        `).join("")
+        `,
+              )
+              .join("")
       }
     </div>
 
@@ -181,7 +202,7 @@ export async function POST(request: NextRequest) {
     </div>
   </body>
 </html>
-`
+`;
 
       try {
         const response = await fetch("https://api.resend.com/emails", {
@@ -192,27 +213,34 @@ export async function POST(request: NextRequest) {
           },
           body: JSON.stringify({
             from: "Kids Xtra <noreply@kids-xtra.app>",
-            to: parent.email,
-            subject: `${familyData?.name || "Family"} - Weekly Activity Report`,
+            to: parentEmail,
+            subject: `${family.name || "Family"} - Weekly Activity Report`,
             html: htmlBody,
           }),
-        })
+        });
 
         if (response.ok) {
-          results.sent += 1
+          results.sent += 1;
         } else {
-          results.failed += 1
+          results.failed += 1;
         }
       } catch {
-        results.failed += 1
+        results.failed += 1;
       }
     }
 
-    return NextResponse.json({ success: true, results })
+    return NextResponse.json({ success: true, results });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to send reports" },
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to send reports",
+      },
       { status: 500 },
-    )
+    );
   }
+}
+
+export async function POST(request: NextRequest) {
+  return GET(request);
 }

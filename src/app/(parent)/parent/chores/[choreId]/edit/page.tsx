@@ -33,6 +33,8 @@ interface ChoreData {
   due_time: string | null
   credit_value: number
   xp_value: number
+  requires_photo: boolean
+  checklist_items: string[] | null
 }
 
 export default function EditChorePage() {
@@ -52,13 +54,14 @@ export default function EditChorePage() {
   const [customDays, setCustomDays] = useState<number[]>([])
   const [timesPeriod, setTimesPeriod] = useState(1)
   const [periodUnit, setPeriodUnit] = useState("day")
+  const [requiresPhoto, setRequiresPhoto] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
     Promise.all([
       supabase
         .from("chores")
-        .select("id, title, description, category, frequency, custom_days, times_per_period, period_unit, due_time, credit_value, xp_value")
+        .select("id, title, description, category, frequency, custom_days, times_per_period, period_unit, due_time, credit_value, xp_value, requires_photo, checklist_items")
         .eq("id", choreId)
         .single(),
       supabase
@@ -78,6 +81,7 @@ export default function EditChorePage() {
         setCustomDays(choreData.custom_days ?? [])
         setTimesPeriod(choreData.times_per_period ?? 1)
         setPeriodUnit(choreData.period_unit ?? "day")
+        setRequiresPhoto(choreData.requires_photo ?? false)
       }
       setChildren(childData ?? [])
       setSelectedChildren((assignData ?? []).map((a) => a.child_id))
@@ -103,6 +107,7 @@ export default function EditChorePage() {
     if (frequency === "custom") formData.set("custom_days", customDays.join(","))
     formData.set("times_per_period", String(timesPeriod))
     formData.set("period_unit", periodUnit)
+    formData.set("requires_photo", String(requiresPhoto))
     formData.set("is_active", "true")
     setError(null)
     startTransition(async () => {
@@ -116,7 +121,7 @@ export default function EditChorePage() {
   }
 
   if (loading) return <div className="text-sm text-muted-foreground p-4">Loading…</div>
-  if (!chore) return <div className="text-sm text-destructive p-4">Chore not found.</div>
+  if (!chore) return <div className="text-sm text-destructive p-4">Mission not found.</div>
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -124,20 +129,31 @@ export default function EditChorePage() {
         <Button variant="ghost" size="icon" asChild>
           <Link href="/parent/chores"><ArrowLeft className="w-4 h-4" /></Link>
         </Button>
-        <h1 className="text-2xl font-bold">Edit chore</h1>
+        <h1 className="text-2xl font-bold">Edit mission</h1>
       </div>
 
       <Card>
         <CardContent className="pt-6">
           <form action={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title">Mission name *</Label>
               <Input id="title" name="title" defaultValue={chore.title} required autoFocus />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="description">Description (optional)</Label>
+              <Label htmlFor="description">Short description (optional)</Label>
               <Textarea id="description" name="description" defaultValue={chore.description ?? ""} rows={2} />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="checklist_items">Checklist (optional)</Label>
+              <Textarea
+                id="checklist_items"
+                name="checklist_items"
+                defaultValue={(chore.checklist_items ?? []).join("\n")}
+                rows={4}
+              />
+              <p className="text-xs text-muted-foreground">One simple step per line. Kids check these before Mission Check.</p>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
@@ -169,7 +185,7 @@ export default function EditChorePage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label>How many times?</Label>
+              <Label>Schedule</Label>
               <div className="flex items-center gap-3">
                 <Input
                   type="number"
@@ -191,7 +207,7 @@ export default function EditChorePage() {
               </div>
               {timesPeriod > 1 && (
                 <p className="text-xs text-muted-foreground">
-                  Kids can complete this {timesPeriod}× per {periodUnit}
+                  Kids can complete this mission {timesPeriod}× per {periodUnit}
                 </p>
               )}
             </div>
@@ -220,9 +236,36 @@ export default function EditChorePage() {
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="credit_value">Credits *</Label>
+                <Label htmlFor="credit_value">Credit reward *</Label>
                 <Input id="credit_value" name="credit_value" type="number" min="1" max="1000" defaultValue={chore.credit_value} required />
               </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="xp_value">XP reward</Label>
+                <Input id="xp_value" name="xp_value" type="number" min="0" max="1000" defaultValue={chore.xp_value} />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              role="switch"
+              aria-checked={requiresPhoto}
+              onClick={() => setRequiresPhoto((value) => !value)}
+              className="flex w-full items-center justify-between rounded-xl border border-slate-200 p-4 text-left transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-violet-600 active:scale-[.99]"
+            >
+              <span>
+                <span className="block text-sm font-semibold">Require Mission Photo</span>
+                <span className="text-xs text-muted-foreground">Child must attach photo proof before Mission Check.</span>
+              </span>
+              <span
+                className={`relative h-7 w-12 rounded-full transition-colors ${requiresPhoto ? "bg-violet-600" : "bg-slate-200"}`}
+              >
+                <span
+                  className={`absolute top-1 size-5 rounded-full bg-white transition-transform ${requiresPhoto ? "translate-x-6" : "translate-x-1"}`}
+                />
+              </span>
+            </button>
+
+            <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="due_time">Due time (optional)</Label>
                 <Input id="due_time" name="due_time" type="time" defaultValue={chore.due_time ?? ""} />
