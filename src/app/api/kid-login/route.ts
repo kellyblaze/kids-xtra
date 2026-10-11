@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { verifyPin, signKidSession } from "@/lib/kid-session"
-import { KID_SESSION_COOKIE } from "@/lib/kid-session-constants"
+import { KID_SESSION_COOKIE, KID_SESSION_MAX_AGE_SECONDS } from "@/lib/kid-session-constants"
 import { consumeRateLimit } from "@/lib/rate-limit"
 import { isSameOriginRequest } from "@/lib/request-security"
 
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: KID_SESSION_MAX_AGE_SECONDS,
     path: "/",
   })
 

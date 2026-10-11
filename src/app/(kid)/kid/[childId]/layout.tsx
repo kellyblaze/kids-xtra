@@ -5,6 +5,7 @@ import { authorizeChildAccess } from "@/lib/kid-authorization"
 import { kidLogout } from "@/app/actions/kid-auth"
 import { AVATAR_EMOJI } from "@/lib/constants"
 import { SessionExpiryBanner } from "@/components/kid/SessionExpiryBanner"
+import { KidSessionKeepAlive } from "@/components/kid/KidSessionKeepAlive"
 
 interface LayoutProps {
   children: React.ReactNode
@@ -36,6 +37,7 @@ export default async function KidSessionLayout({ children, params }: LayoutProps
 
   return (
     <div className="min-h-screen flex flex-col pb-24 bg-slate-50">
+      {!authorization.isParentSession && <KidSessionKeepAlive />}
       <header className="sticky top-0 z-10 bg-white border-b-4 border-violet-100 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-violet-100 border-2 border-violet-200 flex items-center justify-center text-xl">

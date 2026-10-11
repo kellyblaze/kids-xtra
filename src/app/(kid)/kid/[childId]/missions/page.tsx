@@ -174,46 +174,48 @@ export default async function KidMissionsPage({ params }: PageProps) {
             ({ assignmentId, chore, timesAllowed, periodUnit, doneCount, state }) => (
               <div
                 key={assignmentId}
-                className={`rounded-3xl border-4 bg-white p-4 flex items-start gap-3 ${state.key === "needs_more_work" ? "border-red-300 shadow-[0_4px_0_#fca5a5]" : "border-violet-200 shadow-[0_4px_0_#ddd6fe]"}`}
+                className={`rounded-3xl border-4 bg-white p-4 flex flex-col gap-4 sm:flex-row sm:items-start ${state.key === "needs_more_work" ? "border-red-300 shadow-[0_4px_0_#fca5a5]" : "border-violet-200 shadow-[0_4px_0_#ddd6fe]"}`}
               >
-                <div className="text-3xl shrink-0">
-                  {CATEGORY_EMOJI[
-                    chore.category as keyof typeof CATEGORY_EMOJI
-                  ] ?? "📋"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  {state.key === "needs_more_work" && (
-                    <div className="mb-2 flex items-start gap-1.5 bg-red-50 border-2 border-red-200 rounded-xl px-2.5 py-1.5">
-                      <p className="text-xs font-black text-red-700">
-                        Almost there · {state.note}
-                      </p>
-                    </div>
-                  )}
-                  <span className="mb-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-black text-slate-600">
-                    {state.childLabel}
-                  </span>
-                  <p className="font-black text-slate-800">{chore.title}</p>
-                  {chore.description && (
-                    <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                      {chore.description}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 border-2 border-amber-200 text-xs font-black px-2 py-0.5 rounded-full">
-                      <Star className="w-3 h-3" />
-                      {chore.credit_value} Credits
+                <div className="flex flex-1 gap-3">
+                  <div className="text-3xl shrink-0">
+                    {CATEGORY_EMOJI[
+                      chore.category as keyof typeof CATEGORY_EMOJI
+                    ] ?? "📋"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    {state.key === "needs_more_work" && (
+                      <div className="mb-2 flex items-start gap-1.5 bg-red-50 border-2 border-red-200 rounded-xl px-2.5 py-1.5">
+                        <p className="text-xs font-black text-red-700">
+                          Almost there · {state.note}
+                        </p>
+                      </div>
+                    )}
+                    <span className="mb-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-black text-slate-600">
+                      {state.childLabel}
                     </span>
-                    {timesAllowed > 1 && (
-                      <span className="text-xs font-black bg-violet-100 text-violet-700 border-2 border-violet-200 px-2 py-0.5 rounded-full">
-                        {doneCount}/{timesAllowed}× this{" "}
-                        {PERIOD_LABEL[periodUnit] ?? periodUnit}
-                      </span>
+                    <p className="font-black text-slate-800">{chore.title}</p>
+                    {chore.description && (
+                      <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                        {chore.description}
+                      </p>
                     )}
-                    {chore.due_time && (
-                      <span className="text-xs font-bold text-slate-400">
-                        Due {chore.due_time}
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 border-2 border-amber-200 text-xs font-black px-2 py-0.5 rounded-full">
+                        <Star className="w-3 h-3" />
+                        {chore.credit_value} Credits
                       </span>
-                    )}
+                      {timesAllowed > 1 && (
+                        <span className="text-xs font-black bg-violet-100 text-violet-700 border-2 border-violet-200 px-2 py-0.5 rounded-full">
+                          {doneCount}/{timesAllowed}× this{" "}
+                          {PERIOD_LABEL[periodUnit] ?? periodUnit}
+                        </span>
+                      )}
+                      {chore.due_time && (
+                        <span className="text-xs font-bold text-slate-400">
+                          Due {chore.due_time}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <MarkDoneButton

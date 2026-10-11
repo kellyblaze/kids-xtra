@@ -1,8 +1,7 @@
 import { cookies } from "next/headers";
 import { KID_SESSION_COOKIE } from "@/lib/kid-session-constants";
+import { KID_SESSION_WARN_SECONDS } from "@/lib/kid-session-constants";
 import { getKidSessionExpiry } from "@/lib/kid-session";
-
-const WARN_SECONDS = 24 * 60 * 60;
 
 export async function SessionExpiryBanner() {
   const cookieStore = await cookies();
@@ -13,7 +12,7 @@ export async function SessionExpiryBanner() {
   if (!expiresAt) return null;
 
   const secsRemaining = expiresAt - Math.floor(new Date().getTime() / 1000);
-  if (secsRemaining > WARN_SECONDS) return null;
+  if (secsRemaining > KID_SESSION_WARN_SECONDS) return null;
 
   const hoursLeft = Math.max(0, Math.floor(secsRemaining / 3600));
 

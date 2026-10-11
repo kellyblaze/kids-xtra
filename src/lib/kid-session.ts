@@ -1,4 +1,5 @@
 const enc = new TextEncoder()
+const DEFAULT_KID_SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30
 
 function getSecret(): string {
   const secret = process.env.KID_SESSION_SECRET
@@ -46,11 +47,19 @@ export async function getKidSessionExpiry(token: string): Promise<number | null>
   }
 }
 
-export async function signKidSession(childId: string): Promise<string> {
-  const expiresAt = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7
+export async function signKidSession(
+  childId: string,
+  maxAgeSeconds = DEFAULT_KID_SESSION_MAX_AGE_SECONDS,
+): Promise<string> {
+  const expiresAt = Math.floor(Date.now() / 1000) + maxAgeSeconds
   const payload = `${childId}.${expiresAt}`
   const signature = await crypto.subtle.sign("HMAC", await getSigningKey(), enc.encode(payload))
   return `${payload}.${toBase64Url(new Uint8Array(signature))}`
+}
+
+export async function getKidSessionChildId(token: string): Promise<string | null> {
+  const childId = await verifyKidSession(token)
+  return childId
 }
 
 export async function verifyKidSession(token: string): Promise<string | null> {
