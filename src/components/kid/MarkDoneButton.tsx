@@ -189,13 +189,15 @@ export function MarkDoneButton({
       )}
 
       {!requiresPhoto && !photoUrl && !showPhotoFlow && (
-        <button
-          type="button"
-          onClick={() => setShowPhotoFlow(true)}
-          className="mt-3 flex w-full items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-500 transition-colors hover:border-violet-200 hover:text-violet-700"
-        >
-          <Camera className="size-3.5" /> Add optional photo
-        </button>
+        <div className="mt-3 rounded-2xl border-2 border-amber-200 bg-amber-50 p-2">
+          <PhotoUploadButton
+            childId={childId}
+            onUploaded={(url) => {
+              setPhotoUrl(url);
+              setShowPhotoFlow(false);
+            }}
+          />
+        </div>
       )}
 
       <Button
