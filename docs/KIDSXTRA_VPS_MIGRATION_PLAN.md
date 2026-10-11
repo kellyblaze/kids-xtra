@@ -28,8 +28,8 @@ The VPS migration needs a replacement for each item above.
 
 Use a simple Node-based deployment:
 
-- Ubuntu 22.04 or 24.04 LTS.
-- Node.js LTS.
+- Ubuntu 22.04 or 24.04 LTS, or Amazon Linux 2023.
+- Node.js LTS. For Amazon Linux 2023, prefer the OS-packaged Node.js 22 packages.
 - npm.
 - Git.
 - Caddy or Nginx as the reverse proxy.
@@ -46,6 +46,49 @@ kidsxtra.com {
   reverse_proxy localhost:3000
 }
 ```
+
+### Amazon Linux 2023 Notes
+
+Amazon Linux 2023 is a good target for this app if the host is kept on a current release stream and uses Node.js 22.
+
+Recommended base setup:
+
+```bash
+sudo dnf update -y
+sudo dnf install -y git nodejs22 nodejs22-npm nginx
+node --version
+npm --version
+```
+
+Use `nginx` from the Amazon Linux repositories unless you intentionally add a maintained Caddy repository. A minimal Nginx reverse proxy can point HTTPS traffic to the internal Next.js server on `localhost:3000`.
+
+The app uses native packages for production runtime:
+
+- `sharp`, pulled in by Next.js image optimization.
+- `@node-rs/argon2`, used for child PIN hashing.
+- Next.js SWC native binaries.
+
+These packages ship Linux glibc builds for common EC2 architectures. Prefer `x86_64` or `arm64` Amazon Linux 2023 instances. Avoid Amazon Linux 2 for the first migration unless it is separately tested, because the current dependency tree expects a modern Node.js runtime and native package support.
+
+Before accepting Amazon Linux 2023 as the production host, run this on the instance:
+
+```bash
+npm ci
+npm run build
+npm run start
+```
+
+Then smoke-test:
+
+- Home page and marketing images.
+- Parent login and dashboard.
+- Kid login/session resume.
+- Mission completion with checklist and photo proof.
+- Parent approval.
+- Stripe webhook endpoint.
+- Cron endpoints with `CRON_SECRET`.
+
+If using a small instance, build on the instance only after confirming it has enough memory. If builds are slow or unstable, build in CI and deploy the built artifact to the Amazon Linux host.
 
 ## Runtime Commands
 
