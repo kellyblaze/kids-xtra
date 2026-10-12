@@ -58,6 +58,10 @@ export function RedeemButton({
     if (!hasGoalImpact) redeem()
   }
 
+  const buttonClass = canAfford
+    ? "shrink-0 rounded-2xl border-2 border-emerald-200 bg-emerald-400 px-4 py-2 text-xs font-black text-emerald-950 shadow-[0_5px_0_#047857] transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-300 focus-visible:ring-4 focus-visible:ring-emerald-200/70 active:translate-y-1 active:shadow-none"
+    : "shrink-0 rounded-2xl border-2 border-white/15 bg-white/10 px-4 py-2 text-xs font-black text-white/55 transition-all duration-200"
+
   return (
     <>
       <AlertDialog open={open} onOpenChange={setOpen}>
@@ -65,8 +69,8 @@ export function RedeemButton({
           size="sm"
           onClick={handleClick}
           disabled={isPending || !canAfford}
-          className="shrink-0 rounded-xl"
-          variant={canAfford ? "default" : "outline"}
+          className={buttonClass}
+          variant="outline"
           title={canAfford ? `Spend ${creditCost} Credits` : `Need ${creditCost} Credits`}
         >
           <Gift className="w-4 h-4 mr-1.5" />

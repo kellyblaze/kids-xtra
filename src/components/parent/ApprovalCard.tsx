@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { AVATAR_EMOJI, CATEGORY_EMOJI } from "@/lib/constants"
+import { AVATAR_EMOJI } from "@/lib/constants"
 import {
   approveChoreCompletion,
   rejectChoreCompletion,
@@ -114,31 +114,31 @@ export function ApprovalCard({ type, item }: Props) {
 
   const title = type === "chore" ? choreInfo?.title : rewardInfo?.title
   const subtitle = type === "chore"
-    ? `${choreInfo?.credit_value ?? 0} Credits · ${choreInfo?.xp_value ?? 0} XP · ${CATEGORY_EMOJI[choreInfo?.category as keyof typeof CATEGORY_EMOJI] ?? "📋"} ${choreInfo?.category ?? ""}`
+    ? `${choreInfo?.credit_value ?? 0} Credits, ${choreInfo?.xp_value ?? 0} XP, ${choreInfo?.category ?? "Mission"}`
     : `${rewardItem?.credits_spent ?? 0} Credits`
   const dateStr = new Date(
     type === "chore" ? choreItem!.completed_at : rewardItem!.requested_at
   ).toLocaleString()
 
   return (
-    <Card>
-      <CardContent className="p-4 space-y-3">
+    <Card className="rounded-3xl border border-slate-200 bg-white py-0 shadow-sm">
+      <CardContent className="space-y-4 p-4 md:p-5">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl shrink-0">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-xl">
             {avatarEmoji}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-sm">{child?.name ?? "Child"}</span>
-              <span className="text-muted-foreground text-xs">{dateStr}</span>
+              <span className="text-sm font-black text-slate-950">{child?.name ?? "Child"}</span>
+              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-500">{dateStr}</span>
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
               {type === "chore"
                 ? <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                 : <Gift className="w-3.5 h-3.5 text-violet-500 shrink-0" />}
-              <p className="text-sm font-medium truncate">{title ?? "—"}</p>
+              <p className="truncate text-base font-black text-slate-900">{title ?? "Untitled"}</p>
             </div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+            <p className="text-xs text-slate-500 flex items-center gap-1 mt-1 font-bold">
               <Star className="w-3 h-3 text-amber-400" />
               {subtitle}
             </p>
@@ -150,19 +150,19 @@ export function ApprovalCard({ type, item }: Props) {
           <img
             src={choreItem.photo_url}
             alt="Completion photo"
-            className="rounded-lg w-full max-h-48 object-cover border"
+            className="max-h-72 w-full rounded-2xl border border-slate-200 object-cover"
           />
         )}
 
         {type === "chore" && (choreInfo?.checklist_items?.length ?? 0) > 0 && (
-          <div className="rounded-xl border bg-slate-50 p-3">
-            <p className="mb-2 text-xs font-black uppercase tracking-wide text-slate-500">Checklist</p>
-            <div className="space-y-1">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="mb-3 text-xs font-black text-slate-500">Checklist</p>
+            <div className="grid gap-2 sm:grid-cols-2">
               {(choreInfo?.checklist_items ?? []).map((item) => {
                 const checked = choreItem?.checklist_completed?.includes(item) ?? false
                 return (
-                  <div key={item} className="flex items-center gap-2 text-sm">
-                    <span className={checked ? "text-emerald-600" : "text-slate-300"}>
+                  <div key={item} className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm">
+                    <span className={checked ? "font-black text-emerald-600" : "font-black text-slate-300"}>
                       {checked ? "✓" : "□"}
                     </span>
                     <span className={checked ? "font-medium text-slate-700" : "text-slate-500"}>{item}</span>
@@ -174,8 +174,8 @@ export function ApprovalCard({ type, item }: Props) {
         )}
 
         {showReject ? (
-          <div className="space-y-3 border-t pt-3">
-            <p className="text-sm font-semibold text-slate-700">
+          <div className="space-y-3 rounded-2xl border border-rose-200 bg-rose-50 p-4">
+            <p className="text-sm font-black text-rose-950">
               {type === "chore" ? "What needs more work?" : "Select a reason"}
             </p>
 
@@ -183,7 +183,7 @@ export function ApprovalCard({ type, item }: Props) {
               <select
                 value={selected}
                 onChange={(e) => setSelected(e.target.value)}
-                className="w-full appearance-none rounded-lg border border-input bg-background px-3 py-2 text-sm pr-8 focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full appearance-none rounded-xl border border-rose-200 bg-white px-3 py-2 pr-8 text-sm font-medium text-slate-800 focus:outline-none focus:ring-4 focus:ring-rose-100"
               >
                 {reasons.map((r) => (
                   <option key={r} value={r}>{r}</option>
@@ -194,7 +194,7 @@ export function ApprovalCard({ type, item }: Props) {
 
             <div className="flex gap-2">
               <Input
-                placeholder="Add new reason…"
+                placeholder="Add new reason..."
                 value={newReason}
                 onChange={(e) => setNewReason(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddReason()}
@@ -217,7 +217,7 @@ export function ApprovalCard({ type, item }: Props) {
                 variant="destructive"
                 onClick={handleReject}
                 disabled={isPending || !selected}
-                className="flex-1"
+                className="h-9 flex-1 rounded-xl bg-rose-600 text-white hover:bg-rose-700"
               >
                 <XCircle className="w-3.5 h-3.5 mr-1.5" />
                 {type === "chore" ? "Needs More Work" : "Deny Request"}
@@ -227,21 +227,22 @@ export function ApprovalCard({ type, item }: Props) {
                 variant="outline"
                 onClick={() => setShowReject(false)}
                 disabled={isPending}
+                className="h-9 rounded-xl bg-white"
               >
                 Cancel
               </Button>
             </div>
           </div>
         ) : showDelete ? (
-          <div className="space-y-2 border-t pt-3">
-            <p className="text-sm font-semibold text-slate-700">Are you sure you want to delete?</p>
+          <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-sm font-black text-slate-800">Are you sure you want to delete?</p>
             <div className="flex gap-2">
               <Button
                 size="sm"
                 variant="destructive"
                 onClick={handleDelete}
                 disabled={isPending}
-                className="flex-1"
+                className="h-9 flex-1 rounded-xl bg-rose-600 text-white hover:bg-rose-700"
               >
                 <Trash2 className="w-3.5 h-3.5 mr-1.5" />
                 Yes, Delete
@@ -251,22 +252,23 @@ export function ApprovalCard({ type, item }: Props) {
                 variant="outline"
                 onClick={() => setShowDelete(false)}
                 disabled={isPending}
+                className="h-9 rounded-xl bg-white"
               >
                 Cancel
               </Button>
             </div>
           </div>
         ) : (
-          <div className="flex gap-2">
-            <Button size="sm" onClick={handleApprove} disabled={isPending} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white">
+          <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+            <Button size="sm" onClick={handleApprove} disabled={isPending} className="h-10 rounded-xl bg-emerald-600 font-black text-white hover:bg-emerald-700">
               <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
               {type === "chore" ? "Approve Mission" : "Approve Reward"}
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setShowReject(true)} disabled={isPending} className="flex-1 text-destructive border-destructive/30 hover:bg-destructive/10">
+            <Button size="sm" variant="outline" onClick={() => setShowReject(true)} disabled={isPending} className="h-10 rounded-xl border-rose-200 bg-white font-black text-rose-700 hover:bg-rose-50">
               <XCircle className="w-3.5 h-3.5 mr-1.5" />
               {type === "chore" ? "Needs More Work" : "Deny"}
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setShowDelete(true)} disabled={isPending} className="text-slate-500 border-slate-200 hover:bg-slate-100 hover:text-slate-700">
+            <Button size="sm" variant="outline" onClick={() => setShowDelete(true)} disabled={isPending} className="h-10 rounded-xl border-slate-200 bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700">
               <Trash2 className="w-3.5 h-3.5" />
             </Button>
           </div>

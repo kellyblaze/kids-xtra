@@ -28,6 +28,7 @@ export default function LandingPage() {
             <Link href="#features" className="hover:text-violet-600 transition-colors">Features</Link>
             <Link href="#how-it-works" className="hover:text-violet-600 transition-colors">How it works</Link>
             <Link href="/pricing" className="hover:text-violet-600 transition-colors">Pricing</Link>
+            <Link href="/faq" className="hover:text-violet-600 transition-colors">FAQ</Link>
           </nav>
           <div className="flex items-center gap-3">
             <Link href="/kids"
@@ -306,6 +307,7 @@ export default function LandingPage() {
               <span className="font-black text-lg text-violet-700">Kids Xtra</span>
             </div>
             <div className="flex gap-6">
+              <Link href="/faq" className="hover:text-violet-600 transition-colors">FAQ</Link>
               <Link href="/privacy" className="hover:text-violet-600 transition-colors">Privacy Policy</Link>
               <Link href="/terms" className="hover:text-violet-600 transition-colors">Terms of Service</Link>
             </div>

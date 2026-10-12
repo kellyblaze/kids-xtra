@@ -1,50 +1,6 @@
 import { ExternalLink, LifeBuoy, Mail, MessageCircleQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const SUPPORT_EMAIL = "info@seethestarsllc.com";
-
-const FAQS = [
-  {
-    question: "How do my children sign in?",
-    answer:
-      "Open Kid Login, enter your family code, choose the child profile, and enter that child's four-digit PIN. You can find the family code on the parent dashboard and manage each PIN from the child's profile.",
-  },
-  {
-    question: "How do Missions and Credits work?",
-    answer:
-      "Create a Mission, assign it to one or more children, and choose its Credit value and schedule. When a child marks it complete, a parent approves it before Credits are added.",
-  },
-  {
-    question: "Can I require photo proof?",
-    answer:
-      "Yes. Turn on photo proof for a mission when you create or edit it. Completion photos are optional unless the mission requires one and are visible only within your family account.",
-  },
-  {
-    question: "How do rewards work?",
-    answer:
-      "Parents create Rewards and set their Credit cost. Children can request a Reward after earning enough Credits, and a parent approves or denies the request.",
-  },
-  {
-    question: "How do I install Kids Xtra on a device?",
-    answer:
-      "Reopen Guided family setup above for Android, iPhone, iPad, Amazon Fire, Chrome, and Edge instructions. Kids Xtra installs as a secure web app, so no app-store download is required.",
-  },
-  {
-    question: "Why am I not receiving notifications?",
-    answer:
-      "Make sure notifications are allowed in your browser or device settings. On iPhone and iPad, install Kids Xtra on the Home Screen first. Battery-saving modes can also delay notifications.",
-  },
-  {
-    question: "How do I manage or cancel my subscription?",
-    answer:
-      "Use Manage subscription in the Billing section above. Stripe's secure billing portal lets you update your payment method or cancel at the end of the current billing period.",
-  },
-  {
-    question: "What should I do if I forget a child PIN?",
-    answer:
-      "Open Children from the parent menu, choose the child, and set a new PIN. For safety, existing PINs cannot be displayed.",
-  },
-] as const;
+import { FAQS, SUPPORT_EMAIL } from "@/lib/faq";
 
 export function HelpAndFaq({ accountEmail }: { accountEmail: string }) {
   const subject = encodeURIComponent("Kids Xtra help request");

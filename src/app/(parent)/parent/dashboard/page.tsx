@@ -3,7 +3,22 @@ export const dynamic = "force-dynamic";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Sparkles, Target } from "lucide-react";
+import type React from "react";
+import {
+  ArrowRight,
+  BadgeDollarSign,
+  CalendarDays,
+  CheckCircle2,
+  Clock3,
+  Gift,
+  PiggyBank,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  TrendingUp,
+  Users,
+  WalletCards,
+} from "lucide-react";
 import { AVATAR_EMOJI } from "@/lib/constants";
 import { ensureFamilyCode } from "@/app/actions/auth";
 import { WeeklyScheduleGrid } from "@/components/parent/WeeklyScheduleGrid";
@@ -79,7 +94,6 @@ export default async function ParentDashboardPage() {
       .eq("family_id", familyId)
       .order("created_at", { ascending: false })
       .limit(8),
-
     supabase
       .from("chores")
       .select(
@@ -99,8 +113,9 @@ export default async function ParentDashboardPage() {
       .gte("created_at", weekStart.toISOString()),
   ]);
 
-  const pendingCount =
-    (pendingCompletions?.length ?? 0) + (pendingRedemptions?.length ?? 0);
+  const missionChecksCount = pendingCompletions?.length ?? 0;
+  const rewardRequestsCount = pendingRedemptions?.length ?? 0;
+  const pendingCount = missionChecksCount + rewardRequestsCount;
 
   const weekDays = buildWeekSchedule(chores ?? [], weekStart);
   const periodicChores = buildPeriodicChores(chores ?? []);
@@ -112,343 +127,524 @@ export default async function ParentDashboardPage() {
       .filter((tx) => (tx.amount ?? 0) < 0)
       .reduce((sum, tx) => sum + (tx.amount ?? 0), 0),
   );
+  const totalSaved = (children ?? []).reduce(
+    (sum, child) => sum + (child.credit_balance ?? 0),
+    0,
+  );
 
   return (
-    <div className="space-y-6 max-w-6xl">
-      <div>
-        <h1 className="text-2xl font-black text-slate-800">Dashboard 🏡</h1>
-        <p className="text-slate-500 text-sm mt-1 font-medium">
-          Overview of your family&apos;s progress
-        </p>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-8 text-slate-950">
+      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div className="grid gap-0 lg:grid-cols-[1.35fr_0.65fr]">
+          <div className="space-y-6 p-6 md:p-8">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-bold text-emerald-700">
+                  Parent Command Center
+                </p>
+                <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">
+                  Good morning, here is what needs your attention.
+                </h1>
+                <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-slate-600">
+                  Review completed Missions, keep reward requests moving, and
+                  see how your family is building better habits this week.
+                </p>
+              </div>
+              <Link
+                href="/parent/approvals"
+                className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-300 active:translate-y-0"
+              >
+                Review queue
+                <ArrowRight className="size-4" />
+              </Link>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <MetricCard
+                icon={CheckCircle2}
+                label="Missions this week"
+                value={earnedThisWeek > 0 ? `+${earnedThisWeek}` : "0"}
+                detail="Credits earned"
+                tone="emerald"
+              />
+              <MetricCard
+                icon={Clock3}
+                label="Needs review"
+                value={pendingCount}
+                detail={`${missionChecksCount} Missions, ${rewardRequestsCount} rewards`}
+                tone="amber"
+              />
+              <MetricCard
+                icon={WalletCards}
+                label="Family Credits"
+                value={totalSaved}
+                detail={`-${spentThisWeek} spent this week`}
+                tone="blue"
+              />
+              <MetricCard
+                icon={PiggyBank}
+                label="Savings goals"
+                value={goals?.length ?? 0}
+                detail="Active goals"
+                tone="rose"
+              />
+            </div>
+          </div>
+
+          <div className="border-t border-slate-200 bg-slate-950 p-6 text-white lg:border-l lg:border-t-0 md:p-8">
+            <div className="flex h-full flex-col justify-between gap-8">
+              <div>
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-emerald-400 text-slate-950">
+                  <ShieldCheck className="size-6" />
+                </div>
+                <h2 className="mt-5 text-2xl font-black">Family code</h2>
+                <p className="mt-2 text-sm font-medium leading-6 text-slate-300">
+                  Children use this code at Kid Login to reach their account.
+                </p>
+              </div>
+              {familyCode && (
+                <div className="rounded-3xl border border-white/15 bg-white/10 p-5">
+                  <p className="text-xs font-black text-emerald-200">
+                    KID LOGIN CODE
+                  </p>
+                  <p className="mt-2 text-4xl font-black tracking-[0.18em] text-white">
+                    {familyCode}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {!onboarding.completed && (
         <Link
           href="/parent/onboarding"
-          className="flex items-center justify-between gap-4 rounded-3xl border-4 border-violet-200 bg-white p-5 shadow-[0_4px_0_#ddd6fe] transition-all hover:translate-y-[2px] hover:shadow-[0_2px_0_#ddd6fe] focus-visible:outline-2 focus-visible:outline-violet-600"
+          className="flex flex-col justify-between gap-4 rounded-3xl border border-violet-200 bg-violet-50 p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-violet-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-200 sm:flex-row sm:items-center"
         >
           <div className="flex items-center gap-4">
-            <div className="flex size-12 items-center justify-center rounded-2xl bg-violet-100">
-              <Sparkles className="size-6 text-violet-600" />
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-white text-violet-700 shadow-sm">
+              <Sparkles className="size-6" />
             </div>
             <div>
-              <p className="font-black text-slate-900">
+              <p className="font-black text-violet-950">
                 Finish setting up your family
               </p>
-              <p className="text-sm font-medium text-slate-500">
-                Resume at step {(onboarding.step ?? 0) + 1} of 8
+              <p className="text-sm font-medium text-violet-700">
+                Resume at step {(onboarding.step ?? 0) + 1} of 8.
               </p>
             </div>
           </div>
-          <ArrowRight className="size-5 shrink-0 text-violet-600" />
+          <ArrowRight className="size-5 shrink-0 text-violet-700" />
         </Link>
       )}
 
-      {familyCode && (
-        <div className="rounded-3xl border-4 border-violet-200 bg-violet-50 p-4 shadow-[0_4px_0_#ddd6fe]">
-          <p className="text-xs font-bold text-violet-500 uppercase tracking-wide mb-1">
-            Kids login with this family code
-          </p>
-          <p className="text-3xl font-black text-violet-700 tracking-widest">
-            {familyCode}
-          </p>
-          <p className="text-xs font-medium text-violet-400 mt-1">
-            Share this with your children — they enter it at the Kid Login
-            screen
-          </p>
-        </div>
-      )}
-
-      {pendingCount > 0 && (
-        <Link
-          href="/parent/approvals"
-          className="flex items-center justify-between gap-4 rounded-3xl border-4 border-amber-200 bg-amber-50 p-4 shadow-[0_4px_0_#fde68a] hover:translate-y-[2px] hover:shadow-[0_2px_0_#fde68a] transition-all"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-200 flex items-center justify-center text-xl">
-              ⏳
-            </div>
-            <div>
-              <p className="font-black text-amber-900 text-sm">
-                {pendingCount} item{pendingCount !== 1 ? "s" : ""} waiting for
-                your approval
-              </p>
-              <p className="text-amber-700 text-xs font-medium">
-                Tap to review now
-              </p>
-            </div>
-          </div>
-          <ArrowRight className="w-5 h-5 text-amber-600 shrink-0" />
-        </Link>
-      )}
-
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          {
-            emoji: "👧",
-            label: "Children",
-            value: children?.length ?? 0,
-            border: "border-blue-200",
-            bg: "bg-blue-50",
-            shadow: "shadow-blue-200",
-            text: "text-blue-700",
-          },
-          {
-            emoji: "✅",
-            label: "Mission Checks",
-            value: pendingCompletions?.length ?? 0,
-            border: "border-amber-200",
-            bg: "bg-amber-50",
-            shadow: "shadow-amber-200",
-            text: "text-amber-700",
-          },
-          {
-            emoji: "🎁",
-            label: "Reward requests",
-            value: pendingRedemptions?.length ?? 0,
-            border: "border-violet-200",
-            bg: "bg-violet-50",
-            shadow: "shadow-violet-200",
-            text: "text-violet-700",
-          },
-          {
-            emoji: "⭐",
-            label: "Earned this week",
-            value: earnedThisWeek,
-            border: "border-emerald-200",
-            bg: "bg-emerald-50",
-            shadow: "shadow-emerald-200",
-            text: "text-emerald-700",
-          },
-          {
-            emoji: "🎯",
-            label: "Savings goals",
-            value: goals?.length ?? 0,
-            border: "border-pink-200",
-            bg: "bg-pink-50",
-            shadow: "shadow-pink-200",
-            text: "text-pink-700",
-          },
-        ].map(({ emoji, label, value, border, bg, shadow, text }) => (
-          <div
-            key={label}
-            className={`rounded-3xl border-4 ${border} ${bg} p-4 text-center shadow-[0_4px_0_0] ${shadow}`}
+      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.35fr]">
+        <section className="space-y-6">
+          <Panel
+            title="Priority Queue"
+            action={
+              <Link
+                href="/parent/approvals"
+                className="text-sm font-black text-emerald-700 hover:text-emerald-800"
+              >
+                Open review
+              </Link>
+            }
           >
-            <p className="text-2xl mb-1">{emoji}</p>
-            <p className={`text-3xl font-black ${text}`}>{value}</p>
-            <p className="text-xs font-bold text-slate-500 mt-1">{label}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="rounded-3xl border-4 border-amber-200 bg-amber-50 p-4 shadow-[0_4px_0_#fde68a]">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="font-black text-amber-900">Credit activity this week</h2>
-            <p className="text-sm font-medium text-amber-700">
-              Earned +{earnedThisWeek} Credits · Spent -{spentThisWeek} Credits
-            </p>
-          </div>
-          <Link href="/parent/activity" className="text-xs font-black text-amber-700 hover:underline">
-            View ledger
-          </Link>
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Children card */}
-        <div className="rounded-3xl border-4 border-slate-200 bg-white shadow-[0_4px_0_#e2e8f0] overflow-hidden">
-          <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <h2 className="font-black text-slate-800">Your children</h2>
-            <Link
-              href="/parent/children"
-              className="text-xs font-bold text-violet-600 flex items-center gap-1"
-            >
-              Manage <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-          <div className="px-3 pb-4 space-y-1">
-            {!children?.length ? (
-              <div className="text-center py-6">
-                <p className="text-slate-500 text-sm mb-3 font-medium">
-                  No children yet
-                </p>
-                <Link
-                  href="/parent/children"
-                  className="inline-flex items-center gap-2 bg-violet-600 text-white font-bold text-sm px-4 py-2 rounded-2xl shadow-[0_3px_0_#5b21b6]"
-                >
-                  Add your first child
-                </Link>
+            {pendingCount > 0 ? (
+              <div className="space-y-3">
+                <PriorityRow
+                  icon={CheckCircle2}
+                  label="Mission Checks"
+                  value={missionChecksCount}
+                  detail="Proof waiting for parent review"
+                />
+                <PriorityRow
+                  icon={Gift}
+                  label="Reward requests"
+                  value={rewardRequestsCount}
+                  detail="Rewards waiting for approval"
+                />
               </div>
             ) : (
-              children.map((child) => (
-                <Link
-                  key={child.id}
-                  href={`/parent/children/${child.id}`}
-                  className="flex items-center gap-3 p-3 rounded-2xl hover:bg-violet-50 transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-2xl bg-violet-100 flex items-center justify-center text-xl border-2 border-violet-200">
-                    {AVATAR_EMOJI[child.avatar_key ?? "star"] ?? "⭐"}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-black text-sm text-slate-800 truncate">
-                      {child.name}
-                    </p>
-                    <p className="text-xs font-medium text-slate-500">
-                      Level {child.level}
-                    </p>
-                  </div>
-                  <p className="font-black text-sm text-amber-600 shrink-0">
-                    {child.credit_balance} ⭐
-                  </p>
-                </Link>
-              ))
+              <EmptyBlock
+                icon={CheckCircle2}
+                title="All caught up"
+                body="No Mission Checks or reward requests are waiting right now."
+              />
             )}
-          </div>
-        </div>
+          </Panel>
 
-        <div className="rounded-3xl border-4 border-slate-200 bg-white shadow-[0_4px_0_#e2e8f0] overflow-hidden">
-          <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <h2 className="font-black text-slate-800">Savings goals</h2>
-            <Target className="w-5 h-5 text-pink-500" />
-          </div>
-          <div className="px-4 pb-4 space-y-3">
+          <Panel
+            title="Your Children"
+            action={
+              <Link
+                href="/parent/children"
+                className="text-sm font-black text-emerald-700 hover:text-emerald-800"
+              >
+                Manage
+              </Link>
+            }
+          >
+            {!children?.length ? (
+              <EmptyBlock
+                icon={Users}
+                title="No children yet"
+                body="Add your first child to start assigning Missions."
+              />
+            ) : (
+              <div className="space-y-3">
+                {children.map((child) => (
+                  <Link
+                    key={child.id}
+                    href={`/parent/children/${child.id}`}
+                    className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-100"
+                  >
+                    <div className="flex size-11 items-center justify-center rounded-2xl bg-white text-xl shadow-sm">
+                      {AVATAR_EMOJI[child.avatar_key ?? "star"] ?? "Star"}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-black text-slate-950">
+                        {child.name}
+                      </p>
+                      <p className="text-xs font-bold text-slate-500">
+                        Level {child.level}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-black text-slate-950">
+                        {child.credit_balance}
+                      </p>
+                      <p className="text-xs font-bold text-slate-500">
+                        Credits
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </Panel>
+
+          <Panel title="Quick Actions">
+            <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+              <QuickAction href="/parent/chores/new" label="Add a Mission" />
+              <QuickAction href="/parent/rewards/new" label="Add a reward" />
+              <QuickAction href="/parent/children" label="Add a child" />
+            </div>
+          </Panel>
+        </section>
+
+        <section className="space-y-6">
+          <Panel
+            title="Savings Goals"
+            action={<Target className="size-5 text-rose-500" />}
+          >
             {!goals?.length ? (
-              <p className="text-slate-500 text-sm text-center py-6 font-medium">
-                No active goals yet
-              </p>
+              <EmptyBlock
+                icon={PiggyBank}
+                title="No active goals yet"
+                body="Set a reward as a goal to help children see progress."
+              />
             ) : (
-              goals.map((goal) => {
-                const child = Array.isArray(goal.child_profiles)
-                  ? goal.child_profiles[0] ?? null
-                  : goal.child_profiles
-                const reward = Array.isArray(goal.rewards)
-                  ? goal.rewards[0] ?? null
-                  : goal.rewards
-                const balance = child?.credit_balance ?? 0
-                const cost = reward?.credit_cost ?? 0
-                const progress = cost > 0 ? Math.min(100, Math.round((balance / cost) * 100)) : 0
-                return (
-                  <div key={goal.child_id} className="rounded-2xl border bg-slate-50 p-3">
-                    <div className="flex items-center justify-between gap-3 text-sm">
-                      <div className="min-w-0">
-                        <p className="font-black text-slate-800 truncate">{child?.name ?? "Child"}</p>
-                        <p className="text-xs font-medium text-slate-500 truncate">{reward?.title ?? "Reward goal"}</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {goals.map((goal) => {
+                  const child = Array.isArray(goal.child_profiles)
+                    ? goal.child_profiles[0] ?? null
+                    : goal.child_profiles;
+                  const reward = Array.isArray(goal.rewards)
+                    ? goal.rewards[0] ?? null
+                    : goal.rewards;
+                  const balance = child?.credit_balance ?? 0;
+                  const cost = reward?.credit_cost ?? 0;
+                  const progress =
+                    cost > 0 ? Math.min(100, Math.round((balance / cost) * 100)) : 0;
+                  return (
+                    <div
+                      key={goal.child_id}
+                      className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-black text-slate-950">
+                            {child?.name ?? "Child"}
+                          </p>
+                          <p className="mt-1 truncate text-xs font-bold text-slate-500">
+                            {reward?.title ?? "Reward goal"}
+                          </p>
+                        </div>
+                        <p className="rounded-full bg-white px-2.5 py-1 text-xs font-black text-rose-700 shadow-sm">
+                          {progress}%
+                        </p>
                       </div>
-                      <p className="text-xs font-black text-pink-600">{progress}%</p>
+                      <div className="mt-4 h-2 overflow-hidden rounded-full bg-rose-100">
+                        <div
+                          className="h-full rounded-full bg-rose-500"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                      <p className="mt-2 text-xs font-bold text-slate-500">
+                        {balance} of {cost} Credits
+                      </p>
                     </div>
-                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-pink-100">
-                      <div className="h-full rounded-full bg-pink-500" style={{ width: `${progress}%` }} />
-                    </div>
-                  </div>
-                )
-              })
+                  );
+                })}
+              </div>
             )}
-          </div>
-        </div>
+          </Panel>
 
-        {/* Activity card */}
-        <div className="rounded-3xl border-4 border-slate-200 bg-white shadow-[0_4px_0_#e2e8f0] overflow-hidden">
-          <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <h2 className="font-black text-slate-800">Recent activity</h2>
-            <Link
-              href="/parent/activity"
-              className="text-xs font-bold text-violet-600 flex items-center gap-1"
-            >
-              All <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-          <div className="px-4 pb-4 space-y-3">
+          <Panel
+            title="Credit Activity"
+            action={
+              <Link
+                href="/parent/activity"
+                className="text-sm font-black text-emerald-700 hover:text-emerald-800"
+              >
+                View ledger
+              </Link>
+            }
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              <ActivityStat
+                icon={TrendingUp}
+                label="Earned this week"
+                value={`+${earnedThisWeek}`}
+                tone="emerald"
+              />
+              <ActivityStat
+                icon={BadgeDollarSign}
+                label="Spent this week"
+                value={`-${spentThisWeek}`}
+                tone="slate"
+              />
+            </div>
+          </Panel>
+
+          <Panel
+            title="Recent Activity"
+            action={
+              <Link
+                href="/parent/activity"
+                className="text-sm font-black text-emerald-700 hover:text-emerald-800"
+              >
+                All activity
+              </Link>
+            }
+          >
             {!recentActivity?.length ? (
-              <p className="text-slate-500 text-sm text-center py-6 font-medium">
-                No activity yet
-              </p>
+              <EmptyBlock
+                icon={CalendarDays}
+                title="No activity yet"
+                body="Completed Missions and reward requests will appear here."
+              />
             ) : (
-              recentActivity.map((log) => (
-                <div key={log.id} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-2xl bg-slate-100 flex items-center justify-center text-base shrink-0 border-2 border-slate-200">
-                    {activityEmoji(log.event_type)}
+              <div className="divide-y divide-slate-100">
+                {recentActivity.map((log) => (
+                  <div
+                    key={log.id}
+                    className="flex items-start gap-3 py-3 first:pt-0 last:pb-0"
+                  >
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+                      <ActivityIcon eventType={log.event_type} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold leading-5 text-slate-800">
+                        {(() => {
+                          const child = Array.isArray(log.child_profiles)
+                            ? (log.child_profiles[0] ?? null)
+                            : log.child_profiles;
+                          return child?.name ?? "Parent";
+                        })()}{" "}
+                        <span className="font-medium text-slate-500">
+                          {activityLabel(
+                            log.event_type,
+                            log.metadata as Record<string, string>,
+                          )}
+                        </span>
+                      </p>
+                      <p className="mt-0.5 text-xs font-bold text-slate-400">
+                        {formatRelativeTime(log.created_at)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-slate-700">
-                      {(() => {
-                        const child = Array.isArray(log.child_profiles)
-                          ? (log.child_profiles[0] ?? null)
-                          : log.child_profiles;
-                        return child?.name ?? "Parent";
-                      })()}{" "}
-                      <span className="font-medium text-slate-500">
-                        {activityLabel(
-                          log.event_type,
-                          log.metadata as Record<string, string>,
-                        )}
-                      </span>
-                    </p>
-                    <p className="text-xs text-slate-400 font-medium">
-                      {formatRelativeTime(log.created_at)}
-                    </p>
-                  </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
-          </div>
-        </div>
+          </Panel>
+        </section>
       </div>
 
       <WeeklyScheduleGrid days={weekDays} periodicChores={periodicChores} />
-
-      {/* Quick actions */}
-      <div className="grid sm:grid-cols-3 gap-4">
-        {[
-          {
-            href: "/parent/chores/new",
-            label: "Add a Mission",
-            emoji: "✅",
-            border: "border-blue-200",
-            shadow: "shadow-blue-200",
-          },
-          {
-            href: "/parent/rewards/new",
-            label: "Add a reward",
-            emoji: "🎁",
-            border: "border-violet-200",
-            shadow: "shadow-violet-200",
-          },
-          {
-            href: "/parent/children",
-            label: "Add a child",
-            emoji: "👧",
-            border: "border-emerald-200",
-            shadow: "shadow-emerald-200",
-          },
-        ].map(({ href, label, emoji, border, shadow }) => (
-          <Link
-            key={href}
-            href={href}
-            className={`flex items-center gap-3 p-4 rounded-3xl border-4 ${border} bg-white shadow-[0_4px_0_0] ${shadow} hover:translate-y-[2px] hover:shadow-[0_2px_0_0] transition-all`}
-          >
-            <span className="text-2xl">{emoji}</span>
-            <span className="font-black text-sm text-slate-700">{label}</span>
-            <ArrowRight className="w-4 h-4 text-slate-400 ml-auto" />
-          </Link>
-        ))}
-      </div>
     </div>
   );
 }
 
-function activityEmoji(eventType: string): string {
-  const map: Record<string, string> = {
-    chore_completed: "✅",
-    chore_approved: "🌟",
-    chore_rejected: "💬",
-    reward_requested: "🎁",
-    reward_approved: "🎉",
-    child_created: "👤",
-    chore_created: "📋",
-  };
-  return map[eventType] ?? "📝";
+type Tone = "emerald" | "amber" | "blue" | "rose" | "slate";
+type IconType = React.ComponentType<{ className?: string }>;
+
+const toneStyles: Record<Tone, { card: string; icon: string; text: string }> = {
+  emerald: {
+    card: "border-emerald-100 bg-emerald-50",
+    icon: "bg-emerald-600 text-white",
+    text: "text-emerald-700",
+  },
+  amber: {
+    card: "border-amber-100 bg-amber-50",
+    icon: "bg-amber-500 text-white",
+    text: "text-amber-700",
+  },
+  blue: {
+    card: "border-sky-100 bg-sky-50",
+    icon: "bg-sky-600 text-white",
+    text: "text-sky-700",
+  },
+  rose: {
+    card: "border-rose-100 bg-rose-50",
+    icon: "bg-rose-500 text-white",
+    text: "text-rose-700",
+  },
+  slate: {
+    card: "border-slate-200 bg-slate-50",
+    icon: "bg-slate-900 text-white",
+    text: "text-slate-700",
+  },
+};
+
+function MetricCard({
+  icon: Icon,
+  label,
+  value,
+  detail,
+  tone,
+}: {
+  icon: IconType;
+  label: string;
+  value: string | number;
+  detail: string;
+  tone: Tone;
+}) {
+  const styles = toneStyles[tone];
+  return (
+    <div className={`rounded-3xl border p-4 ${styles.card}`}>
+      <div className={`flex size-10 items-center justify-center rounded-2xl ${styles.icon}`}>
+        <Icon className="size-5" />
+      </div>
+      <p className="mt-4 text-3xl font-black tracking-tight text-slate-950">
+        {value}
+      </p>
+      <p className="mt-1 text-sm font-black text-slate-700">{label}</p>
+      <p className={`mt-1 text-xs font-bold ${styles.text}`}>{detail}</p>
+    </div>
+  );
+}
+
+function Panel({
+  title,
+  action,
+  children,
+}: {
+  title: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="text-base font-black text-slate-950">{title}</h2>
+        {action}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function PriorityRow({
+  icon: Icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: IconType;
+  label: string;
+  value: number;
+  detail: string;
+}) {
+  return (
+    <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="flex size-11 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm">
+        <Icon className="size-5" />
+      </div>
+      <div>
+        <p className="text-sm font-black text-slate-950">{label}</p>
+        <p className="text-xs font-bold text-slate-500">{detail}</p>
+      </div>
+      <p className="text-2xl font-black text-slate-950">{value}</p>
+    </div>
+  );
+}
+
+function EmptyBlock({
+  icon: Icon,
+  title,
+  body,
+}: {
+  icon: IconType;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+      <div className="mx-auto flex size-11 items-center justify-center rounded-2xl bg-white text-slate-700 shadow-sm">
+        <Icon className="size-5" />
+      </div>
+      <p className="mt-3 text-sm font-black text-slate-950">{title}</p>
+      <p className="mx-auto mt-1 max-w-sm text-sm font-medium leading-6 text-slate-500">
+        {body}
+      </p>
+    </div>
+  );
+}
+
+function QuickAction({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-black text-slate-800 transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-100"
+    >
+      {label}
+      <ArrowRight className="size-4 text-emerald-700" />
+    </Link>
+  );
+}
+
+function ActivityStat({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: IconType;
+  label: string;
+  value: string;
+  tone: Tone;
+}) {
+  const styles = toneStyles[tone];
+  return (
+    <div className={`rounded-2xl border p-4 ${styles.card}`}>
+      <div className={`flex size-10 items-center justify-center rounded-2xl ${styles.icon}`}>
+        <Icon className="size-5" />
+      </div>
+      <p className="mt-4 text-2xl font-black text-slate-950">{value}</p>
+      <p className="text-sm font-bold text-slate-600">{label}</p>
+    </div>
+  );
+}
+
+function ActivityIcon({ eventType }: { eventType: string }) {
+  if (eventType.includes("reward")) return <Gift className="size-4" />;
+  if (eventType.includes("approved")) return <ShieldCheck className="size-4" />;
+  if (eventType.includes("created")) return <Sparkles className="size-4" />;
+  return <CheckCircle2 className="size-4" />;
 }
 
 function activityLabel(
@@ -460,8 +656,8 @@ function activityLabel(
     chore_completed: `completed "${m.mission_title ?? m.chore_title ?? "a Mission"}"`,
     mission_completed: `completed "${m.mission_title ?? "a Mission"}"`,
     chore_approved: `earned ${m.credits ?? ""} Credits`,
-    chore_rejected: `got feedback on a Mission`,
-    mission_needs_work: `got feedback on a Mission`,
+    chore_rejected: "got feedback on a Mission",
+    mission_needs_work: "got feedback on a Mission",
     reward_requested: `requested "${m.reward_title ?? "a reward"}"`,
     reward_approved: `redeemed "${m.reward_title ?? "a reward"}"`,
     child_created: "profile was created",

@@ -92,6 +92,8 @@ export default function PricingPage() {
 
         <p className="text-center text-sm text-muted-foreground">
           One simple monthly plan after your trial.{" "}
+          <Link href="/faq" className="underline underline-offset-2">FAQ</Link>
+          {" · "}
           <Link href="/privacy" className="underline underline-offset-2">Privacy policy</Link>
           {" · "}
           <Link href="/terms" className="underline underline-offset-2">Terms</Link>

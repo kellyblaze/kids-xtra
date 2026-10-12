@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { signOut } from "@/app/actions/auth"
-import { LogOut, Settings, Star } from "lucide-react"
+import { HelpCircle, LogOut, Settings, Star } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { PushNotificationToggle } from "@/components/parent/PushNotificationToggle"
@@ -65,6 +65,10 @@ export function ParentTopbar({ profile }: ParentTopbarProps) {
             <DropdownMenuItem onClick={() => router.push("/parent/settings")} className="flex items-center gap-2 cursor-pointer">
               <Settings className="w-4 h-4" />
               Settings
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/faq")} className="flex items-center gap-2 cursor-pointer">
+              <HelpCircle className="w-4 h-4" />
+              Help & FAQ
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

@@ -28,7 +28,7 @@ export function GoalButton({ childId, rewardId, isCurrentGoal }: Props) {
       <button
         onClick={handleToggle}
         disabled={isPending}
-        className="flex items-center gap-1.5 text-xs font-black bg-emerald-100 text-emerald-700 border-2 border-emerald-300 px-3 py-1.5 rounded-full hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors"
+        className="flex items-center gap-1.5 rounded-full border-2 border-emerald-200 bg-emerald-300 px-3 py-1.5 text-xs font-black text-emerald-950 shadow-[0_3px_0_#047857] transition-all duration-200 hover:-translate-y-0.5 hover:border-rose-200 hover:bg-rose-100 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200/70 active:translate-y-0.5 active:shadow-none disabled:opacity-60"
       >
         <Star className="w-3.5 h-3.5 fill-current" />
         My Goal
@@ -41,7 +41,7 @@ export function GoalButton({ childId, rewardId, isCurrentGoal }: Props) {
     <button
       onClick={handleToggle}
       disabled={isPending}
-      className="flex items-center gap-1.5 text-xs font-black bg-violet-50 text-violet-600 border-2 border-violet-200 px-3 py-1.5 rounded-full hover:bg-violet-100 transition-colors"
+      className="flex items-center gap-1.5 rounded-full border-2 border-cyan-200/80 bg-cyan-300 px-3 py-1.5 text-xs font-black text-cyan-950 shadow-[0_3px_0_#0891b2] transition-all duration-200 hover:-translate-y-0.5 hover:bg-cyan-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-200/70 active:translate-y-0.5 active:shadow-none disabled:opacity-60"
     >
       <Star className="w-3.5 h-3.5" />
       Add as Goal
