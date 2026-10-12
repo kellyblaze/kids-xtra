@@ -10,6 +10,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           </Link>
           <nav className="flex items-center gap-6 text-sm text-muted-foreground">
             <Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
+            <Link href="/faq" className="hover:text-foreground transition-colors">FAQ</Link>
             <Link href="/login" className="hover:text-foreground transition-colors">Log in</Link>
             <Link
               href="/signup"
@@ -30,6 +31,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
             <Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
+            <Link href="/faq" className="hover:text-foreground transition-colors">FAQ</Link>
           </nav>
         </div>
       </footer>

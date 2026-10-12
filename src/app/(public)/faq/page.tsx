@@ -7,7 +7,6 @@ import {
   Mail,
   ShieldCheck,
   Sparkles,
-  Star,
 } from "lucide-react";
 import { FAQ_CATEGORIES, SUPPORT_EMAIL } from "@/lib/faq";
 
@@ -36,48 +35,7 @@ export default function FaqPage() {
   )}`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-violet-50 via-white to-amber-50">
-      <header className="sticky top-0 z-50 border-b-4 border-violet-100 bg-white">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex size-10 items-center justify-center rounded-2xl bg-violet-600 shadow-[0_4px_0_#5b21b6]">
-              <Star className="size-5 fill-white text-white" />
-            </div>
-            <span className="text-2xl font-black tracking-tight text-violet-700">
-              Kids Xtra
-            </span>
-          </Link>
-          <nav className="hidden items-center gap-8 text-sm font-bold text-slate-500 md:flex">
-            <Link href="/#features" className="transition-colors hover:text-violet-600">
-              Features
-            </Link>
-            <Link href="/#how-it-works" className="transition-colors hover:text-violet-600">
-              How it works
-            </Link>
-            <Link href="/pricing" className="transition-colors hover:text-violet-600">
-              Pricing
-            </Link>
-            <Link href="/faq" className="text-violet-700">
-              FAQ
-            </Link>
-          </nav>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="hidden px-4 py-2 text-sm font-bold text-violet-600 transition-colors hover:text-violet-800 sm:inline-flex"
-            >
-              Parent Login
-            </Link>
-            <Link
-              href="/signup"
-              className="rounded-2xl bg-violet-600 px-5 py-2.5 text-sm font-bold text-white shadow-[0_4px_0_#5b21b6] transition-all hover:translate-y-[2px] hover:bg-violet-700 hover:shadow-[0_2px_0_#5b21b6]"
-            >
-              Start free month
-            </Link>
-          </div>
-        </div>
-      </header>
-
+    <div className="bg-gradient-to-b from-violet-50 via-white to-amber-50">
       <main>
         <section className="px-4 py-16 sm:py-20">
           <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
@@ -224,7 +182,7 @@ export default function FaqPage() {
               </a>
             </div>
             <div className="rounded-3xl border-2 border-amber-200 bg-amber-50 p-6">
-              <Star className="size-6 fill-amber-500 text-amber-500" />
+              <Sparkles className="size-6 text-amber-600" />
               <h2 className="mt-4 font-black text-amber-950">
                 Helpful links
               </h2>
