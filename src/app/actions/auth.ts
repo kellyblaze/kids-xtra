@@ -49,6 +49,16 @@ export async function signUp(formData: FormData) {
     }
 
     await admin.from("family_settings").insert({ family_id: family.id })
+
+    // Record parental consent (COPPA §312.5) — terms acceptance method.
+    // This is an interim mechanism; will be upgraded to Stripe billing verification at checkout.
+    await admin.from("parental_consents").insert({
+      family_id: family.id,
+      parent_user_id: authData.user.id,
+      consent_method: "terms_acceptance",
+      policy_version: "2026-11",
+    })
+    await admin.from("families").update({ consent_recorded: true }).eq("id", family.id)
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unexpected error during signup"
     return { error: message }

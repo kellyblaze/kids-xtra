@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { AVATAR_OPTIONS, COLOR_THEMES } from "@/lib/constants";
 
@@ -25,6 +26,17 @@ export async function createChildProfile(formData: FormData) {
 
   const familyId = await getParentFamilyId(supabase, user.id);
   if (!familyId) return { error: "Family not found" };
+
+  // COPPA gate: consent must be recorded before child profiles can be created
+  const admin = createAdminClient();
+  const { data: family } = await admin
+    .from("families")
+    .select("consent_recorded")
+    .eq("id", familyId)
+    .single();
+  if (!family?.consent_recorded) {
+    return { error: "Parental consent is required before adding children. Please complete account setup." };
+  }
 
   const name = String(formData.get("name") ?? "").trim();
   const nickname = String(formData.get("nickname") ?? "").trim();
