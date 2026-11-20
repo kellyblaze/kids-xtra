@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
+import { AVATAR_EMOJI } from "@/lib/constants"
 
 export interface LeaderboardEntry {
   childId: string
@@ -18,7 +19,7 @@ export async function getWeeklyLeaderboard(
 
   const { data: children } = await admin
     .from("child_profiles")
-    .select("id, name, avatar_emoji")
+    .select("id, name, avatar_key")
     .eq("family_id", familyId)
     .eq("is_active", true)
 
@@ -41,7 +42,7 @@ export async function getWeeklyLeaderboard(
     .map((c) => ({
       childId: c.id as string,
       name: c.name as string,
-      avatarEmoji: (c.avatar_emoji as string) ?? "🧒",
+      avatarEmoji: AVATAR_EMOJI[c.avatar_key as string] ?? "🧒",
       weeklyCredits: totals.get(c.id) ?? 0,
     }))
     .sort((a, b) => b.weeklyCredits - a.weeklyCredits)
