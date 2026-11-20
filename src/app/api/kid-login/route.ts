@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     maxAge: KID_SESSION_MAX_AGE_SECONDS,
-    path: "/",
+    path: "/kid",
   })
 
   return response

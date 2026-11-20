@@ -6,6 +6,7 @@ import {
 } from "@/lib/kid-session-constants"
 import { getKidSessionExpiry, signKidSession, verifyKidSession } from "@/lib/kid-session"
 import { isSameOriginRequest } from "@/lib/request-security"
+import { consumeRateLimit } from "@/lib/rate-limit"
 
 export async function POST(request: NextRequest) {
   if (!isSameOriginRequest(request)) {
@@ -21,6 +22,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ refreshed: false }, { status: 401 })
   }
 
+  const ip = (request as NextRequest & { ip?: string }).ip
+  const refreshLimit = await consumeRateLimit(
+    { action: "session-refresh", subject: childId, maxAttempts: 60, windowSeconds: 3600, blockSeconds: 3600 },
+    { ip },
+  ).catch(() => ({ allowed: true, retryAfterSeconds: 0 }))
+  if (!refreshLimit.allowed) {
+    return NextResponse.json({ refreshed: false }, { status: 429 })
+  }
+
   const secondsRemaining = expiresAt - Math.floor(Date.now() / 1000)
   const response = NextResponse.json({
     refreshed: secondsRemaining <= KID_SESSION_RENEW_SECONDS,
@@ -32,7 +42,7 @@ export async function POST(request: NextRequest) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: KID_SESSION_MAX_AGE_SECONDS,
-      path: "/",
+      path: "/kid",
     })
   }
 

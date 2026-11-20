@@ -72,6 +72,15 @@ export async function signIn(formData: FormData) {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
 
+  // Application-layer rate limit — defence-in-depth on top of Supabase's built-in limit
+  const { consumeRateLimit } = await import("@/lib/rate-limit")
+  const loginLimit = await consumeRateLimit(
+    { action: "parent-login", subject: email.toLowerCase(), maxAttempts: 10, windowSeconds: 15 * 60, blockSeconds: 30 * 60 },
+  ).catch(() => ({ allowed: true, retryAfterSeconds: 0 }))
+  if (!loginLimit.allowed) {
+    return { error: "Too many login attempts. Please wait and try again." }
+  }
+
   const supabase = await createClient()
 
   const { error } = await supabase.auth.signInWithPassword({ email, password })

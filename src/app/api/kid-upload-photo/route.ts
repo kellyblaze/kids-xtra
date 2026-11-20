@@ -8,6 +8,7 @@ import {
   hasValidImageSignature,
 } from "@/lib/chore-photos"
 import { isSameOriginRequest } from "@/lib/request-security"
+import { consumeRateLimit } from "@/lib/rate-limit"
 
 export async function POST(request: NextRequest) {
   if (!isSameOriginRequest(request)) {
@@ -25,6 +26,15 @@ export async function POST(request: NextRequest) {
   const authorization = await authorizeChildAccess(childId)
   if (!authorization) {
     return NextResponse.json({ error: "Not authorized" }, { status: 401 })
+  }
+
+  const ip = (request as NextRequest & { ip?: string }).ip
+  const uploadLimit = await consumeRateLimit(
+    { action: "photo-upload", subject: childId, maxAttempts: 20, windowSeconds: 3600, blockSeconds: 3600 },
+    { ip },
+  ).catch(() => ({ allowed: true, retryAfterSeconds: 0 }))
+  if (!uploadLimit.allowed) {
+    return NextResponse.json({ error: "Upload limit reached. Try again later." }, { status: 429 })
   }
 
   if (file.size === 0 || file.size > CHORE_PHOTO_MAX_BYTES) {

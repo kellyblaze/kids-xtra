@@ -113,7 +113,7 @@ export async function awardBonusCredits(childId: string, formData: FormData) {
     actor_type: "parent",
     actor_id: ctx.userId,
     event_type: "bonus_credits_awarded",
-    metadata: { child_name: child.name, credits: String(amount), reason: description },
+    metadata: { child_id: childId, credits: String(amount), reason: description },
   })
 
   revalidatePath(`/parent/children/${childId}`)
