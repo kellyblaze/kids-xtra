@@ -11,6 +11,10 @@ export async function signUp(formData: FormData) {
   const displayName = formData.get("displayName") as string
   const familyName = formData.get("familyName") as string
 
+  if (!password || password.length < 8) {
+    return { error: "Password must be at least 8 characters." }
+  }
+
   try {
     const supabase = await createClient()
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import type Stripe from "stripe"
 import { getStripe } from "@/lib/stripe"
 import { syncStripeSubscription } from "@/lib/stripe-subscriptions"
+import { logger } from "@/lib/logger"
 
 export async function POST(request: Request) {
   const signature = request.headers.get("stripe-signature")
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
       await syncStripeSubscription(event.data.object)
     }
   } catch (error) {
-    console.error("Stripe webhook sync failed", error)
+    logger.error("stripe_webhook_sync_failed", { error: error instanceof Error ? error.message : String(error) })
     return NextResponse.json({ error: "Subscription sync failed" }, { status: 500 })
   }
 

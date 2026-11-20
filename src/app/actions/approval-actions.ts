@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { revalidatePath } from "next/cache"
 import { awardMilestoneBadges } from "@/lib/badge-service"
+import { logger } from "@/lib/logger"
 
 async function getParentContext(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user } } = await supabase.auth.getUser()
@@ -74,12 +75,12 @@ export async function approveChoreCompletion(completionId: string) {
     admin.rpc("award_xp", { p_child_id: completion.child_id, p_xp: xpValue }),
     admin.rpc("update_child_streak", { p_child_id: completion.child_id }),
   ])
-  if (balanceResult.error) console.error("recalculate_child_balance failed", balanceResult.error)
-  if (xpResult.error) console.error("award_xp failed", xpResult.error)
-  if (streakResult.error) console.error("update_child_streak failed", streakResult.error)
+  if (balanceResult.error) logger.error("rpc_failed", { rpc: "recalculate_child_balance", error: balanceResult.error.message })
+  if (xpResult.error) logger.error("rpc_failed", { rpc: "award_xp", error: xpResult.error.message })
+  if (streakResult.error) logger.error("rpc_failed", { rpc: "update_child_streak", error: streakResult.error.message })
 
   awardMilestoneBadges(admin, completion.child_id as string, ctx.familyId as string).catch((e) =>
-    console.error("awardMilestoneBadges failed", e),
+    logger.error("award_milestone_badges_failed", { error: e instanceof Error ? e.message : String(e) }),
   )
 
   await supabase.from("activity_logs").insert({
