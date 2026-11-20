@@ -57,7 +57,7 @@ export async function approveChoreCompletion(completionId: string) {
 
   if (updateError) return { error: updateError.message }
 
-  await supabase.from("credit_transactions").insert({
+  const { error: txError } = await supabase.from("credit_transactions").insert({
     family_id: ctx.familyId,
     child_id: completion.child_id,
     type: "chore_approved",
@@ -66,6 +66,7 @@ export async function approveChoreCompletion(completionId: string) {
     note: `Earned for: ${choreTitle}`,
     created_by: ctx.userId,
   })
+  if (txError) return { error: `Could not record credits: ${txError.message}` }
 
   const admin = createAdminClient()
   const [balanceResult, xpResult, streakResult] = await Promise.all([
@@ -157,20 +158,22 @@ export async function approveRewardRedemption(redemptionId: string) {
   if (outcome?.error) return { error: outcome.error }
 
   const rewardTitle = outcome?.reward_title ?? "reward"
-  const { data: redemption } = await supabase
+  const { data: redemption, error: redemptionFetchError } = await supabase
     .from("reward_redemptions")
     .select("child_id")
     .eq("id", redemptionId)
     .single()
 
-  await supabase.from("activity_logs").insert({
-    family_id: ctx.familyId,
-    child_id: redemption?.child_id,
-    actor_type: "parent",
-    actor_id: ctx.userId,
-    event_type: "reward_approved",
-    metadata: { reward_title: rewardTitle },
-  })
+  if (!redemptionFetchError && redemption?.child_id) {
+    await supabase.from("activity_logs").insert({
+      family_id: ctx.familyId,
+      child_id: redemption.child_id,
+      actor_type: "parent",
+      actor_id: ctx.userId,
+      event_type: "reward_approved",
+      metadata: { reward_title: rewardTitle },
+    })
+  }
 
   revalidatePath("/parent/approvals")
   revalidatePath("/parent/dashboard")

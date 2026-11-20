@@ -40,6 +40,11 @@ function computeStreak(completedAts: string[]): number {
     new Set(completedAts.map((d) => new Date(d).toISOString().slice(0, 10))),
   ).sort((a, b) => b.localeCompare(a))
 
+  // Streak must be anchored to today or yesterday — anything older means the streak is broken
+  const today = new Date().toISOString().slice(0, 10)
+  const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10)
+  if (uniqueDays[0] !== today && uniqueDays[0] !== yesterday) return 0
+
   let streak = 1
   for (let i = 1; i < uniqueDays.length; i++) {
     const prev = new Date(uniqueDays[i - 1])

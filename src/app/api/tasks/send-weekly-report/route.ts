@@ -61,8 +61,7 @@ export async function GET(request: NextRequest) {
         supabase
           .from("parent_profiles")
           .select("id, display_name")
-          .eq("family_id", family.id)
-          .limit(1),
+          .eq("family_id", family.id),
         supabase
           .from("activity_logs")
           .select("child_id, event_type, metadata")
@@ -85,13 +84,6 @@ export async function GET(request: NextRequest) {
       ]);
 
       if (!parents || parents.length === 0) continue;
-
-      const parent = parents[0];
-      const { data: authUser } = await supabase.auth.admin.getUserById(
-        parent.id,
-      );
-      const parentEmail = authUser.user?.email;
-      if (!parentEmail) continue;
 
       const summaries = (children ?? []).map((child) => {
         const streak = streaks?.find((item) => item.child_id === child.id)
@@ -204,28 +196,34 @@ export async function GET(request: NextRequest) {
 </html>
 `;
 
-      try {
-        const response = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            from: "Kids Xtra <noreply@kids-xtra.app>",
-            to: parentEmail,
-            subject: `${family.name || "Family"} - Weekly Activity Report`,
-            html: htmlBody,
-          }),
-        });
+      for (const parent of parents) {
+        const { data: authUser } = await supabase.auth.admin.getUserById(parent.id);
+        const parentEmail = authUser.user?.email;
+        if (!parentEmail) continue;
 
-        if (response.ok) {
-          results.sent += 1;
-        } else {
+        try {
+          const response = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              from: "Kids Xtra <noreply@kids-xtra.app>",
+              to: parentEmail,
+              subject: `${family.name || "Family"} - Weekly Activity Report`,
+              html: htmlBody,
+            }),
+          });
+
+          if (response.ok) {
+            results.sent += 1;
+          } else {
+            results.failed += 1;
+          }
+        } catch {
           results.failed += 1;
         }
-      } catch {
-        results.failed += 1;
       }
     }
 
