@@ -1,7 +1,32 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
+function generateNonce(): string {
+  const bytes = new Uint8Array(16)
+  crypto.getRandomValues(bytes)
+  return Buffer.from(bytes).toString("base64")
+}
+
+function buildCsp(nonce: string): string {
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    `script-src 'self' 'nonce-${nonce}'`,
+    `style-src 'self' 'nonce-${nonce}' 'unsafe-inline'`,
+    "img-src 'self' data: blob: https://images.pexels.com https://*.supabase.co",
+    "font-src 'self' data:",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
+    "upgrade-insecure-requests",
+  ].join("; ")
+}
+
 export async function middleware(request: NextRequest) {
+  const nonce = generateNonce()
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -37,6 +62,9 @@ export async function middleware(request: NextRequest) {
     loginUrl.pathname = "/login"
     return NextResponse.redirect(loginUrl)
   }
+
+  supabaseResponse.headers.set("Content-Security-Policy", buildCsp(nonce))
+  supabaseResponse.headers.set("x-nonce", nonce)
 
   return supabaseResponse
 }

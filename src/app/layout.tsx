@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Geist } from "next/font/google"
 import Script from "next/script"
+import { headers } from "next/headers"
 import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
 
@@ -25,15 +26,18 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const headersList = await headers()
+  const nonce = headersList.get("x-nonce") ?? undefined
+
   return (
     <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
         <Toaster richColors position="top-right" />
-        <Script src="/sw-register.js" strategy="afterInteractive" />
+        <Script src="/sw-register.js" strategy="afterInteractive" nonce={nonce} />
       </body>
     </html>
   )

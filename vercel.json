@@ -6,7 +6,11 @@
     },
     {
       "path": "/api/tasks/send-chore-reminders",
-      "schedule": "0 17 * * *"
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/tasks/purge-expired-data",
+      "schedule": "0 3 * * *"
     }
   ]
 }
