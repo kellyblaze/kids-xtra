@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { HelpAndFaq } from "@/components/parent/HelpAndFaq";
+import { WeeklyReportToggle } from "@/components/parent/WeeklyReportToggle";
+import { parseOnboardingState } from "@/lib/onboarding";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -26,10 +28,18 @@ export default async function SettingsPage() {
   const { data: family } = await supabase
     .from("families")
     .select(
-      "id, name, family_code, subscription_status, trial_ends_at, cancel_at_period_end, stripe_customer_id",
+      "id, name, family_code, subscription_status, trial_ends_at, cancel_at_period_end, stripe_customer_id, settings",
     )
     .eq("id", profile.family_id)
     .single();
+
+  const weeklyReportEnabled = parseOnboardingState(family?.settings).preferences.weeklyReport;
+
+  const { data: reminderSettings } = await supabase
+    .from("family_settings")
+    .select("timezone, reminder_quiet_start, reminder_quiet_end, parent_overdue_notifications")
+    .eq("family_id", profile.family_id)
+    .maybeSingle();
 
   return (
     <div className="space-y-6 max-w-xl">
@@ -41,11 +51,14 @@ export default async function SettingsPage() {
       </div>
 
       <FamilySettingsForm
-        familyId={profile.family_id}
         familyName={family?.name ?? ""}
         displayName={profile.display_name ?? ""}
         email={user.email ?? ""}
         familyCode={family?.family_code ?? ""}
+        timezone={reminderSettings?.timezone ?? "America/New_York"}
+        quietStart={reminderSettings?.reminder_quiet_start?.slice(0, 5) ?? "20:00"}
+        quietEnd={reminderSettings?.reminder_quiet_end?.slice(0, 5) ?? "07:00"}
+        parentOverdueNotifications={reminderSettings?.parent_overdue_notifications !== false}
       />
 
       <section className="rounded-xl border bg-white p-5 shadow-sm">
@@ -80,6 +93,11 @@ export default async function SettingsPage() {
             </Button>
           </form>
         )}
+      </section>
+
+      <section className="rounded-xl border bg-white p-5 shadow-sm">
+        <h2 className="font-semibold mb-4">Email notifications</h2>
+        <WeeklyReportToggle enabled={weeklyReportEnabled} />
       </section>
 
       <ExportActivityForm />

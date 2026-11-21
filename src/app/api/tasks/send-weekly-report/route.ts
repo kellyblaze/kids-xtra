@@ -24,6 +24,10 @@ export async function GET(request: NextRequest) {
   const authError = authorizeCronRequest(request);
   if (authError) return authError;
 
+  if (!process.env.RESEND_API_KEY) {
+    return NextResponse.json({ success: false, error: "RESEND_API_KEY not configured" }, { status: 500 });
+  }
+
   try {
     const supabase = createAdminClient();
 
@@ -191,6 +195,10 @@ export async function GET(request: NextRequest) {
     <div class="footer">
       <p>Keep up the great work! 🎉</p>
       <p><a href="${process.env.NEXT_PUBLIC_APP_URL || "https://kids-xtra.vercel.app"}/parent/dashboard" style="color: #667eea; text-decoration: none;">View Dashboard</a></p>
+      <p style="margin-top:1rem;font-size:11px;color:#aaa;">
+        You're receiving this because weekly summaries are enabled in Kids Xtra.<br>
+        <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://kids-xtra.vercel.app"}/parent/settings" style="color:#aaa;">Turn off weekly emails</a>
+      </p>
     </div>
   </body>
 </html>
@@ -219,9 +227,12 @@ export async function GET(request: NextRequest) {
           if (response.ok) {
             results.sent += 1;
           } else {
+            const errorBody = await response.text().catch(() => "(unreadable)");
+            console.error("resend_error", { status: response.status, body: errorBody, to: parentEmail });
             results.failed += 1;
           }
-        } catch {
+        } catch (err) {
+          console.error("resend_fetch_error", { error: err instanceof Error ? err.message : String(err) });
           results.failed += 1;
         }
       }
