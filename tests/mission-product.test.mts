@@ -36,6 +36,18 @@ test("getMissionState marks an overdue daily mission as missed", () => {
   assert.equal(state.canSubmit, false);
 });
 
+test("getMissionState keeps a started Mission in progress after its due time", () => {
+  const state = getMissionState({
+    doneCount: 0,
+    timesAllowed: 1,
+    latestCompletionStatus: "in_progress",
+    pastDue: true,
+  });
+
+  assert.equal(state.key, "in_progress");
+  assert.equal(state.canSubmit, true);
+});
+
 test("getCelebrations keeps celebrations lightweight and event based", () => {
   const celebrations = getCelebrations({
     approvedMissionCredits: 30,

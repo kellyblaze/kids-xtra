@@ -28,3 +28,18 @@ test("needs more work migration adds a first-class completion state", () => {
   assert.doesNotMatch(sql, /DROP TABLE|DROP COLUMN|TRUNCATE/i)
   assert.doesNotMatch(backfillSql, /DROP TABLE|DROP COLUMN|TRUNCATE/i)
 })
+
+test("Mission reminder migration is additive and isolates server-owned tables", () => {
+  const sql = readFileSync("supabase/migrations/0012_mission_reminders.sql", "utf8")
+
+  assert.match(sql, /ADD COLUMN IF NOT EXISTS reminder_enabled/i)
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.mission_progress/i)
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.mission_reminder_deliveries/i)
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.push_subscription_recipients/i)
+  for (const table of ["push_subscriptions", "push_subscription_recipients", "mission_progress", "mission_reminder_deliveries"]) {
+    assert.match(sql, new RegExp(`ALTER TABLE public\\.${table} ENABLE ROW LEVEL SECURITY`))
+    assert.match(sql, new RegExp(`ALTER TABLE public\\.${table} FORCE ROW LEVEL SECURITY`))
+    assert.match(sql, new RegExp(`REVOKE ALL ON public\\.${table} FROM anon, authenticated`))
+  }
+  assert.doesNotMatch(sql, /DROP TABLE|DROP COLUMN|TRUNCATE/i)
+})

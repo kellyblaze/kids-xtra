@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test --experimental-strip-types tests/*.test.mts",
+    "test:sre": "node --import ./tests/mocks/register.mjs --test --experimental-strip-types tests/sre-*.test.mts",
     "qa:workflow": "node scripts/final-workflow-qa.mjs",
     "qa:cleanup": "node scripts/cleanup-qa-data.mjs"
   },
@@ -16,6 +17,7 @@
     "@base-ui/react": "^1.5.0",
     "@node-rs/argon2": "^2.2.1",
     "@radix-ui/react-slot": "^1.2.5",
+    "@sentry/nextjs": "^11.16.0",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.1",
     "@types/web-push": "^3.6.4",
