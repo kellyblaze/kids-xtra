@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   WalletCards,
   XCircle,
+  BellRing,
 } from "lucide-react";
 import type React from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -68,6 +69,10 @@ const OPTIONAL_ENV = [
   "VAPID_PRIVATE_KEY",
   "VAPID_EMAIL",
   "ANTHROPIC_API_KEY",
+  "ALERT_EMAIL",
+  "SENTRY_WEBHOOK_SECRET",
+  "GITHUB_TOKEN",
+  "GITHUB_ALERT_REPO",
 ] as const;
 
 export default async function AdminHealthPage() {
@@ -81,12 +86,14 @@ export default async function AdminHealthPage() {
     staleRewardRequests,
     balanceCheck,
     recentActivity,
+    reminderHealth,
   ] = await Promise.all([
     getCounts(admin),
     getStaleMissionChecks(admin),
     getStaleRewardRequests(admin),
     getBalanceIntegrity(admin),
     getRecentActivityCount(admin),
+    getReminderHealth(admin),
   ]);
 
   const envChecks = getEnvChecks();
@@ -98,10 +105,12 @@ export default async function AdminHealthPage() {
     (staleMissionChecks.length > 0 ? 1 : 0) +
     (staleRewardRequests.length > 0 ? 1 : 0) +
     (balanceCheck.mismatches.length > 0 ? 1 : 0) +
+    (reminderHealth.failedLast24Hours > 0 ? 1 : 0) +
     requiredMissing.length;
   const errorCount =
     counts.filter((count) => count.status === "error").length +
-    (databaseCheck.status === "error" ? 1 : 0);
+    (databaseCheck.status === "error" ? 1 : 0) +
+    (reminderHealth.error ? 1 : 0);
   const overallStatus: Status =
     errorCount > 0 ? "error" : warningCount > 0 ? "warn" : "ok";
 
@@ -217,7 +226,7 @@ export default async function AdminHealthPage() {
           </Panel>
         </section>
 
-        <section className="grid gap-6 xl:grid-cols-2">
+        <section className="grid gap-6 xl:grid-cols-3">
           <Panel title="Environment Checks" icon={ShieldCheck}>
             <div className="grid gap-2">
               {envChecks.map((check) => (
@@ -260,6 +269,31 @@ export default async function AdminHealthPage() {
                 ))}
               </div>
             )}
+          </Panel>
+
+          <Panel title="Mission Reminders" icon={BellRing}>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <CountTile check={{ label: "Paired kid devices", value: reminderHealth.pairedDevices, status: "ok" }} />
+              <CountTile check={{
+                label: "Successful batches (24h)",
+                value: reminderHealth.sentLast24Hours,
+                status: reminderHealth.error ? "error" : "ok",
+                detail: reminderHealth.error ?? undefined,
+              }} />
+              <CountTile check={{
+                label: "Batches with failures (24h)",
+                value: reminderHealth.failedLast24Hours,
+                status: reminderHealth.error ? "error" : reminderHealth.failedLast24Hours > 0 ? "warn" : "ok",
+              }} />
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <p className="text-sm font-black text-slate-300">Last delivery attempt</p>
+                <p className="mt-2 text-sm font-bold text-white">
+                  {reminderHealth.lastAttemptAt
+                    ? new Date(reminderHealth.lastAttemptAt).toLocaleString()
+                    : "No attempts yet"}
+                </p>
+              </div>
+            </div>
           </Panel>
         </section>
       </div>
@@ -435,6 +469,41 @@ async function getRecentActivityCount(
     .select("*", { count: "exact", head: true })
     .gte("created_at", cutoff);
   return count ?? 0;
+}
+
+async function getReminderHealth(admin: ReturnType<typeof createAdminClient>) {
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const [devices, sent, failed, latest] = await Promise.all([
+    admin
+      .from("push_subscription_recipients")
+      .select("*", { count: "exact", head: true })
+      .in("audience", ["child", "shared"]),
+    admin
+      .from("mission_reminder_deliveries")
+      .select("*", { count: "exact", head: true })
+      .not("sent_at", "is", null)
+      .gte("attempted_at", cutoff),
+    admin
+      .from("mission_reminder_deliveries")
+      .select("*", { count: "exact", head: true })
+      .gt("failure_count", 0)
+      .gte("attempted_at", cutoff),
+    admin
+      .from("mission_reminder_deliveries")
+      .select("attempted_at")
+      .order("attempted_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+  const error = devices.error ?? sent.error ?? failed.error ?? latest.error;
+
+  return {
+    pairedDevices: devices.count ?? 0,
+    sentLast24Hours: sent.count ?? 0,
+    failedLast24Hours: failed.count ?? 0,
+    lastAttemptAt: latest.data?.attempted_at ?? null,
+    error: error?.message ?? null,
+  };
 }
 
 async function getBalanceIntegrity(admin: ReturnType<typeof createAdminClient>) {
