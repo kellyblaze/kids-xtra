@@ -25,7 +25,34 @@ function buildCsp(nonce: string): string {
   ].join("; ")
 }
 
+function checkAdminAuth(request: NextRequest): NextResponse | null {
+  const password = process.env.ADMIN_HEALTH_PASSWORD
+  if (!password) return null // not configured — allow (dev environment)
+  const authHeader = request.headers.get("authorization") ?? ""
+  const [scheme, credentials] = authHeader.split(" ")
+  if (scheme?.toLowerCase() === "basic" && credentials) {
+    const decoded = Buffer.from(credentials, "base64").toString("utf-8")
+    const colonIdx = decoded.indexOf(":")
+    const suppliedPassword = colonIdx >= 0 ? decoded.slice(colonIdx + 1) : decoded
+    const passwordBuf = Buffer.from(password)
+    const suppliedBuf = Buffer.from(suppliedPassword)
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    if (suppliedBuf.length === passwordBuf.length && require("crypto").timingSafeEqual(suppliedBuf, passwordBuf)) {
+      return null // authorized
+    }
+  }
+  return new NextResponse("Unauthorized", {
+    status: 401,
+    headers: { "WWW-Authenticate": 'Basic realm="KidsXtra Admin"' },
+  })
+}
+
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    const authError = checkAdminAuth(request)
+    if (authError) return authError
+  }
+
   const nonce = generateNonce()
   let supabaseResponse = NextResponse.next({ request })
 

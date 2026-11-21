@@ -6,9 +6,8 @@ const CHILD_RETENTION_DAYS = 90
 const ACTIVITY_LOG_RETENTION_DAYS = 365
 
 export async function GET(request: NextRequest) {
-  if (!authorizeCronRequest(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const authError = authorizeCronRequest(request)
+  if (authError) return authError
 
   const admin = createAdminClient()
   const results: Record<string, number | string> = {}
