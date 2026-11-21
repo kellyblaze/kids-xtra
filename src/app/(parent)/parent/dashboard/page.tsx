@@ -52,6 +52,12 @@ export default async function ParentDashboardPage() {
     completed?: boolean;
     step?: number;
   };
+  // New accounts that haven't finished setup are sent to the wizard.
+  // Once completed, the wizard sets onboarding.completed = true.
+  if (!onboarding.completed) {
+    redirect("/parent/onboarding")
+  }
+
   if (!familyCode) {
     const result = await ensureFamilyCode();
     familyCode = result.code;
