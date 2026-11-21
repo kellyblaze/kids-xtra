@@ -217,7 +217,7 @@ export async function GET(request: NextRequest) {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              from: "Kids Xtra <noreply@kids-xtra.app>",
+              from: "Kids Xtra <noreply@kidsxtra.cc>",
               to: parentEmail,
               subject: `${family.name || "Family"} - Weekly Activity Report`,
               html: htmlBody,
