@@ -1,0 +1,17 @@
+{
+  "name": "kidsxtra-load-tests",
+  "version": "1.0.0",
+  "description": "k6 load test suite for KidsXtra — staging only",
+  "scripts": {
+    "test:smoke":  "k6 run scenarios/01-smoke.js",
+    "test:load":   "k6 run scenarios/02-parent-login.js",
+    "test:kid":    "k6 run scenarios/03-kid-flow.js",
+    "test:chore":  "k6 run scenarios/04-chore-submission.js",
+    "test:stress": "k6 run scenarios/05-concurrent-families.js",
+    "test:spike":  "k6 run scenarios/06-spike.js",
+    "test:soak":   "k6 run scenarios/07-soak.js"
+  },
+  "engines": {
+    "k6": ">=0.49.0"
+  }
+}

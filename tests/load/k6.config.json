@@ -1,0 +1,6 @@
+{
+  "_comment": "Grafana k6 Cloud project configuration stub. Fill in projectID from your k6 Cloud account.",
+  "projectID": 0,
+  "name": "KidsXtra Load Tests",
+  "note": "To use k6 Cloud: set K6_CLOUD_TOKEN env var and run: k6 cloud scenarios/02-parent-login.js"
+}
