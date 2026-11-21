@@ -1,6 +1,4 @@
-import Link from "next/link"
 import { redirect } from "next/navigation"
-import { CheckCircle2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { getStripe } from "@/lib/stripe"
@@ -36,16 +34,16 @@ export default async function BillingSuccessPage({
   const subscription = await getStripe().subscriptions.retrieve(subscriptionId)
   await syncStripeSubscription(subscription)
 
-  return (
-    <main className="grid min-h-screen place-items-center bg-violet-50 px-4">
-      <section className="max-w-lg rounded-[2rem] border-4 border-emerald-200 bg-white p-8 text-center shadow-[0_10px_0_#a7f3d0] sm:p-12">
-        <CheckCircle2 className="mx-auto size-16 text-emerald-600" />
-        <h1 className="mt-5 text-3xl font-black text-slate-900">Your free month has started!</h1>
-        <p className="mt-3 text-slate-600">You now have every Kids Xtra feature. You will be billed $6 per month after your 30-day trial unless you cancel.</p>
-        <Link href="/parent/onboarding" className="mt-8 inline-flex rounded-2xl bg-violet-600 px-7 py-3 font-black text-white transition-all hover:bg-violet-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-300 active:translate-y-0.5">
-          Set up my family
-        </Link>
-      </section>
-    </main>
-  )
+  // Send new subscribers straight into the wizard; returning users who re-visit
+  // this URL (e.g. via browser history) go to the dashboard instead.
+  const { data: family } = await admin
+    .from("families")
+    .select("settings")
+    .eq("id", profile.family_id)
+    .single()
+  const settings = family?.settings as Record<string, unknown> | null
+  const onboarding = settings?.onboarding as { completed?: boolean } | undefined
+  const destination = onboarding?.completed ? "/parent/dashboard" : "/parent/onboarding"
+
+  redirect(destination)
 }
