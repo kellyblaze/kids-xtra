@@ -1,0 +1,73 @@
+# Post-deployment health check
+#
+# Run this manually after deploying to verify the app and database are healthy.
+# Trigger via: GitHub UI → Actions → "Post-Deploy Health Check" → Run workflow
+# Or via CLI: gh workflow run release-health.yml -f deployment_url=https://your-app.vercel.app
+
+name: Post-Deploy Health Check
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_url:
+        description: "Deployed app URL to check (e.g. https://kidsxtra.cc)"
+        required: true
+        type: string
+
+env:
+  NODE_ENV: production
+  NEXT_TELEMETRY_DISABLED: 1
+
+jobs:
+  post-deploy-health-check:
+    name: Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for deployment to warm up
+        run: sleep 30
+
+      - name: Check /api/health endpoint
+        id: health
+        run: |
+          DEPLOYMENT_URL="${{ inputs.deployment_url }}"
+          HEALTH_URL="${DEPLOYMENT_URL%/}/api/health"
+          echo "Checking: $HEALTH_URL"
+
+          RESPONSE=""
+          for i in 1 2 3 4 5; do
+            echo "Attempt $i/5..."
+            RESPONSE=$(curl -sf --max-time 15 "$HEALTH_URL" 2>/dev/null || echo "")
+            if [ -n "$RESPONSE" ]; then
+              break
+            fi
+            if [ $i -lt 5 ]; then
+              echo "No response — waiting 10s before retry..."
+              sleep 10
+            fi
+          done
+
+          if [ -z "$RESPONSE" ]; then
+            echo "❌ Health endpoint did not respond after 5 attempts"
+            exit 1
+          fi
+
+          echo "Raw response: $RESPONSE"
+          echo "response=$RESPONSE" >> "$GITHUB_OUTPUT"
+
+      - name: Verify health response
+        run: |
+          RESPONSE='${{ steps.health.outputs.response }}'
+
+          OK=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(str(d.get('ok',False)).lower())" 2>/dev/null || echo "false")
+          DB=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('db','error'))" 2>/dev/null || echo "error")
+          TS=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('ts','unknown'))" 2>/dev/null || echo "unknown")
+
+          if [ "$OK" != "true" ] || [ "$DB" != "ok" ]; then
+            echo "❌ Health check FAILED"
+            echo "   ok=$OK  db=$DB"
+            echo "   Full response: $RESPONSE"
+            exit 1
+          fi
+
+          echo "✅ Health check passed"
+          echo "   ok=$OK  db=$DB  ts=$TS"

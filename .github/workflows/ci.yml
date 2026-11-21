@@ -1,0 +1,93 @@
+# CI pipeline — runs on every push/PR to main
+#
+# Required GitHub secrets (Settings → Secrets → Actions):
+#   NEXT_PUBLIC_SUPABASE_URL   — can be a placeholder value for build
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY — can be a placeholder value for build
+#
+# Optional secrets (source-map upload to Sentry):
+#   SENTRY_AUTH_TOKEN
+#   SENTRY_ORG
+#   SENTRY_PROJECT
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_ENV: test
+  NEXT_TELEMETRY_DISABLED: 1
+
+jobs:
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+      - run: npm ci
+      - run: npx tsc --noEmit
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+      - run: npm ci
+      - run: npm run lint
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+      - run: npm ci
+      # Passes even if no test files exist yet; remove `|| true` once tests are added
+      - run: npm test || true
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    env:
+      # Use real secrets when available; fall back to placeholder values so the
+      # Next.js build doesn't fail due to missing NEXT_PUBLIC_* vars.
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+      - run: npm ci
+      - run: npm run build
+
+  dependency-scan:
+    name: Dependency Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+      - run: npm ci
+      # Informational only — does not fail the pipeline
+      - run: npm audit --audit-level=high || true
